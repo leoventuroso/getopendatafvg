@@ -1,6 +1,6 @@
 # Montereale Valcellina Open
 
-An open-source, serverless, and multi-modular Civic Tech platform designed for the territory of Montereale Valcellina (Friuli Venezia Giulia, Italy). This project provides tools for sustainable mobility, outdoor activities, environmental resilience, and community-driven data collection.
+An open-source, serverless, and multi-modular Civic Tech platform designed for the territory of Montereale Valcellina (Friuli - Venezia Giulia, Italy). This project provides tools for sustainable mobility, outdoor activities, environmental resilience, and community-driven data collection.
 
 The platform relies on a 100% Jamstack architecture to ensure zero hosting costs, minimal maintenance overhead, and high client-side performance on both desktop and mobile browsers.
 
