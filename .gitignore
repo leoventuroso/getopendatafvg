@@ -1,6 +1,7 @@
 # Frontend
 frontend/node_modules/
 frontend/dist/
+frontend/tsconfig.tsbuildinfo
 
 # Python
 __pycache__/
@@ -10,6 +11,11 @@ __pycache__/
 # Data artifacts
 frontend/public/data/*.pmtiles
 frontend/public/data/*.duckdb
+frontend/src/data/*.tif
+frontend/src/data/*.SAFE/
+pipeline/data/
+pipeline/tools/
+data/
 
 # OS / Editor
 .DS_Store
