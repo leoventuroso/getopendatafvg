@@ -1,0 +1,1 @@
+{"type": "FeatureCollection", "features": [{"id": "aed-placeholder-1", "type": "Feature", "properties": {"class": "defibrillator", "name": "AED simulato", "source": "placeholder", "note": "Segnaposto in attesa dei dati OSM"}, "geometry": {"type": "Point", "coordinates": [12.6469, 46.1518]}}]}

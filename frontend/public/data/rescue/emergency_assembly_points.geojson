@@ -1,0 +1,1 @@
+{"type": "FeatureCollection", "features": [{"id": "assembly-point-1", "type": "Feature", "properties": {"class": "assembly_point", "name": "Punto raccolta simulato", "status": "verifica richiesta", "most_recent_event": "2024-10-02", "note": "Placeholder per aree di raccolta emergenza."}, "geometry": {"type": "Point", "coordinates": [12.6538, 46.1553]}}]}

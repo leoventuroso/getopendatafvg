@@ -1,0 +1,17 @@
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Data artifacts
+frontend/public/data/*.pmtiles
+frontend/public/data/*.duckdb
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/

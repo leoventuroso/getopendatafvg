@@ -1,0 +1,30 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": "landslide-risk-1",
+      "type": "Feature",
+      "properties": {
+        "risk_type": "landslide",
+        "risk_class": "historic",
+        "name": "Area frana simulata",
+        "most_recent_event": "2023-09-18",
+        "event_note": "Segnaposto per dissesto storico su versante.",
+        "source_note": "Placeholder in attesa di layer geologici ufficiali"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [12.6498, 46.1726],
+            [12.6544, 46.1724],
+            [12.6557, 46.1752],
+            [12.6527, 46.1765],
+            [12.6501, 46.1751],
+            [12.6498, 46.1726]
+          ]
+        ]
+      }
+    }
+  ]
+}

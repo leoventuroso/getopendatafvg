@@ -1,0 +1,30 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": "hydraulic-risk-1",
+      "type": "Feature",
+      "properties": {
+        "risk_type": "hydraulic",
+        "risk_class": "P2",
+        "name": "Area idraulica simulata",
+        "most_recent_event": "2024-11-03",
+        "event_note": "Soglia prudenziale usata come segnaposto per la Direttiva Alluvioni.",
+        "source_note": "Placeholder in attesa di layer istituzionali FVG"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [12.6439, 46.1519],
+            [12.6477, 46.1519],
+            [12.6481, 46.1550],
+            [12.6448, 46.1556],
+            [12.6429, 46.1534],
+            [12.6439, 46.1519]
+          ]
+        ]
+      }
+    }
+  ]
+}

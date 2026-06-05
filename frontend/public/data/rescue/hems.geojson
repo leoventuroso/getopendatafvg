@@ -1,0 +1,1 @@
+{"type": "FeatureCollection", "features": [{"id": "hems-placeholder-1", "type": "Feature", "properties": {"class": "hems", "name": "Elisoccorso simulato", "source": "placeholder", "note": "Segnaposto in attesa dei dati OSM"}, "geometry": {"type": "Point", "coordinates": [12.6512, 46.1549]}}]}
