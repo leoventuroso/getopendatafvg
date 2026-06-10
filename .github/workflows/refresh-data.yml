@@ -1,0 +1,56 @@
+name: Refresh GIS data
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'    # ogni lunedì alle 3:00 UTC — rescue + cyclepaths
+    - cron: '0 3 1 * *'    # il 1° di ogni mese alle 3:00 UTC — base + community
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Makefile target'
+        required: true
+        default: 'rescue'
+        type: choice
+        options: [rescue, cyclepaths, base, community]
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: pipeline/requirements-ci.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-ci.txt
+        working-directory: pipeline
+
+      - name: Weekly refresh (rescue + cyclepaths)
+        if: github.event.schedule == '0 3 * * 1'
+        run: make rescue cyclepaths
+        working-directory: pipeline
+
+      - name: Monthly refresh (base + community)
+        if: github.event.schedule == '0 3 1 * *'
+        run: make base community
+        working-directory: pipeline
+
+      - name: Manual target
+        if: github.event_name == 'workflow_dispatch'
+        run: make ${{ github.event.inputs.target }}
+        working-directory: pipeline
+
+      - name: Commit updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add frontend/public/data/
+          git diff --staged --quiet || git commit -m "chore: auto-refresh GIS data [skip ci]"
+          git push

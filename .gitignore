@@ -8,14 +8,13 @@ __pycache__/
 *.pyc
 .venv/
 
-# Data artifacts
-frontend/public/data/*.pmtiles
-frontend/public/data/*.duckdb
+# Data artifacts — pmtiles and duckdb are committed as pre-built artifacts
 frontend/src/data/*.tif
+frontend/src/data/*.TIF
 frontend/src/data/*.SAFE/
 pipeline/data/
 pipeline/tools/
-data/
+/data/
 
 # OS / Editor
 .DS_Store
