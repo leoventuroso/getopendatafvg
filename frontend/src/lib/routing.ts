@@ -216,7 +216,7 @@ export async function loadRoutingGraph(): Promise<RoutingGraph> {
 
 export async function loadRoutingGraphForMode(mode: RoutingMode): Promise<RoutingGraph> {
   if (mode === 'biking') {
-    const response = await fetch('/data/transport.geojson');
+    const response = await fetch(`${import.meta.env.BASE_URL}data/transport.geojson`);
     if (!response.ok) {
       throw new Error('Impossibile caricare il dataset routing');
     }
@@ -226,8 +226,8 @@ export async function loadRoutingGraphForMode(mode: RoutingMode): Promise<Routin
   }
 
   const [roadsResponse, trailsResponse] = await Promise.all([
-    fetch('/data/transport.geojson'),
-    fetch('/data/outdoor/trails_routing.geojson')
+    fetch(`${import.meta.env.BASE_URL}data/transport.geojson`),
+    fetch(`${import.meta.env.BASE_URL}data/outdoor/trails_routing.geojson`)
   ]);
 
   if (!roadsResponse.ok || !trailsResponse.ok) {

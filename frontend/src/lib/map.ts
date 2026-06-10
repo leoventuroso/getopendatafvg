@@ -313,14 +313,14 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
   if (options.module === 'base') {
     sources.municipalityBoundary = {
       type: 'geojson',
-      data: '/data/boundary.geojson'
+      data: `${import.meta.env.BASE_URL}data/boundary.geojson`
     };
   }
 
   if (isOutdoorModule) {
     sources.lts = {
       type: 'geojson',
-      data: '/data/transport.geojson'
+      data: `${import.meta.env.BASE_URL}data/transport.geojson`
     };
   }
 
@@ -328,61 +328,61 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
     sources.aed = {
       type: 'geojson',
       generateId: true,
-      data: '/data/rescue/aed.geojson'
+      data: `${import.meta.env.BASE_URL}data/rescue/aed.geojson`
     };
     sources.hems = {
       type: 'geojson',
       generateId: true,
-      data: '/data/rescue/hems.geojson'
+      data: `${import.meta.env.BASE_URL}data/rescue/hems.geojson`
     };
     sources.fireHydrants = {
       type: 'geojson',
       generateId: true,
-      data: '/data/rescue/fire_hydrants.geojson'
+      data: `${import.meta.env.BASE_URL}data/rescue/fire_hydrants.geojson`
     };
     sources.assemblyPoints = {
       type: 'geojson',
       generateId: true,
-      data: '/data/rescue/emergency_assembly_points.geojson'
+      data: `${import.meta.env.BASE_URL}data/rescue/emergency_assembly_points.geojson`
     };
     sources.hydraulicRisk = {
       type: 'geojson',
       generateId: true,
-      data: '/data/rescue/hydraulic_risk.geojson'
+      data: `${import.meta.env.BASE_URL}data/rescue/hydraulic_risk.geojson`
     };
     sources.landslideRisk = {
       type: 'geojson',
       generateId: true,
-      data: '/data/rescue/landslide_risk.geojson'
+      data: `${import.meta.env.BASE_URL}data/rescue/landslide_risk.geojson`
     };
   }
 
   if (isOutdoorModule && outdoorSection === 'trails' && trailsSubsection === 'trails') {
     sources.trails = {
       type: 'geojson',
-      data: '/data/outdoor/trails_shaded.geojson'
+      data: `${import.meta.env.BASE_URL}data/outdoor/trails_shaded.geojson`
     };
     sources.water = {
       type: 'geojson',
-      data: '/data/outdoor/water.geojson'
+      data: `${import.meta.env.BASE_URL}data/outdoor/water.geojson`
     };
   }
 
   if (isOutdoorModule && outdoorSection === 'trails' && trailsSubsection === 'slope') {
     sources.trailsRouting = {
       type: 'geojson',
-      data: '/data/outdoor/trails_routing.geojson'
+      data: `${import.meta.env.BASE_URL}data/outdoor/trails_routing.geojson`
     };
   }
 
   if (isOutdoorModule && outdoorSection === 'cyclability' && cyclabilitySubsection === 'bike-infra') {
     sources.cyclepaths = {
       type: 'geojson',
-      data: '/data/outdoor/bike_cyclepaths.geojson'
+      data: `${import.meta.env.BASE_URL}data/outdoor/bike_cyclepaths.geojson`
     };
     sources.bikeInfra = {
       type: 'geojson',
-      data: '/data/outdoor/bike_infra.geojson'
+      data: `${import.meta.env.BASE_URL}data/outdoor/bike_infra.geojson`
     };
   }
 
@@ -399,26 +399,26 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
   if (isGreenModule) {
     sources.greenery = {
       type: 'geojson',
-      data: '/data/greenery.geojson'
+      data: `${import.meta.env.BASE_URL}data/greenery.geojson`
     };
     sources.shadeCorridors = {
       type: 'geojson',
-      data: '/data/shade_corridors.geojson'
+      data: `${import.meta.env.BASE_URL}data/shade_corridors.geojson`
     };
     sources.lst = {
       type: 'geojson',
-      data: '/data/lst.geojson'
+      data: `${import.meta.env.BASE_URL}data/lst.geojson`
     };
     sources.nbr = {
       type: 'geojson',
-      data: '/data/nbr.geojson'
+      data: `${import.meta.env.BASE_URL}data/nbr.geojson`
     };
   }
 
   if (options.module === 'community') {
     sources.municipalityBoundary = {
       type: 'geojson',
-      data: '/data/boundary.geojson'
+      data: `${import.meta.env.BASE_URL}data/boundary.geojson`
     };
   }
 

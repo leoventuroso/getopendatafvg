@@ -4,11 +4,11 @@ export const APP_CONFIG = {
   map: {
     center: [12.664, 46.160] as [number, number],
     zoom: 12,
-    pmtilesUrl: '/data/base_layers.pmtiles',
+    pmtilesUrl: `${import.meta.env.BASE_URL}data/base_layers.pmtiles`,
     // Allineato allo script pipeline (`tippecanoe -l transport`).
     sourceLayer: 'transportation'
   },
   duckdb: {
-    databaseUrl: '/data/community_data.duckdb'
+    databaseUrl: `${import.meta.env.BASE_URL}data/community_data.duckdb`
   }
 };

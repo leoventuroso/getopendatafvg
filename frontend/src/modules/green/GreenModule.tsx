@@ -43,7 +43,7 @@ export default function GreenModule() {
   const [stats, setStats] = useState<Record<NdviClass, ClassStats> | null>(null);
 
   useEffect(() => {
-    fetch('/data/greenery.geojson')
+    fetch(`${import.meta.env.BASE_URL}data/greenery.geojson`)
       .then(r => r.json())
       .then(fc => setStats(computeStats(fc.features ?? [])))
       .catch(() => {});

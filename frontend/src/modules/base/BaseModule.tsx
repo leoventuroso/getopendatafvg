@@ -12,14 +12,14 @@ export default function BaseModule() {
   const [selectedFrazione, setSelectedFrazione] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/data/municipality_stats.json')
+    fetch(`${import.meta.env.BASE_URL}data/municipality_stats.json`)
       .then(r => r.json())
       .then(setStats)
       .catch(() => null);
   }, []);
 
   useEffect(() => {
-    fetch('/data/frazioni.geojson')
+    fetch(`${import.meta.env.BASE_URL}data/frazioni.geojson`)
       .then(r => r.json())
       .then((geojson) => {
         const items: FrazioneFeature[] = geojson.features.map(
