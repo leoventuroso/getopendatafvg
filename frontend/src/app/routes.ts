@@ -1,4 +1,4 @@
-export type AppModule = 'base' | 'outdoor' | 'rescue';
+export type AppModule = 'base' | 'outdoor' | 'rescue' | 'green' | 'community';
 export type OutdoorSection = 'cyclability' | 'trails';
 export type CyclabilitySubsection = 'lts' | 'bike-infra' | 'slope';
 export type TrailsSubsection = 'trails' | 'slope';
@@ -9,7 +9,7 @@ const DEFAULT_CYCLABILITY_SUBSECTION: CyclabilitySubsection = 'lts';
 const DEFAULT_TRAILS_SUBSECTION: TrailsSubsection = 'trails';
 
 function isAppModule(value: string | null): value is AppModule {
-  return value === 'base' || value === 'outdoor' || value === 'rescue';
+  return value === 'base' || value === 'outdoor' || value === 'rescue' || value === 'green' || value === 'community';
 }
 
 function isOutdoorSection(value: string | null): value is OutdoorSection {
@@ -91,14 +91,22 @@ export function navigateToTrailsSubsection(subsection: TrailsSubsection): void {
 
 export function getModuleLabel(module: AppModule): string {
   if (module === 'base') {
-    return 'Mappa Base';
+    return 'Home';
   }
 
   if (module === 'outdoor') {
     return 'Modulo Outdoor';
   }
 
-  return 'Modulo Soccorso ed Emergenza';
+  if (module === 'rescue') {
+    return 'Modulo Soccorso ed Emergenza';
+  }
+
+  if (module === 'green') {
+    return 'Modulo Green';
+  }
+
+  return 'Segnala';
 }
 
 export function getOutdoorSectionLabel(section: OutdoorSection): string {

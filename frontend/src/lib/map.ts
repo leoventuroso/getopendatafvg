@@ -3,7 +3,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Protocol } from 'pmtiles';
 import { APP_CONFIG } from '../config';
 
-type MapModule = 'base' | 'outdoor' | 'rescue';
+export type MapModule = 'base' | 'outdoor' | 'rescue' | 'green' | 'community';
 type OutdoorSection = 'cyclability' | 'trails';
 type CyclabilitySubsection = 'lts' | 'bike-infra' | 'slope';
 type TrailsSubsection = 'trails' | 'slope';
@@ -277,6 +277,7 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
 
   const isOutdoorModule = options.module === 'outdoor';
   const isRescueModule = options.module === 'rescue';
+  const isGreenModule = options.module === 'green';
   const outdoorSection = options.outdoorSection ?? 'cyclability';
   const cyclabilitySubsection = options.cyclabilitySubsection ?? 'lts';
   const trailsSubsection = options.trailsSubsection ?? 'trails';
@@ -285,9 +286,11 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
       ? 14
     : isOutdoorModule && cyclabilitySubsection === 'bike-infra'
         ? 14
-        : isOutdoorModule || isRescueModule
+        : isOutdoorModule || isRescueModule || options.module === 'community'
           ? 13
-          : APP_CONFIG.map.zoom;
+          : isGreenModule
+            ? 12
+            : APP_CONFIG.map.zoom;
 
   const sources: maplibregl.StyleSpecification['sources'] = {
     osm: {
@@ -306,6 +309,13 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
       url: `pmtiles://${APP_CONFIG.map.pmtilesUrl}`
     }
   };
+
+  if (options.module === 'base') {
+    sources.municipalityBoundary = {
+      type: 'geojson',
+      data: '/data/boundary.geojson'
+    };
+  }
 
   if (isOutdoorModule) {
     sources.lts = {
@@ -350,7 +360,7 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
   if (isOutdoorModule && outdoorSection === 'trails' && trailsSubsection === 'trails') {
     sources.trails = {
       type: 'geojson',
-      data: '/data/outdoor/trails.geojson'
+      data: '/data/outdoor/trails_shaded.geojson'
     };
     sources.water = {
       type: 'geojson',
@@ -386,6 +396,32 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
     };
   }
 
+  if (isGreenModule) {
+    sources.greenery = {
+      type: 'geojson',
+      data: '/data/greenery.geojson'
+    };
+    sources.shadeCorridors = {
+      type: 'geojson',
+      data: '/data/shade_corridors.geojson'
+    };
+    sources.lst = {
+      type: 'geojson',
+      data: '/data/lst.geojson'
+    };
+    sources.nbr = {
+      type: 'geojson',
+      data: '/data/nbr.geojson'
+    };
+  }
+
+  if (options.module === 'community') {
+    sources.municipalityBoundary = {
+      type: 'geojson',
+      data: '/data/boundary.geojson'
+    };
+  }
+
   const layers: maplibregl.StyleSpecification['layers'] = [
     {
       id: 'osm-base',
@@ -396,6 +432,30 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
       }
     }
   ];
+
+  if (options.module === 'base') {
+    layers.push({
+      id: 'boundary-fill',
+      type: 'fill',
+      source: 'municipalityBoundary',
+      paint: {
+        'fill-color': '#4a90d9',
+        'fill-opacity': 0.06
+      }
+    });
+    layers.push({
+      id: 'boundary-outline',
+      type: 'line',
+      source: 'municipalityBoundary',
+      paint: {
+        'line-color': '#2563a8',
+        'line-width': 2,
+        'line-opacity': 0.7,
+        'line-dasharray': [4, 3]
+      }
+    });
+
+  }
 
   if (isOutdoorModule) {
     if (outdoorSection === 'cyclability' && cyclabilitySubsection === 'lts') {
@@ -610,6 +670,122 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
     });
   }
 
+  if (isGreenModule) {
+    layers.push({
+      id: 'greenery-fill',
+      type: 'fill',
+      source: 'greenery',
+      paint: {
+        'fill-color': [
+          'match',
+          ['get', 'ndvi_class'],
+          'water',      '#4a90d9',
+          'bare',       '#c9a96e',
+          'sparse',     '#a8d08d',
+          'moderate',   '#5aaa5a',
+          'dense',      '#238b45',
+          'very_dense', '#004d20',
+          '#cccccc'
+        ],
+        'fill-opacity': [
+          'match', ['get', 'ndvi_class'],
+          'bare', 0.15,
+          0.45
+        ]
+      }
+    });
+
+    layers.push({
+      id: 'greenery-outline',
+      type: 'line',
+      source: 'greenery',
+      paint: {
+        'line-color': '#ffffff',
+        'line-width': 0.3,
+        'line-opacity': 0.4
+      }
+    });
+
+    layers.push({
+      id: 'nbr-fill',
+      type: 'fill',
+      source: 'nbr',
+      layout: { visibility: 'none' },
+      paint: {
+        'fill-color': ['get', 'color'],
+        'fill-opacity': 0.65
+      }
+    });
+
+    layers.push({
+      id: 'nbr-outline',
+      type: 'line',
+      source: 'nbr',
+      layout: { visibility: 'none' },
+      paint: {
+        'line-color': '#ffffff',
+        'line-width': 0.3,
+        'line-opacity': 0.4
+      }
+    });
+
+    layers.push({
+      id: 'lst-fill',
+      type: 'fill',
+      source: 'lst',
+      layout: { visibility: 'none' },
+      paint: {
+        'fill-color': ['get', 'color'],
+        'fill-opacity': 0.65
+      }
+    });
+
+    layers.push({
+      id: 'lst-outline',
+      type: 'line',
+      source: 'lst',
+      layout: { visibility: 'none' },
+      paint: {
+        'line-color': '#ffffff',
+        'line-width': 0.3,
+        'line-opacity': 0.4
+      }
+    });
+
+    layers.push({
+      id: 'shade-corridors-casing',
+      type: 'line',
+      source: 'shadeCorridors',
+      layout: { visibility: 'none' },
+      paint: {
+        'line-color': '#ffffff',
+        'line-width': ['interpolate', ['linear'], ['zoom'], 11, 3.5, 15, 7.5],
+        'line-opacity': 0.7
+      }
+    });
+
+    layers.push({
+      id: 'shade-corridors',
+      type: 'line',
+      source: 'shadeCorridors',
+      layout: { visibility: 'none' },
+      paint: {
+        'line-color': [
+          'match', ['get', 'type'],
+          'road', '#1a7f3c',
+          '#52b788'
+        ],
+        'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.8, 15, 4.5],
+        'line-opacity': [
+          'interpolate', ['linear'],
+          ['get', 'shade_pct'],
+          20, 0.55,
+          100, 0.95
+        ]
+      }
+    });
+  }
+
   if (isRescueModule) {
     addRiskFillLayers(layers, 'hydraulicRisk', 'hydraulic-risk-fill', 'hydraulic-risk-outline', '#1c7ed6', 'Rischio idraulico P2', [0, 0]);
     addRiskFillLayers(layers, 'landslideRisk', 'landslide-risk-fill', 'landslide-risk-outline', '#e8590c', 'Frana storica', [0, 0]);
@@ -619,9 +795,38 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
     addEmergencyLayers(layers, 'assemblyPoints', 'assembly-point-sites', 'assembly-point-labels', '#2f9e44', '#1b5e20');
   }
 
+  if (options.module === 'community') {
+    layers.push({
+      id: 'boundary-fill',
+      type: 'fill',
+      source: 'municipalityBoundary',
+      paint: {
+        'fill-color': '#4a90d9',
+        'fill-opacity': 0.06
+      }
+    });
+    layers.push({
+      id: 'boundary-outline',
+      type: 'line',
+      source: 'municipalityBoundary',
+      paint: {
+        'line-color': '#2563a8',
+        'line-width': 2,
+        'line-opacity': 0.7,
+        'line-dasharray': [4, 3]
+      }
+    });
+  }
+
+  // The Green module centers on the NDVI coverage centroid — the municipality's
+  // forested territory is ~3.5 km SW of the app's default urban center.
+  const initialCenter: [number, number] = isGreenModule
+    ? [12.620, 46.110]
+    : APP_CONFIG.map.center;
+
   const map = new maplibregl.Map({
     container,
-    center: APP_CONFIG.map.center,
+    center: initialCenter,
     zoom: initialZoom,
     style: {
       version: 8,

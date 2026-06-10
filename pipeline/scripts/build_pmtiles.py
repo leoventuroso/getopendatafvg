@@ -16,8 +16,10 @@ import geopandas as gpd
 import pandas as pd
 from shapely import wkt
 
-from dem_slope import DemSampler, enrich_geodataframe_with_slope
-from exclusions import CAO_MALNISIO_POLYGON
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.dem_slope import DemSampler, enrich_geodataframe_with_slope
+from lib.exclusions import CAO_MALNISIO_POLYGON
 
 SOURCE_CRS = "EPSG:32632"
 TARGET_CRS = "EPSG:4326"
@@ -26,7 +28,7 @@ DEM_PATH = Path(__file__).resolve().parents[2] / "frontend" / "src" / "data" / "
 
 def main() -> None:
     repo_root = Path(__file__).resolve().parents[2]
-    csv_path = repo_root / "Montereale_Valcellina_all_lts.csv"
+    csv_path = Path(__file__).resolve().parents[1] / "data" / "Montereale_Valcellina_all_lts.csv"
     output_dir = repo_root / "frontend" / "public" / "data"
     output_dir.mkdir(parents=True, exist_ok=True)
 

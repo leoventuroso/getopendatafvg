@@ -13,6 +13,7 @@
     "@mapbox/vector-tile": "^3.0.0",
     "@turf/buffer": "^7.3.5",
     "@turf/helpers": "^7.3.5",
+    "bootstrap-icons": "^1.13.1",
     "maplibre-gl": "^4.5.0",
     "pmtiles": "^3.2.0",
     "react": "^18.3.1",

@@ -12,7 +12,9 @@ from urllib.request import Request, urlopen
 
 from shapely.geometry import shape
 
-from exclusions import geometry_is_excluded
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.exclusions import geometry_is_excluded
 
 
 OVERPASS_URLS = [

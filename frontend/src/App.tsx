@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import BaseModule from './modules/base/BaseModule';
+import CommunityModule from './modules/community/CommunityModule';
+import GreenModule from './modules/green/GreenModule';
 import OutdoorModule from './modules/outdoor/OutdoorModule';
 import RescueModule from './modules/rescue/RescueModule';
 import {
@@ -32,7 +34,7 @@ export default function App() {
       <header className="app-header">
         <h1>Montereale Valcellina Open</h1>
         <nav className="module-nav" aria-label="Selezione modulo applicativo">
-          {(['base', 'outdoor', 'rescue'] as AppModule[]).map((module) => (
+          {(['base', 'outdoor', 'rescue', 'green', 'community'] as AppModule[]).map((module) => (
             <button
               key={module}
               type="button"
@@ -49,8 +51,12 @@ export default function App() {
         <BaseModule />
       ) : activeModule === 'outdoor' ? (
         <OutdoorModule />
-      ) : (
+      ) : activeModule === 'rescue' ? (
         <RescueModule />
+      ) : activeModule === 'community' ? (
+        <CommunityModule />
+      ) : (
+        <GreenModule />
       )}
     </main>
   );

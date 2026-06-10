@@ -17,8 +17,10 @@ from urllib.request import Request, urlopen
 import geopandas as gpd
 from shapely.geometry import shape
 
-from dem_slope import DemSampler, enrich_geodataframe_with_slope
-from exclusions import geometry_is_excluded
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.dem_slope import DemSampler, enrich_geodataframe_with_slope
+from lib.exclusions import geometry_is_excluded
 
 
 OVERPASS_URLS = [

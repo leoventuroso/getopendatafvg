@@ -557,6 +557,7 @@ export default function OutdoorModule() {
   const [visibleBikeInfraCategories, setVisibleBikeInfraCategories] = useState<BikeInfraCategory[]>(ALL_BIKE_INFRA_CATEGORIES);
   const [visibleCyclabilitySlopeClasses, setVisibleCyclabilitySlopeClasses] = useState<SlopeClass[]>(ALL_SLOPE_CLASSES);
   const [visibleTrailSlopeClasses, setVisibleTrailSlopeClasses] = useState<SlopeClass[]>(ALL_SLOPE_CLASSES);
+  const [showTrailShade, setShowTrailShade] = useState(false);
   const [routingEnabled, setRoutingEnabled] = useState(false);
   const [routingPoints, setRoutingPoints] = useState<RouteStatePoint[]>([]);
   const [routingGraph, setRoutingGraph] = useState<Awaited<ReturnType<typeof loadRoutingGraphForMode>> | null>(null);
@@ -915,6 +916,42 @@ export default function OutdoorModule() {
 
   useEffect(() => {
     const map = mapInstanceRef.current;
+    if (!map || activeSection !== 'trails' || activeTrailsSubsection !== 'trails') {
+      return;
+    }
+
+    const hikingColor = showTrailShade
+      ? ['interpolate', ['linear'], ['get', 'shade_pct'], 0, '#c8e6c9', 30, '#66bb6a', 60, '#2e7d32', 100, '#0a3d0f']
+      : '#4f7b3a';
+
+    const hikingCasing = showTrailShade
+      ? ['interpolate', ['linear'], ['get', 'shade_pct'], 0, '#f1f8e9', 30, '#a5d6a7', 60, '#388e3c', 100, '#1b5e20']
+      : '#dfe9d8';
+
+    const mtbColor = showTrailShade
+      ? ['interpolate', ['linear'], ['get', 'shade_pct'], 0, '#bbdefb', 30, '#42a5f5', 60, '#1565c0', 100, '#07234d']
+      : '#2f78c4';
+
+    const mtbCasing = showTrailShade
+      ? ['interpolate', ['linear'], ['get', 'shade_pct'], 0, '#e3f2fd', 30, '#90caf9', 60, '#1976d2', 100, '#0d47a1']
+      : '#d9e7f4';
+
+    const apply = () => {
+      if (map.getLayer('trail-network-hiking')) map.setPaintProperty('trail-network-hiking', 'line-color', hikingColor as never);
+      if (map.getLayer('trail-casing-hiking')) map.setPaintProperty('trail-casing-hiking', 'line-color', hikingCasing as never);
+      if (map.getLayer('trail-network-mtb')) map.setPaintProperty('trail-network-mtb', 'line-color', mtbColor as never);
+      if (map.getLayer('trail-casing-mtb')) map.setPaintProperty('trail-casing-mtb', 'line-color', mtbCasing as never);
+    };
+
+    if (map.isStyleLoaded()) {
+      apply();
+    } else {
+      map.once('load', apply);
+    }
+  }, [showTrailShade, activeSection, activeTrailsSubsection]);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
     const slopeLayerId =
       activeSection === 'cyclability' && activeCyclabilitySubsection === 'slope'
         ? 'slope-network-cyclability'
@@ -1072,6 +1109,24 @@ export default function OutdoorModule() {
             onToggleCategory={toggleWaterCategory}
             onShowAll={showAllWaterCategories}
           />
+          <section className="legend-panel" aria-label="Corridoi d'ombra">
+            <div className="shade-toggle">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={showTrailShade}
+                  onChange={(e) => setShowTrailShade(e.target.checked)}
+                />
+                <span className="shade-swatch" />
+                Corridoi d'ombra naturale
+              </label>
+              {showTrailShade && (
+                <p className="shade-legend-hint">
+                  Colore chiaro = copertura parziale · Colore scuro = sentiero completamente ombreggiato
+                </p>
+              )}
+            </div>
+          </section>
         </>
       ) : null}
 
