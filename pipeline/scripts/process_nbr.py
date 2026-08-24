@@ -34,6 +34,10 @@ from shapely.geometry import mapping, shape
 from shapely.ops import orient
 from shapely.validation import make_valid
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.comune_config import BOUNDARY_PATH
+
 NBR_CLASSES = [
     (0.4,  float('inf'), 'sana',      '#1a9641'),
     (0.2,  0.4,          'moderata',  '#a6d96a'),
@@ -70,9 +74,8 @@ def find_band_jp2(safe_dir: Path, band_id: str, resolution: str = 'R20m') -> Pat
     return Path(matches[0])
 
 
-def load_boundary_in_crs(repo_root: Path, dst_crs: CRS) -> list[dict]:
-    boundary_path = repo_root / 'frontend' / 'src' / 'data' / 'monterealeBoundary.json'
-    with boundary_path.open() as fh:
+def load_boundary_in_crs(dst_crs: CRS) -> list[dict]:
+    with BOUNDARY_PATH.open() as fh:
         geojson = json.load(fh)
     src_crs = CRS.from_epsg(4326)
     geom_utm = shape(transform_geom(src_crs, dst_crs, geojson['geometry']))
@@ -108,7 +111,7 @@ def main() -> None:
 
     with rasterio.open(b8a_path) as src:
         scene_crs = src.crs
-        boundary_geoms = load_boundary_in_crs(repo_root, scene_crs)
+        boundary_geoms = load_boundary_in_crs(scene_crs)
         b8a_arr, native_transform = rio_mask(src, boundary_geoms, crop=True, nodata=0)
         b8a = b8a_arr[0].astype(np.float32)
 

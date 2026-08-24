@@ -1,4 +1,4 @@
-"""Extract Montereale Valcellina cyclepaths from the transport GeoJSON.
+"""Extract cyclepaths from the committed transport GeoJSON.
 
 Genera un file statico per il submodulo Cyclability/Bike infra:
 - frontend/public/data/outdoor/bike_cyclepaths.geojson

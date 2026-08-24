@@ -1,6 +1,7 @@
 import type { CommunityReport } from '../../lib/duckdb';
+import { APP_CONFIG } from '../../config';
 
-export const MUNICIPALITY_EMAIL = 'info@comune.montereale-valcellina.pn.it';
+export const MUNICIPALITY_EMAIL = APP_CONFIG.municipality.email;
 
 const LS_KEY = 'mv_pending_reports';
 const LS_VOTES_KEY = 'mv_report_votes';

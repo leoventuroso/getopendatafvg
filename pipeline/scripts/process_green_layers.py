@@ -1,4 +1,4 @@
-"""Compute NDVI from Sentinel-2 L2A imagery for Montereale Valcellina.
+"""Compute NDVI from Sentinel-2 L2A imagery, clipped to the configured comune.
 
 Reads B04 (Red) and B08 (NIR) at 10 m from a *.SAFE directory in
 frontend/src/data/, clips to the municipal boundary, classifies NDVI
@@ -31,6 +31,10 @@ from rasterio.warp import transform_geom
 from shapely.geometry import mapping, shape
 from shapely.ops import orient
 from shapely.validation import make_valid
+
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.comune_config import BOUNDARY_PATH
 
 
 # NDVI classification: (low_inclusive, high_exclusive, label, hex_color)
@@ -79,10 +83,9 @@ def find_band_jp2(safe_dir: Path, band_id: str, resolution: str = 'R10m') -> Pat
     return Path(matches[0])
 
 
-def load_boundary_in_crs(repo_root: Path, dst_crs: CRS) -> list[dict]:
+def load_boundary_in_crs(dst_crs: CRS) -> list[dict]:
     """Return a list of valid geometry dicts in dst_crs suitable for rio_mask."""
-    boundary_path = repo_root / 'frontend' / 'src' / 'data' / 'monterealeBoundary.json'
-    with boundary_path.open() as fh:
+    with BOUNDARY_PATH.open() as fh:
         geojson = json.load(fh)
     src_crs = CRS.from_epsg(4326)
     geom_utm = shape(transform_geom(src_crs, dst_crs, geojson['geometry']))
@@ -123,7 +126,7 @@ def main() -> None:
     # Read both bands clipped to the municipal boundary.
     with rasterio.open(b04_path) as src:
         scene_crs = src.crs
-        boundary_geoms = load_boundary_in_crs(repo_root, scene_crs)
+        boundary_geoms = load_boundary_in_crs(scene_crs)
         b04_arr, native_transform = rio_mask(src, boundary_geoms, crop=True, nodata=0)
         b04 = b04_arr[0].astype(np.float32)
 

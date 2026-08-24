@@ -32,8 +32,11 @@ body {
   font-size: 1.2rem;
 }
 
-.app-header p {
-  margin: 0.4rem 0 0;
+.app-header-subtitle {
+  margin: 0.1rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: #587089;
 }
 
 .app-header-bar {

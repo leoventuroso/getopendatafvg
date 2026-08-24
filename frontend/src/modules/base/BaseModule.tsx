@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { APP_CONFIG } from '../../config';
 import { useModuleMap } from '../../hooks/useModuleMap';
 import ModuleCards from './ModuleCards';
 import FrazioniList, { type FrazioneFeature } from './FrazioniList';
@@ -41,7 +42,7 @@ export default function BaseModule() {
     <section className="home-layout" aria-label="Home">
       <aside className="home-panel">
         <div className="home-intro">
-          <h2 className="home-title">Montereale Valcellina</h2>
+          <h2 className="home-title">{APP_CONFIG.municipality.name}</h2>
           <p className="home-subtitle">
             Piattaforma civica open-source per la mobilità sostenibile, l'ambiente, la resilienza del territorio e la partecipazione della comunità.
           </p>

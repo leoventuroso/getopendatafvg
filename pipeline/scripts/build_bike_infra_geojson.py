@@ -1,4 +1,4 @@
-"""Extract Montereale Valcellina bike infrastructure from OSM Overpass.
+"""Extract bike infrastructure for the configured comune from OSM Overpass.
 
 Genera un file statico per il submodulo Cyclability/Bike infra:
 - frontend/public/data/outdoor/bike_infra.geojson
@@ -14,6 +14,7 @@ from shapely.geometry import shape
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.comune_config import AREA_ID
 from lib.exclusions import geometry_is_excluded
 
 
@@ -21,7 +22,6 @@ OVERPASS_URLS = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
 ]
-AREA_ID = 3600179223  # relation 179223 + 3600000000
 
 
 def overpass(query: str) -> dict:

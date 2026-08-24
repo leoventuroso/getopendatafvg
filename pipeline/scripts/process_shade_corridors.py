@@ -1,4 +1,4 @@
-"""Identify natural shade corridors along roads and trails in Montereale Valcellina.
+"""Identify natural shade corridors along roads and trails.
 
 Method:
   1. Load roads from transport.geojson and trails from outdoor/trails.geojson.

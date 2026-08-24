@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { APP_CONFIG } from './config';
 import BaseModule from './modules/base/BaseModule';
 import CommunityModule from './modules/community/CommunityModule';
 import GreenModule from './modules/green/GreenModule';
@@ -35,7 +36,10 @@ export default function App() {
     <main className="app-shell">
       <header className="app-header">
         <div className="app-header-bar">
-          <h1>Montereale Valcellina Open</h1>
+          <div className="app-header-title">
+            <h1>{APP_CONFIG.productName}</h1>
+            <p className="app-header-subtitle">{APP_CONFIG.municipality.name}</p>
+          </div>
           <button
             type="button"
             className="nav-toggle"

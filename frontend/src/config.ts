@@ -1,17 +1,22 @@
-// In Fase 0 centralizziamo gli endpoint in un file unico.
-// In produzione questi valori possono arrivare da variabili Vite (import.meta.env).
+import comune from './comune.config.json';
+
+// Tutto ciò che è specifico del comune (nome, email, confine, viste mappa)
+// vive in comune.config.json — unica fonte, letta anche dalla pipeline Python
+// (pipeline/lib/comune_config.py). Per un nuovo comune: vedi SETUP.md.
 export const APP_CONFIG = {
+  productName: 'Mappa Civica',
   municipality: {
-    name: 'Montereale Valcellina',
+    name: comune.name,
+    email: comune.email,
     // Vista di default per l'embed stressinbici.it (Percorsi in bici → Stress da traffico).
     // area=italia usa il tileset nazionale, che fa lo swap automatico sul comune giusto in base
     // a queste coordinate/zoom (nessuno slug/nome comune da conoscere). Per un'altra città:
-    // cambia solo lat/lon/zoom.
-    ltsEmbedView: { lat: 46.15620, lon: 12.65731, zoom: 12.86 }
+    // cambia solo lat/lon/zoom in comune.config.json.
+    ltsEmbedView: comune.ltsEmbedView
   },
   map: {
-    center: [12.664, 46.160] as [number, number],
-    zoom: 12
+    center: comune.map.center as [number, number],
+    zoom: comune.map.zoom
   },
   duckdb: {
     databaseUrl: `${import.meta.env.BASE_URL}data/community_data.duckdb`

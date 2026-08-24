@@ -1,6 +1,7 @@
 """
-Fetch ISTAT data for Montereale Valcellina via esploradati.istat.it SDMX REST API
-and merge into frontend/public/data/municipality_stats.json.
+Fetch ISTAT data for the configured comune (see comune_config.py) via
+esploradati.istat.it SDMX REST API and merge into
+frontend/public/data/municipality_stats.json.
 
 Reference: https://github.com/ondata/guida-api-istat
 
@@ -39,6 +40,10 @@ import pandas as pd
 import requests
 from istatapi import discovery, retrieval
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.comune_config import ISTAT_CODE, PROVINCE_ISTAT_CODE
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_PATH = REPO_ROOT / 'frontend' / 'public' / 'data' / 'municipality_stats.json'
 
@@ -46,8 +51,8 @@ NEW_BASE = 'https://esploradati.istat.it/SDMXWS/rest'
 OLD_BASE = 'https://sdmx.istat.it/SDMXWS/rest'
 CSV_HEADERS = {'Accept': 'application/vnd.sdmx.data+csv;version=1.0.0'}
 
-MV = '093027'   # Montereale Valcellina
-PN = 'ITD41'    # Pordenone province
+MV = ISTAT_CODE            # comune ISTAT code
+PN = PROVINCE_ISTAT_CODE   # province ISTAT code (provincial fallback data)
 
 
 def get_csv(flow: str, key: str = '....', base: str = NEW_BASE, **params) -> pd.DataFrame | None:

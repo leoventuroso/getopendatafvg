@@ -1,14 +1,11 @@
 """
-Generate frazioni.geojson for Montereale Valcellina.
+Generate frazioni.geojson for the configured comune.
 
-Creates approximate circular polygons for each frazione/borgata
-using coordinates from Nominatim (OSM data).
-
-Frazioni ufficiali (Sottodivisioni):
-  Grizzo, Malnisio, San Leonardo
-
-Borgate (definite "borgate" dallo statuto comunale):
-  Borgo Alzetta, Cao Malnisio, San Rocco
+Creates approximate circular polygons for each locality (frazione/borgata/
+capoluogo) listed in frontend/src/data/localities.json — a hand-curated
+input file (name, coordinates, radius), since this kind of local
+subdivision isn't reliably queryable from OSM/Overpass for every comune.
+For a new comune: replace localities.json with your own list (see SETUP.md).
 
 Output: frontend/public/data/frazioni.geojson
 """
@@ -18,68 +15,8 @@ import math
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+LOCALITIES_PATH = REPO_ROOT / 'frontend' / 'src' / 'data' / 'localities.json'
 OUTPUT_PATH = REPO_ROOT / 'frontend' / 'public' / 'data' / 'frazioni.geojson'
-
-# Frazioni and borgate with coordinates from Nominatim OSM data.
-# radius_m: approximate radius for the circular polygon representation.
-LOCALITIES = [
-    {
-        "name": "Montereale Valcellina",
-        "name_fur": "Montreâl",
-        "type": "capoluogo",
-        "lon": 12.6621363,
-        "lat": 46.1605087,
-        "radius_m": 550,
-    },
-    {
-        "name": "Grizzo",
-        "name_fur": "Gris",
-        "type": "frazione",
-        "lon": 12.64901,
-        "lat": 46.15073,
-        "radius_m": 450,
-    },
-    {
-        "name": "Malnisio",
-        "name_fur": "Malnîs",
-        "type": "frazione",
-        "lon": 12.63721,
-        "lat": 46.14404,
-        "radius_m": 400,
-    },
-    {
-        "name": "San Leonardo",
-        "name_fur": "Salinart",
-        "type": "frazione",
-        "lon": 12.68226,
-        "lat": 46.09697,
-        "radius_m": 380,
-    },
-    {
-        "name": "Borgo Alzetta",
-        "name_fur": None,
-        "type": "borgata",
-        "lon": 12.64381,
-        "lat": 46.15370,
-        "radius_m": 200,
-    },
-    {
-        "name": "Cao Malnisio",
-        "name_fur": "Cao Malnîs",
-        "type": "borgata",
-        "lon": 12.63001,
-        "lat": 46.14309,
-        "radius_m": 220,
-    },
-    {
-        "name": "San Rocco",
-        "name_fur": None,
-        "type": "borgata",
-        "lon": 12.66098,
-        "lat": 46.16649,
-        "radius_m": 200,
-    },
-]
 
 
 def circle_polygon(lon: float, lat: float, radius_m: float, n_points: int = 32) -> list[list[float]]:
@@ -103,8 +40,17 @@ def circle_polygon(lon: float, lat: float, radius_m: float, n_points: int = 32) 
 
 
 def main():
+    if not LOCALITIES_PATH.exists():
+        raise FileNotFoundError(
+            f"{LOCALITIES_PATH} non trovato. Crea questo file con la lista delle "
+            "frazioni/borgate del tuo comune — vedi SETUP.md."
+        )
+
+    with LOCALITIES_PATH.open(encoding='utf-8') as f:
+        localities = json.load(f)['localities']
+
     features = []
-    for loc in LOCALITIES:
+    for loc in localities:
         ring = circle_polygon(loc["lon"], loc["lat"], loc["radius_m"])
         props = {
             "name": loc["name"],
@@ -134,7 +80,7 @@ def main():
         json.dump(geojson, f, ensure_ascii=False, indent=2)
 
     print(f"Written {len(features)} features to {OUTPUT_PATH}")
-    for loc in LOCALITIES:
+    for loc in localities:
         print(f"  {loc['type']:10s}  {loc['name']}  r={loc['radius_m']}m")
 
 

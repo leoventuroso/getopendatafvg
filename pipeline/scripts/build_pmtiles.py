@@ -1,8 +1,9 @@
-"""Build PMTiles from root CSV (Fase 0).
+"""Build PMTiles from a road-network CSV (Fase 0, legacy).
 
 Pipeline minima:
-1) carica CSV con campo WKT `geometry`;
-2) assegna CRS sorgente EPSG:32632 (UTM32N, coerente con il CSV LTS corrente);
+1) carica pipeline/data/road_network.csv (WKT `geometry` column) — raw input
+   da procurarsi per il proprio comune, vedi SETUP.md;
+2) assegna CRS sorgente EPSG:32632 (UTM32N);
 3) riproietta in EPSG:4326;
 4) esporta GeoJSON intermedio;
 5) prova a generare `base_layers.pmtiles` con Tippecanoe.
@@ -19,16 +20,16 @@ from shapely import wkt
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from lib.dem_slope import DemSampler, enrich_geodataframe_with_slope
-from lib.exclusions import CAO_MALNISIO_POLYGON
+from lib.exclusions import EXCLUSION_POLYGON
 
 SOURCE_CRS = "EPSG:32632"
 TARGET_CRS = "EPSG:4326"
-DEM_PATH = Path(__file__).resolve().parents[2] / "frontend" / "src" / "data" / "w51075_s10.tif"
+DEM_PATH = Path(__file__).resolve().parents[2] / "frontend" / "src" / "data" / "dem.tif"
 
 
 def main() -> None:
     repo_root = Path(__file__).resolve().parents[2]
-    csv_path = Path(__file__).resolve().parents[1] / "data" / "Montereale_Valcellina_all_lts.csv"
+    csv_path = Path(__file__).resolve().parents[1] / "data" / "road_network.csv"
     output_dir = repo_root / "frontend" / "public" / "data"
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -46,8 +47,9 @@ def main() -> None:
     df["geometry"] = df["geometry"].map(wkt.loads)
 
     gdf = gpd.GeoDataFrame(df, geometry="geometry", crs=SOURCE_CRS)
-    excluded_polygon = gpd.GeoSeries([CAO_MALNISIO_POLYGON], crs="EPSG:4326").to_crs(SOURCE_CRS).iloc[0]
-    gdf = gdf[~gdf.geometry.intersects(excluded_polygon)].copy()
+    if EXCLUSION_POLYGON is not None:
+        excluded_polygon = gpd.GeoSeries([EXCLUSION_POLYGON], crs="EPSG:4326").to_crs(SOURCE_CRS).iloc[0]
+        gdf = gdf[~gdf.geometry.intersects(excluded_polygon)].copy()
     dem = DemSampler.from_file(DEM_PATH)
     gdf = enrich_geodataframe_with_slope(gdf, dem)
     gdf = gdf.to_crs(TARGET_CRS)

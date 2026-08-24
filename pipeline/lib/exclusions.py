@@ -1,54 +1,47 @@
-"""Static GIS exclusion geometries used by the build pipeline."""
+"""Optional GIS exclusion geometries used by the build pipeline.
+
+Some datasets need a manual exclusion zone (e.g. a private area OSM tags
+inconsistently, or a known bad stretch of data). This is entirely optional
+and comune-specific: if frontend/src/data/exclusions.json doesn't exist,
+nothing is excluded — geometry_is_excluded() just returns False for
+everything. See SETUP.md.
+"""
 
 from __future__ import annotations
 
-from shapely.geometry import LineString, Point, Polygon
+import json
+from pathlib import Path
+
+from shapely.geometry import shape
+from shapely.ops import unary_union
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+EXCLUSIONS_PATH = REPO_ROOT / 'frontend' / 'src' / 'data' / 'exclusions.json'
 
 
-CAO_MALNISIO_POLYGON = Polygon(
-    [
-        (12.6255883, 46.1312315),
-        (12.6224845, 46.1262122),
-        (12.6221513, 46.1258092),
-        (12.6212328, 46.1265473),
-        (12.6203955, 46.1266036),
-        (12.6197605, 46.1262239),
-        (12.6185746, 46.1250261),
-        (12.6176188, 46.1252341),
-        (12.6157077, 46.1253757),
-        (12.6146620, 46.1258256),
-        (12.6138927, 46.1264837),
-        (12.6118975, 46.1274250),
-        (12.6106835, 46.1280581),
-        (12.6103470, 46.1283080),
-        (12.6086041, 46.1288162),
-        (12.6083823, 46.1299777),
-        (12.6084866, 46.1305077),
-        (12.6081129, 46.1316641),
-        (12.6080869, 46.1323868),
-        (12.6086083, 46.1331396),
-        (12.6091124, 46.1339948),
-        (12.6110851, 46.1342357),
-        (12.6132506, 46.1340218),
-        (12.6152495, 46.1336063),
-        (12.6171614, 46.1334437),
-        (12.6177871, 46.1334136),
-        (12.6189343, 46.1330582),
-        (12.6200119, 46.1327149),
-        (12.6208636, 46.1318778),
-        (12.6212894, 46.1314502),
-        (12.6229145, 46.1310226),
-        (12.6243137, 46.1311250),
-        (12.6255883, 46.1312315),
-    ]
-)
+def _load_exclusion_polygon():
+    if not EXCLUSIONS_PATH.exists():
+        return None
+
+    with EXCLUSIONS_PATH.open(encoding='utf-8') as f:
+        geojson = json.load(f)
+
+    polygons = [shape(feature['geometry']) for feature in geojson.get('features', [])]
+    if not polygons:
+        return None
+
+    return unary_union(polygons)
+
+
+# Loaded once at import time — same lifetime as the old hardcoded constant.
+EXCLUSION_POLYGON = _load_exclusion_polygon()
 
 
 def geometry_is_excluded(geometry) -> bool:
-    if geometry is None or geometry.is_empty:
+    if EXCLUSION_POLYGON is None or geometry is None or geometry.is_empty:
         return False
 
     if geometry.geom_type in {'Point', 'MultiPoint'}:
-        return geometry.within(CAO_MALNISIO_POLYGON)
+        return geometry.within(EXCLUSION_POLYGON)
 
-    return geometry.intersects(CAO_MALNISIO_POLYGON)
+    return geometry.intersects(EXCLUSION_POLYGON)

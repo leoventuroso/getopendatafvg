@@ -1022,9 +1022,11 @@ function exportMapToPdf(map: Map, moduleLabel: string): void {
   const titleHeight = 12;
   const footerHeight = 12;
 
+  const municipalitySlug = APP_CONFIG.municipality.name.toLowerCase().replace(/\s+/g, '-');
+
   doc.setFontSize(16);
   doc.setTextColor(30);
-  doc.text('Montereale Valcellina Open', margin, margin + 6);
+  doc.text(`${APP_CONFIG.productName} — ${APP_CONFIG.municipality.name}`, margin, margin + 6);
   doc.setFontSize(10);
   doc.setTextColor(100);
   doc.text(`${moduleLabel} — ${new Date().toLocaleDateString('it-IT')}`, margin, margin + 11);
@@ -1053,10 +1055,10 @@ function exportMapToPdf(map: Map, moduleLabel: string): void {
   doc.setFontSize(8);
   doc.setTextColor(130);
   doc.text(`${centerText}  ·  ${scaleText}`, margin, pageHeight - 10);
-  doc.text('© Maptoolkit © OpenStreetMap contributors — montereale-valcellina-open', margin, pageHeight - 5);
+  doc.text(`© Maptoolkit © OpenStreetMap contributors — ${municipalitySlug}`, margin, pageHeight - 5);
 
   const fileSlug = moduleLabel.toLowerCase().replace(/\s+/g, '-');
-  doc.save(`montereale-valcellina-${fileSlug}.pdf`);
+  doc.save(`${municipalitySlug}-${fileSlug}.pdf`);
 }
 
 const MODULE_PRINT_LABELS: Record<MapModule, string> = {

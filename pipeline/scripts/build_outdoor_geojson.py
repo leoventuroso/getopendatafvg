@@ -1,4 +1,4 @@
-"""Extract Montereale Valcellina outdoor datasets from OSM Overpass.
+"""Extract outdoor datasets for the configured comune from OSM Overpass.
 
 Genera due file statici, gia' limitati al confine comunale:
 - frontend/public/data/outdoor/trails.geojson
@@ -19,6 +19,7 @@ from shapely.geometry import shape
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.comune_config import AREA_ID
 from lib.dem_slope import DemSampler, enrich_geodataframe_with_slope
 from lib.exclusions import geometry_is_excluded
 
@@ -27,9 +28,8 @@ OVERPASS_URLS = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
 ]
-AREA_ID = 3600179223  # relation 179223 + 3600000000
 MIN_TRAIL_LENGTH_M = 75
-DEM_PATH = Path(__file__).resolve().parents[2] / "frontend" / "src" / "data" / "w51075_s10.tif"
+DEM_PATH = Path(__file__).resolve().parents[2] / "frontend" / "src" / "data" / "dem.tif"
 
 
 def overpass(query: str) -> dict:

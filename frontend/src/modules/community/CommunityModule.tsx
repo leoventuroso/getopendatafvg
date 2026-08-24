@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import { APP_CONFIG } from '../../config';
 import { useModuleMap } from '../../hooks/useModuleMap';
 import { onStyleReady } from '../../lib/map';
 import { loadCommunityReports, type CommunityReport } from '../../lib/duckdb';
@@ -233,7 +234,7 @@ export default function CommunityModule() {
       ...(photo ? [``, `Fotografia allegata: ${photo.fileName}`, `   → Allegare il file all'email prima di inviare.`] : []),
       ``,
       `---`,
-      `Inviato dal portale Montereale Valcellina Open`,
+      `Inviato dal portale ${APP_CONFIG.productName} — ${APP_CONFIG.municipality.name}`,
     ].join('\n');
 
     window.location.href = `mailto:${MUNICIPALITY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

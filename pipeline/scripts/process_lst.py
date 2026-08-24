@@ -30,6 +30,10 @@ from shapely.geometry import mapping, shape
 from shapely.ops import orient
 from shapely.validation import make_valid
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.comune_config import BOUNDARY_PATH
+
 # Landsat C2 L2 scale/offset for ST_B10 → Kelvin
 LST_SCALE = 0.00341802
 LST_OFFSET = 149.0
@@ -62,9 +66,8 @@ def find_lwir_tif(repo_root: Path) -> Path:
     return Path(matches[-1])
 
 
-def load_boundary_in_crs(repo_root: Path, dst_crs: CRS) -> list[dict]:
-    boundary_path = repo_root / 'frontend' / 'src' / 'data' / 'monterealeBoundary.json'
-    with boundary_path.open() as fh:
+def load_boundary_in_crs(dst_crs: CRS) -> list[dict]:
+    with BOUNDARY_PATH.open() as fh:
         geojson = json.load(fh)
     src_crs = CRS.from_epsg(4326)
     geom_utm = shape(transform_geom(src_crs, dst_crs, geojson['geometry']))
@@ -93,7 +96,7 @@ def main() -> None:
 
     with rasterio.open(tif_path) as src:
         scene_crs = src.crs
-        boundary_geoms = load_boundary_in_crs(repo_root, scene_crs)
+        boundary_geoms = load_boundary_in_crs(scene_crs)
         raw_arr, native_transform = rio_mask(src, boundary_geoms, crop=True, nodata=0)
         raw = raw_arr[0].astype(np.float32)
 

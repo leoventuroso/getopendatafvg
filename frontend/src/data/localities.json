@@ -1,0 +1,61 @@
+{
+  "_comment": "Frazioni e borgate del comune, con coordinate (da Nominatim/OSM) e raggio approssimato in metri per il poligono circolare. Dato curato a mano — non derivabile automaticamente da OSM. Per un nuovo comune: sostituisci questa lista con le proprie località.",
+  "localities": [
+    {
+      "name": "Montereale Valcellina",
+      "name_fur": "Montreâl",
+      "type": "capoluogo",
+      "lon": 12.6621363,
+      "lat": 46.1605087,
+      "radius_m": 550
+    },
+    {
+      "name": "Grizzo",
+      "name_fur": "Gris",
+      "type": "frazione",
+      "lon": 12.64901,
+      "lat": 46.15073,
+      "radius_m": 450
+    },
+    {
+      "name": "Malnisio",
+      "name_fur": "Malnîs",
+      "type": "frazione",
+      "lon": 12.63721,
+      "lat": 46.14404,
+      "radius_m": 400
+    },
+    {
+      "name": "San Leonardo",
+      "name_fur": "Salinart",
+      "type": "frazione",
+      "lon": 12.68226,
+      "lat": 46.09697,
+      "radius_m": 380
+    },
+    {
+      "name": "Borgo Alzetta",
+      "name_fur": null,
+      "type": "borgata",
+      "lon": 12.64381,
+      "lat": 46.15370,
+      "radius_m": 200
+    },
+    {
+      "name": "Cao Malnisio",
+      "name_fur": "Cao Malnîs",
+      "type": "borgata",
+      "lon": 12.63001,
+      "lat": 46.14309,
+      "radius_m": 220
+    },
+    {
+      "name": "San Rocco",
+      "name_fur": null,
+      "type": "borgata",
+      "lon": 12.66098,
+      "lat": 46.16649,
+      "radius_m": 200
+    }
+  ]
+}
