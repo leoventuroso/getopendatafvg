@@ -1,8 +1,17 @@
 import * as maplibregl from 'maplibre-gl';
 import type { Map, IControl } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import { jsPDF } from 'jspdf';
 import { APP_CONFIG } from '../config';
+
+// Vite's production build doesn't emit maplibre-gl's worker as a
+// same-origin asset by default (only `optimizeDeps.exclude` in
+// vite.config.ts fixes the dev server) — without this, the worker 404s in
+// `npm run build` output, tile parsing never starts, and the map renders
+// only the low-zoom background raster forever. Importing it as a `?url`
+// asset makes Vite copy it into dist/assets/ and gives us its real URL.
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
 export type MapModule = 'base' | 'outdoor' | 'rescue' | 'green' | 'community';
 type OutdoorSection = 'cyclability' | 'trails';
