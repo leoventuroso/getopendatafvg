@@ -1,17 +1,19 @@
 import * as maplibregl from 'maplibre-gl';
 import type { Map, IControl } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import { jsPDF } from 'jspdf';
 import { APP_CONFIG } from '../config';
 
-// Vite's production build doesn't emit maplibre-gl's worker as a
-// same-origin asset by default (only `optimizeDeps.exclude` in
-// vite.config.ts fixes the dev server) — without this, the worker 404s in
-// `npm run build` output, tile parsing never starts, and the map renders
-// only the low-zoom background raster forever. Importing it as a `?url`
-// asset makes Vite copy it into dist/assets/ and gives us its real URL.
-maplibregl.setWorkerUrl(maplibreWorkerUrl);
+// maplibre-gl-worker.mjs imports a sibling chunk (maplibre-gl-shared.mjs)
+// via a relative import. Bundling the worker through Vite (e.g. a `?url`
+// import) copies only the worker file itself — Vite treats `?url` assets as
+// opaque, so it never notices or copies that sibling, and the worker fails
+// to load in production (works in dev only, since `optimizeDeps.exclude`
+// in vite.config.ts serves node_modules files as-is there). Both files are
+// copied verbatim into frontend/public/maplibre-gl/ instead, so they're
+// served untouched, next to each other, exactly like in node_modules.
+// Re-copy them from node_modules/maplibre-gl/dist/ if maplibre-gl is upgraded.
+maplibregl.setWorkerUrl(`${import.meta.env.BASE_URL}maplibre-gl/maplibre-gl-worker.mjs`);
 
 export type MapModule = 'base' | 'outdoor' | 'rescue' | 'green' | 'community';
 type OutdoorSection = 'cyclability' | 'trails';
