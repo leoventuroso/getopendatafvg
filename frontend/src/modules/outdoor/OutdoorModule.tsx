@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import maplibregl, { type Map } from 'maplibre-gl';
-import { createBaseMap } from '../../lib/map';
+import * as maplibregl from 'maplibre-gl';
+import type { Map } from 'maplibre-gl';
+import { createBaseMap, onStyleReady } from '../../lib/map';
 import { buildRouteSummary, loadRoutingGraphForMode, type RouteSummary, type RoutingInputPoint, type RoutingMode } from '../../lib/routing';
-import LtsLegend from './LtsLegend';
+import Faq from '../../components/Faq';
+import { APP_CONFIG } from '../../config';
 import {
   getActiveOutdoorSectionFromHash,
   getActiveCyclabilitySubsectionFromHash,
   getCyclabilitySubsectionLabel,
   getActiveTrailsSubsectionFromHash,
+  getTrailsSubsectionLabel,
   getOutdoorSectionLabel,
   navigateToCyclabilitySubsection,
   navigateToTrailsSubsection,
@@ -17,18 +20,16 @@ import {
   type TrailsSubsection
 } from '../../app/routes';
 
-type LtsLevel = 1 | 2 | 3 | 4;
 type TrailCategory = 'hiking' | 'mtb';
 type WaterCategory = 'drinking_water' | 'spring' | 'picnic_area';
 type BikeInfraCategory = 'ciclabili' | 'bike_parking' | 'bike_rental' | 'bike_repair' | 'ebike_charging';
 type SlopeClass = '0-3: flat' | '3-5: mild' | '5-8: medium' | '8-10: hard' | '10-20: extreme' | '>20: impossible';
 type RouteStatePoint = RoutingInputPoint & { id: string };
 
-const ALL_LTS_LEVELS: LtsLevel[] = [1, 2, 3, 4];
 const ALL_TRAIL_CATEGORIES: TrailCategory[] = ['hiking', 'mtb'];
 const ALL_WATER_CATEGORIES: WaterCategory[] = ['drinking_water', 'spring', 'picnic_area'];
-const ALL_CYCLABILITY_SUBSECTIONS: CyclabilitySubsection[] = ['lts', 'bike-infra', 'slope'];
-const ALL_TRAILS_SUBSECTIONS: TrailsSubsection[] = ['trails', 'slope'];
+const ALL_CYCLABILITY_SUBSECTIONS: CyclabilitySubsection[] = ['lts', 'bike-infra', 'routing'];
+const ALL_TRAILS_SUBSECTIONS: TrailsSubsection[] = ['trails', 'slope', 'routing'];
 const ALL_BIKE_INFRA_CATEGORIES: BikeInfraCategory[] = [
   'ciclabili',
   'bike_parking',
@@ -47,29 +48,70 @@ const ALL_SLOPE_CLASSES: SlopeClass[] = [
 
 const OUTDOOR_SECTIONS: OutdoorSection[] = ['cyclability', 'trails'];
 
-function getSectionDescription(section: OutdoorSection): string {
+const OUTDOOR_SECTION_ICONS: Record<OutdoorSection, string> = {
+  cyclability: 'bi-bicycle',
+  trails: 'bi-signpost-split'
+};
+
+const CYCLABILITY_SUBSECTION_ICONS: Record<CyclabilitySubsection, string> = {
+  lts: 'bi-exclamation-triangle',
+  'bike-infra': 'bi-signpost-2',
+  routing: 'bi-compass'
+};
+
+const TRAILS_SUBSECTION_ICONS: Record<TrailsSubsection, string> = {
+  trails: 'bi-map',
+  slope: 'bi-graph-up-arrow',
+  routing: 'bi-compass'
+};
+
+function getSectionDescription(section: OutdoorSection | null): string {
   if (section === 'cyclability') {
-    return 'LTS, bike infrastructure e slope per la mobilita ciclabile.';
+    return 'Stress da traffico, infrastrutture per la bici, o pianifica un percorso.';
   }
 
-  return 'Sentieri, hiking, MTB, slope per camminata e punti acqua/picnic.';
+  if (section === 'trails') {
+    return 'Sentieri, pendenza, o pianifica un percorso a piedi.';
+  }
+
+  return 'Scegli cosa ti interessa: percorsi in bici o sentieri a piedi.';
 }
 
-function getCyclabilityDescription(subsection: CyclabilitySubsection): string {
+function getCyclabilityDescription(subsection: CyclabilitySubsection | null): string {
   if (subsection === 'lts') {
-    return 'Classi LTS per leggere la ciclabilita delle strade.';
+    return 'Quanto ogni strada è stressante o sicura da percorrere in bici, mappa di stressinbici.it.';
   }
 
   if (subsection === 'bike-infra') {
-    return 'Cyclepath MV 06, ciclabili e infrastrutture ciclistiche.';
+    return 'Piste ciclabili, rastrelliere, bike sharing e altri servizi per la bici.';
   }
 
-  return 'Strade colorate per classe di pendenza.';
+  if (subsection === 'routing') {
+    return 'Calcola un itinerario in bici, con distanza, tempo e profilo altimetrico.';
+  }
+
+  return 'Scegli cosa vuoi vedere.';
+}
+
+function getTrailsDescription(subsection: TrailsSubsection | null): string {
+  if (subsection === 'trails') {
+    return 'Sentieri CAI, percorsi MTB, fontane e aree picnic.';
+  }
+
+  if (subsection === 'slope') {
+    return 'Strade e sentieri colorati per pendenza, con etichette pensate per chi cammina.';
+  }
+
+  if (subsection === 'routing') {
+    return 'Calcola un itinerario a piedi, con distanza, tempo e profilo altimetrico.';
+  }
+
+  return 'Scegli cosa vuoi vedere.';
 }
 
 function getTrailCategoryLabel(category: TrailCategory): string {
   if (category === 'hiking') {
-    return 'Hiking';
+    return 'Escursionismo';
   }
 
   return 'MTB';
@@ -127,30 +169,6 @@ function getBikeInfraCategoryColor(category: BikeInfraCategory): string {
   return '#f59f00';
 }
 
-function getSlopeBikeLabel(slopeClass: SlopeClass): string {
-  if (slopeClass === '0-3: flat') {
-    return '0-3: flat';
-  }
-
-  if (slopeClass === '3-5: mild') {
-    return '3-5: mild';
-  }
-
-  if (slopeClass === '5-8: medium') {
-    return '5-8: medium';
-  }
-
-  if (slopeClass === '8-10: hard') {
-    return '8-10: hard';
-  }
-
-  if (slopeClass === '10-20: extreme') {
-    return '10-20: extreme';
-  }
-
-  return '>20: impossible';
-}
-
 function getSlopeTrailLabel(slopeClass: SlopeClass): string {
   if (slopeClass === '0-3: flat') {
     return '0-3: flat';
@@ -199,10 +217,10 @@ function getSlopeColor(slopeClass: SlopeClass): string {
   return '#7f1d1d';
 }
 
-function getSlopeEntries(mode: 'bike' | 'trail') {
+function getSlopeEntries() {
   return ALL_SLOPE_CLASSES.map((slopeClass) => ({
     className: slopeClass,
-    label: mode === 'bike' ? getSlopeBikeLabel(slopeClass) : getSlopeTrailLabel(slopeClass),
+    label: getSlopeTrailLabel(slopeClass),
     color: getSlopeColor(slopeClass)
   }));
 }
@@ -229,20 +247,23 @@ function CyclabilityTabs({
   activeSubsection,
   onSelectSubsection
 }: {
-  activeSubsection: CyclabilitySubsection;
+  activeSubsection: CyclabilitySubsection | null;
   onSelectSubsection: (subsection: CyclabilitySubsection) => void;
 }) {
   return (
-    <section className="legend-panel" aria-label="Sottosezioni Cyclability">
-      <strong>Cyclability</strong>
-      <div className="legend-row">
+    <section className="legend-panel" aria-label="Sottosezioni percorsi in bici">
+      <strong>Percorsi in bici</strong>
+      <div className="legend-row" role="tablist">
         {ALL_CYCLABILITY_SUBSECTIONS.map((subsection) => (
           <button
             key={subsection}
             type="button"
+            role="tab"
+            aria-selected={activeSubsection === subsection}
             className={activeSubsection === subsection ? 'module-link active' : 'module-link'}
             onClick={() => onSelectSubsection(subsection)}
           >
+            <i className={`bi ${CYCLABILITY_SUBSECTION_ICONS[subsection]} tab-icon`} aria-hidden="true" />
             {getCyclabilitySubsectionLabel(subsection)}
           </button>
         ))}
@@ -256,29 +277,28 @@ function TrailsTabs({
   activeSubsection,
   onSelectSubsection
 }: {
-  activeSubsection: TrailsSubsection;
+  activeSubsection: TrailsSubsection | null;
   onSelectSubsection: (subsection: TrailsSubsection) => void;
 }) {
   return (
-    <section className="legend-panel" aria-label="Sottosezioni Trails">
-      <strong>Trails</strong>
-      <div className="legend-row">
+    <section className="legend-panel" aria-label="Sottosezioni sentieri">
+      <strong>Sentieri</strong>
+      <div className="legend-row" role="tablist">
         {ALL_TRAILS_SUBSECTIONS.map((subsection) => (
           <button
             key={subsection}
             type="button"
+            role="tab"
+            aria-selected={activeSubsection === subsection}
             className={activeSubsection === subsection ? 'module-link active' : 'module-link'}
             onClick={() => onSelectSubsection(subsection)}
           >
-            {subsection === 'trails' ? 'Trails' : 'Slope'}
+            <i className={`bi ${TRAILS_SUBSECTION_ICONS[subsection]} tab-icon`} aria-hidden="true" />
+            {getTrailsSubsectionLabel(subsection)}
           </button>
         ))}
       </div>
-      <p className="section-description">
-        {activeSubsection === 'trails'
-          ? 'Hiking, MTB e punti acqua/picnic.'
-          : 'Pendenza delle strade letta con etichette adatte alla camminata.'}
-      </p>
+      <p className="section-description">{getTrailsDescription(activeSubsection)}</p>
     </section>
   );
 }
@@ -294,7 +314,7 @@ function TrailsLegend({
 }) {
   return (
     <section className="legend-panel" aria-label="Legenda sentieri">
-      <strong>Trails</strong>
+      <strong>Sentieri</strong>
       <div className="legend-row">
         {ALL_TRAIL_CATEGORIES.map((category) => (
           <label key={category}>
@@ -308,6 +328,10 @@ function TrailsLegend({
         ))}
         <button type="button" onClick={onShowAll}>Mostra tutti</button>
       </div>
+      <Faq>
+        Sentieri segnalati dal CAI (Club Alpino Italiano) per l'escursionismo a piedi, e percorsi adatti alla
+        mountain bike. Tracciati mappati da OpenStreetMap.
+      </Faq>
     </section>
   );
 }
@@ -352,8 +376,7 @@ function BikeInfraLegend({
 }) {
   return (
     <section className="legend-panel" aria-label="Legenda infrastrutture ciclistiche">
-      <strong>Bike infrastructure
-      </strong>
+      <strong>Infrastrutture per biciclette</strong>
       <div className="legend-row">
         {ALL_BIKE_INFRA_CATEGORIES.map((category) => (
           <label key={category}>
@@ -368,26 +391,30 @@ function BikeInfraLegend({
         ))}
         <button type="button" onClick={onShowAll}>Mostra tutti</button>
       </div>
+      <Faq>
+        Piste ciclabili (incluso il percorso regionale FVG3 / MV 06), rastrelliere per parcheggiare la bici,
+        punti di bike sharing, officine per la riparazione e colonnine di ricarica per e-bike, mappati da
+        OpenStreetMap.
+      </Faq>
     </section>
   );
 }
 
 function SlopeLegend({
-  title,
   entries,
   visibleSlopeClasses,
   onToggleSlopeClass,
   onShowAll
 }: {
-  title: string;
   entries: Array<{ className: SlopeClass; label: string; color: string }>;
   visibleSlopeClasses: SlopeClass[];
   onToggleSlopeClass: (slopeClass: SlopeClass) => void;
   onShowAll: () => void;
 }) {
   return (
-    <section className="legend-panel" aria-label="Legenda pendenza">
-      <strong>{title}</strong>
+    <section className="legend-panel" aria-label="Pendenza">
+      <strong>Pendenza</strong>
+      <p className="section-description">Strade e sentieri colorati in base a quanto sono ripidi.</p>
       <div className="legend-row">
         {entries.map((entry) => (
           <label key={entry.className}>
@@ -402,6 +429,11 @@ function SlopeLegend({
         ))}
         <button type="button" onClick={onShowAll}>Mostra tutti</button>
       </div>
+      <Faq>
+        Pendenza media di ogni tratto, calcolata dal modello digitale del terreno (DEM/LiDAR). Le classi vanno
+        da pianeggiante (0-3%) a impraticabile (oltre il 20%), con etichette pensate per chi cammina più che
+        per chi pedala.
+      </Faq>
     </section>
   );
 }
@@ -539,23 +571,48 @@ function RouteElevationProfile({ summary }: { summary: RouteSummary | null }) {
   );
 }
 
+function LtsEmbed() {
+  const { lat, lon, zoom } = APP_CONFIG.municipality.ltsEmbedView;
+  const src = `https://stressinbici.it/?${new URLSearchParams({
+    area: 'italia',
+    zoom: String(zoom),
+    lat: String(lat),
+    lon: String(lon),
+    pitch: '0',
+    bearing: '0',
+    bg: 'dark',
+    lts: '0,1,2,3,4',
+    terrain: '0',
+    gap: '0',
+    lang: 'it'
+  }).toString()}`;
+
+  return (
+    <section className="module-view lts-embed-wrap" aria-label="Stress da traffico, stressinbici.it">
+      <iframe
+        className="lts-embed-frame"
+        src={src}
+        title="Stress in bici: livello di stress da traffico per la mobilità ciclabile"
+      />
+    </section>
+  );
+}
+
 export default function OutdoorModule() {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<Map | null>(null);
-  const [activeSection, setActiveSection] = useState<OutdoorSection>(
+  const [activeSection, setActiveSection] = useState<OutdoorSection | null>(
     getActiveOutdoorSectionFromHash()
   );
-  const [activeCyclabilitySubsection, setActiveCyclabilitySubsection] = useState<CyclabilitySubsection>(
+  const [activeCyclabilitySubsection, setActiveCyclabilitySubsection] = useState<CyclabilitySubsection | null>(
     getActiveCyclabilitySubsectionFromHash()
   );
-  const [activeTrailsSubsection, setActiveTrailsSubsection] = useState<TrailsSubsection>(
+  const [activeTrailsSubsection, setActiveTrailsSubsection] = useState<TrailsSubsection | null>(
     getActiveTrailsSubsectionFromHash()
   );
-  const [visibleLts, setVisibleLts] = useState<LtsLevel[]>(ALL_LTS_LEVELS);
   const [visibleTrailCategories, setVisibleTrailCategories] = useState<TrailCategory[]>(ALL_TRAIL_CATEGORIES);
   const [visibleWaterCategories, setVisibleWaterCategories] = useState<WaterCategory[]>(ALL_WATER_CATEGORIES);
   const [visibleBikeInfraCategories, setVisibleBikeInfraCategories] = useState<BikeInfraCategory[]>(ALL_BIKE_INFRA_CATEGORIES);
-  const [visibleCyclabilitySlopeClasses, setVisibleCyclabilitySlopeClasses] = useState<SlopeClass[]>(ALL_SLOPE_CLASSES);
   const [visibleTrailSlopeClasses, setVisibleTrailSlopeClasses] = useState<SlopeClass[]>(ALL_SLOPE_CLASSES);
   const [showTrailShade, setShowTrailShade] = useState(false);
   const [routingEnabled, setRoutingEnabled] = useState(false);
@@ -564,20 +621,9 @@ export default function OutdoorModule() {
   const [routeSummary, setRouteSummary] = useState<RouteSummary | null>(null);
   const [routeStatus, setRouteStatus] = useState('Nessun percorso calcolato');
   const routingMode: RoutingMode = activeSection === 'cyclability' ? 'biking' : 'walking';
-
-  function toggleLtsLevel(level: LtsLevel): void {
-    setVisibleLts((previous) => {
-      if (previous.includes(level)) {
-        return previous.filter((item) => item !== level);
-      }
-
-      return [...previous, level].sort() as LtsLevel[];
-    });
-  }
-
-  function showAllLts(): void {
-    setVisibleLts(ALL_LTS_LEVELS);
-  }
+  const isRoutingActive =
+    (activeSection === 'cyclability' && activeCyclabilitySubsection === 'routing') ||
+    (activeSection === 'trails' && activeTrailsSubsection === 'routing');
 
   function toggleTrailCategory(category: TrailCategory): void {
     setVisibleTrailCategories((previous) => {
@@ -619,20 +665,6 @@ export default function OutdoorModule() {
 
   function showAllBikeInfraCategories(): void {
     setVisibleBikeInfraCategories(ALL_BIKE_INFRA_CATEGORIES);
-  }
-
-  function toggleCyclabilitySlopeClass(slopeClass: SlopeClass): void {
-    setVisibleCyclabilitySlopeClasses((previous) => {
-      if (previous.includes(slopeClass)) {
-        return previous.filter((item) => item !== slopeClass);
-      }
-
-      return [...previous, slopeClass].sort() as SlopeClass[];
-    });
-  }
-
-  function showAllCyclabilitySlopeClasses(): void {
-    setVisibleCyclabilitySlopeClasses(ALL_SLOPE_CLASSES);
   }
 
   function toggleTrailSlopeClass(slopeClass: SlopeClass): void {
@@ -718,7 +750,7 @@ export default function OutdoorModule() {
     }
 
     const handleClick = (event: maplibregl.MapLayerMouseEvent) => {
-      if (!routingEnabled) {
+      if (!routingEnabled || !isRoutingActive) {
         return;
       }
 
@@ -732,7 +764,7 @@ export default function OutdoorModule() {
       ]);
     };
 
-    map.getCanvas().style.cursor = routingEnabled ? 'crosshair' : '';
+    map.getCanvas().style.cursor = routingEnabled && isRoutingActive ? 'crosshair' : '';
     map.on('click', handleClick);
 
     return () => {
@@ -756,12 +788,7 @@ export default function OutdoorModule() {
       }
     };
 
-    if (map.isStyleLoaded()) {
-      applyData();
-      return;
-    }
-
-    map.once('load', applyData);
+    return onStyleReady(map, applyData);
   }, [routeSummary, activeSection, activeCyclabilitySubsection, activeTrailsSubsection]);
 
   useEffect(() => {
@@ -774,15 +801,9 @@ export default function OutdoorModule() {
       setActiveTrailsSubsection(trailsSubsection);
     };
 
+    // No forced default here: an incomplete hash (#/outdoor, #/outdoor/cyclability)
+    // is a valid "nothing chosen yet" state, not a redirect target.
     window.addEventListener('hashchange', onHashChange);
-    if (
-      window.location.hash === '#/outdoor' ||
-      window.location.hash === '#/outdoor/' ||
-      window.location.hash === '#/outdoor/cyclability' ||
-      window.location.hash === '#/outdoor/cyclability/'
-    ) {
-      navigateToOutdoorSection('cyclability', 'lts');
-    }
 
     return () => {
       window.removeEventListener('hashchange', onHashChange);
@@ -807,30 +828,6 @@ export default function OutdoorModule() {
       mapInstanceRef.current = null;
     };
   }, [activeSection, activeCyclabilitySubsection, activeTrailsSubsection]);
-
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map || activeSection !== 'cyclability' || activeCyclabilitySubsection !== 'lts') {
-      return;
-    }
-
-    const applyFilter = () => {
-      if (map.getLayer('lts-overlay')) {
-        map.setFilter('lts-overlay', [
-          'in',
-          ['to-number', ['get', 'lts'], 0],
-          ['literal', visibleLts]
-        ]);
-      }
-    };
-
-    if (map.isStyleLoaded()) {
-      applyFilter();
-      return;
-    }
-
-    map.once('load', applyFilter);
-  }, [activeSection, activeCyclabilitySubsection, visibleLts]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -862,12 +859,7 @@ export default function OutdoorModule() {
       setVisibility('bike-infra-ebike-charging', bikeInfraVisibility.ebikeCharging);
     };
 
-    if (map.isStyleLoaded()) {
-      applyVisibility();
-      return;
-    }
-
-    map.once('load', applyVisibility);
+    return onStyleReady(map, applyVisibility);
   }, [activeSection, activeCyclabilitySubsection, visibleBikeInfraCategories]);
 
   useEffect(() => {
@@ -906,12 +898,7 @@ export default function OutdoorModule() {
       setVisibility('water-poi-labels-picnic', trailVisibility.picnicArea);
     };
 
-    if (map.isStyleLoaded()) {
-      applyVisibility();
-      return;
-    }
-
-    map.once('load', applyVisibility);
+    return onStyleReady(map, applyVisibility);
   }, [activeSection, activeTrailsSubsection, visibleTrailCategories, visibleWaterCategories]);
 
   useEffect(() => {
@@ -943,32 +930,19 @@ export default function OutdoorModule() {
       if (map.getLayer('trail-casing-mtb')) map.setPaintProperty('trail-casing-mtb', 'line-color', mtbCasing as never);
     };
 
-    if (map.isStyleLoaded()) {
-      apply();
-    } else {
-      map.once('load', apply);
-    }
+    return onStyleReady(map, apply);
   }, [showTrailShade, activeSection, activeTrailsSubsection]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
-    const slopeLayerId =
-      activeSection === 'cyclability' && activeCyclabilitySubsection === 'slope'
-        ? 'slope-network-cyclability'
-        : activeSection === 'trails' && activeTrailsSubsection === 'slope'
-          ? 'slope-network-trails'
-          : null;
+    const isTrailsSlope = activeSection === 'trails' && activeTrailsSubsection === 'slope';
 
-    const visibleSlopeClasses =
-      activeSection === 'cyclability' && activeCyclabilitySubsection === 'slope'
-        ? visibleCyclabilitySlopeClasses
-        : activeSection === 'trails' && activeTrailsSubsection === 'slope'
-          ? visibleTrailSlopeClasses
-          : null;
-
-    if (!map || !slopeLayerId || !visibleSlopeClasses) {
+    if (!map || !isTrailsSlope) {
       return;
     }
+
+    const slopeLayerId = 'slope-network-trails';
+    const visibleSlopeClasses = visibleTrailSlopeClasses;
 
     const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
     const slopeFilter =
@@ -1008,44 +982,36 @@ export default function OutdoorModule() {
       popup.remove();
     };
 
-    if (map.isStyleLoaded()) {
+    const offStyleReady = onStyleReady(map, () => {
       applyFilter();
       map.on('mousemove', slopeLayerId, handleMouseMove);
       map.on('mouseleave', slopeLayerId, handleLeave);
-    } else {
-      map.once('load', () => {
-        applyFilter();
-        map.on('mousemove', slopeLayerId, handleMouseMove);
-        map.on('mouseleave', slopeLayerId, handleLeave);
-      });
-    }
+    });
 
     return () => {
+      offStyleReady();
       map.off('mousemove', slopeLayerId, handleMouseMove);
       map.off('mouseleave', slopeLayerId, handleLeave);
       map.getCanvas().style.cursor = '';
       popup.remove();
     };
-  }, [
-    activeSection,
-    activeCyclabilitySubsection,
-    activeTrailsSubsection,
-    visibleCyclabilitySlopeClasses,
-    visibleTrailSlopeClasses
-  ]);
+  }, [activeSection, activeTrailsSubsection, visibleTrailSlopeClasses]);
 
   return (
     <>
       <section className="legend-panel" aria-label="Sottosezioni Outdoor">
-        <strong>Outdoor</strong>
-        <div className="legend-row">
+        <strong>Modulo Outdoor</strong>
+        <div className="legend-row" role="tablist">
           {OUTDOOR_SECTIONS.map((section) => (
             <button
               key={section}
               type="button"
+              role="tab"
+              aria-selected={activeSection === section}
               className={activeSection === section ? 'module-link active' : 'module-link'}
-              onClick={() => navigateToOutdoorSection(section, section === 'cyclability' ? 'lts' : undefined)}
+              onClick={() => navigateToOutdoorSection(section)}
             >
+              <i className={`bi ${OUTDOOR_SECTION_ICONS[section]} tab-icon`} aria-hidden="true" />
               {getOutdoorSectionLabel(section)}
             </button>
           ))}
@@ -1064,36 +1030,24 @@ export default function OutdoorModule() {
         <TrailsTabs activeSubsection={activeTrailsSubsection} onSelectSubsection={navigateToTrailsSubsection} />
       ) : null}
 
-      <RoutingPanel
-        enabled={routingEnabled}
-        mode={routingMode}
-        pointCount={routingPoints.length}
-        summary={routeSummary}
-        status={routeStatus}
-        onToggleEnabled={() => setRoutingEnabled((previous) => !previous)}
-        onUndo={undoRoutePoint}
-        onClear={clearRoute}
-      />
-
-      {activeSection === 'cyclability' && activeCyclabilitySubsection === 'lts' ? (
-        <LtsLegend visibleLts={visibleLts} onToggleLevel={toggleLtsLevel} onShowAll={showAllLts} />
-      ) : null}
+      {isRoutingActive && (
+        <RoutingPanel
+          enabled={routingEnabled}
+          mode={routingMode}
+          pointCount={routingPoints.length}
+          summary={routeSummary}
+          status={routeStatus}
+          onToggleEnabled={() => setRoutingEnabled((previous) => !previous)}
+          onUndo={undoRoutePoint}
+          onClear={clearRoute}
+        />
+      )}
 
       {activeSection === 'cyclability' && activeCyclabilitySubsection === 'bike-infra' ? (
         <BikeInfraLegend
           visibleBikeInfraCategories={visibleBikeInfraCategories}
           onToggleCategory={toggleBikeInfraCategory}
           onShowAll={showAllBikeInfraCategories}
-        />
-      ) : null}
-
-      {activeSection === 'cyclability' && activeCyclabilitySubsection === 'slope' ? (
-        <SlopeLegend
-          title="Slope (bike)"
-          entries={getSlopeEntries('bike')}
-          visibleSlopeClasses={visibleCyclabilitySlopeClasses}
-          onToggleSlopeClass={toggleCyclabilitySlopeClass}
-          onShowAll={showAllCyclabilitySlopeClasses}
         />
       ) : null}
 
@@ -1132,18 +1086,21 @@ export default function OutdoorModule() {
 
       {activeSection === 'trails' && activeTrailsSubsection === 'slope' ? (
         <SlopeLegend
-          title="Slope (hiking)"
-          entries={getSlopeEntries('trail')}
+          entries={getSlopeEntries()}
           visibleSlopeClasses={visibleTrailSlopeClasses}
           onToggleSlopeClass={toggleTrailSlopeClass}
           onShowAll={showAllTrailSlopeClasses}
         />
       ) : null}
 
-      <section className="module-view" aria-label="Mappa Outdoor">
-        <RouteElevationProfile summary={routeSummary} />
-        <div ref={mapRef} className="map-canvas" />
-      </section>
+      {activeSection === 'cyclability' && activeCyclabilitySubsection === 'lts' ? (
+        <LtsEmbed />
+      ) : (
+        <section className="module-view" aria-label="Mappa Outdoor">
+          <RouteElevationProfile summary={routeSummary} />
+          <div ref={mapRef} className="map-canvas" />
+        </section>
+      )}
     </>
   );
 }

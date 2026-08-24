@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { useModuleMap } from '../../hooks/useModuleMap';
+import { onStyleReady } from '../../lib/map';
+import Faq from '../../components/Faq';
 
 const EVENT_LAYERS = ['hydraulic-risk', 'landslide-risk'] as const;
 const ASSET_LAYERS = ['aed', 'hems', 'fire-hydrants', 'assembly-points'] as const;
@@ -14,7 +16,11 @@ function getLayerVisibility(visible: boolean): 'visible' | 'none' {
 }
 
 function groupLabel(group: RescueGroup): string {
-  return group === 'events' ? 'Eventi e rischi' : 'Presidi utili';
+  return group === 'events' ? 'Zone a rischio' : 'Presidi di soccorso';
+}
+
+function groupIcon(group: RescueGroup): string {
+  return group === 'events' ? 'bi-exclamation-triangle' : 'bi-heart-pulse';
 }
 
 export default function RescueModule() {
@@ -118,10 +124,10 @@ export default function RescueModule() {
       listenersAttached = true;
     };
 
-    if (map.isStyleLoaded()) { applyVisibility(); attachListeners(); }
-    else map.once('load', () => { applyVisibility(); attachListeners(); });
+    const offStyleReady = onStyleReady(map, () => { applyVisibility(); attachListeners(); });
 
     return () => {
+      offStyleReady();
       if (listenersAttached) {
         map.off('mousemove', handleMove);
         map.off('mouseleave', 'hydraulic-risk-fill', clearHover);
@@ -137,23 +143,32 @@ export default function RescueModule() {
       <section className="legend-panel" aria-label="Modulo soccorso ed emergenza">
         <strong>Modulo Soccorso ed Emergenza</strong>
         <p className="section-description">
-          Due gruppi: eventi di rischio e presidi utili per il soccorso.
+          Scegli cosa vuoi vedere: zone a rischio sul territorio, o presidi utili in caso di emergenza.
         </p>
-        <div className="legend-row">
+        <div className="legend-row" role="tablist">
           {(['events', 'assets'] as RescueGroup[]).map(group => (
             <button
               key={group}
               type="button"
+              role="tab"
+              aria-selected={activeGroup === group}
               className={activeGroup === group ? 'module-link active' : 'module-link'}
               onClick={() => setActiveGroup(group)}
             >
+              <i className={`bi ${groupIcon(group)} tab-icon`} aria-hidden="true" />
               {groupLabel(group)}
             </button>
           ))}
-          <button type="button" onClick={showAllVisibleLayers}>Mostra tutti</button>
         </div>
+      </section>
 
-        {activeGroup === 'events' ? (
+      {activeGroup === 'events' ? (
+        <section className="legend-panel" aria-label="Zone a rischio">
+          <strong>Zone a rischio</strong>
+          <p className="data-caveat">
+            <i className="bi bi-exclamation-triangle-fill" aria-hidden="true" /> Dati preliminari, in attesa dei
+            dati ufficiali della Regione FVG. Non usare per decisioni di sicurezza in caso di allerta.
+          </p>
           <div className="legend-row">
             <label>
               <input type="checkbox" checked={visibleEvents.includes('hydraulic-risk')} onChange={() => toggleEventLayer('hydraulic-risk')} />
@@ -163,8 +178,18 @@ export default function RescueModule() {
               <input type="checkbox" checked={visibleEvents.includes('landslide-risk')} onChange={() => toggleEventLayer('landslide-risk')} />
               <span className="chip chip-landslide-risk" /> Frane e dissesto
             </label>
+            <button type="button" onClick={showAllVisibleLayers}>Mostra tutti</button>
           </div>
-        ) : (
+          <Faq>
+            Le zone di rischio idraulico e frana derivano dal Piano di Assetto Idrogeologico (PAI) e dalla
+            Direttiva Alluvioni della Regione FVG. In questa versione i confini mostrati sono segnaposto in
+            attesa del file ufficiale: usali come indicazione generale del territorio, non come riferimento per
+            decisioni di sicurezza.
+          </Faq>
+        </section>
+      ) : (
+        <section className="legend-panel" aria-label="Presidi di soccorso">
+          <strong>Presidi di soccorso</strong>
           <div className="legend-row">
             <label>
               <input type="checkbox" checked={visibleAssets.includes('aed')} onChange={() => toggleAssetLayer('aed')} />
@@ -182,9 +207,15 @@ export default function RescueModule() {
               <input type="checkbox" checked={visibleAssets.includes('assembly-points')} onChange={() => toggleAssetLayer('assembly-points')} />
               <span className="chip chip-assembly-point" /> Punti raccolta
             </label>
+            <button type="button" onClick={showAllVisibleLayers}>Mostra tutti</button>
           </div>
-        )}
-      </section>
+          <Faq>
+            Defibrillatori (AED), elisuperfici per l'elisoccorso (HEMS), idranti antincendio e punti di raccolta
+            per le emergenze, mappati su OpenStreetMap. La copertura dipende da quanto è stato censito sul
+            territorio: se conosci un presidio mancante, puoi aggiungerlo tu stesso su OpenStreetMap.
+          </Faq>
+        </section>
+      )}
 
       <section className="module-view" aria-label="Mappa Soccorso ed Emergenza">
         <div ref={mapRef} className="map-canvas" />

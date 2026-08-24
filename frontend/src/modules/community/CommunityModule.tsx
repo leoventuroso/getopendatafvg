@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { useModuleMap } from '../../hooks/useModuleMap';
+import { onStyleReady } from '../../lib/map';
 import { loadCommunityReports, type CommunityReport } from '../../lib/duckdb';
 import {
   CATEGORIES, EMPTY_FORM, MUNICIPALITY_EMAIL,
@@ -25,7 +26,6 @@ export default function CommunityModule() {
   const [reports, setReports] = useState<CommunityReport[]>([]);
   const [selectedReport, setSelectedReport] = useState<CommunityReport | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [isPlacingPin, setIsPlacingPin] = useState(false);
   const [pendingLocation, setPendingLocation] = useState<[number, number] | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [photo, setPhoto] = useState<PhotoState | null>(null);
@@ -114,26 +114,25 @@ export default function CommunityModule() {
       }
     };
 
-    if (map.isStyleLoaded()) createMarkers(); else map.once('load', createMarkers);
+    const offStyleReady = onStyleReady(map, createMarkers);
 
     return () => {
+      offStyleReady();
       for (const m of markersRef.current.values()) m.remove();
       markersRef.current.clear();
       popup.remove();
     };
   }, [reports]);
 
-  // Map click: place pin
+  // Map click while the form is open: place the pin, or move it if already set
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
     const handleClick = (e: maplibregl.MapMouseEvent) => {
-      if (!isPlacingPin) return;
+      if (view !== 'form') return;
       const { lng, lat } = e.lngLat;
       setPendingLocation([lng, lat]);
-      setIsPlacingPin(false);
-      map.getCanvas().style.cursor = '';
       pinMarkerRef.current?.remove();
       pinMarkerRef.current = new maplibregl.Marker({ color: '#e03131' })
         .setLngLat([lng, lat])
@@ -142,14 +141,15 @@ export default function CommunityModule() {
 
     map.on('click', handleClick);
     return () => { map.off('click', handleClick); };
-  }, [isPlacingPin]);
+  }, [view]);
 
-  // Crosshair cursor while placing pin
+  // Crosshair cursor for the whole time the form is open — the map stays clickable
+  // so the user can reposition the pin at any point, not just before the first click
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
-    map.getCanvas().style.cursor = isPlacingPin ? 'crosshair' : '';
-  }, [isPlacingPin]);
+    map.getCanvas().style.cursor = view === 'form' ? 'crosshair' : '';
+  }, [view]);
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -189,12 +189,10 @@ export default function CommunityModule() {
     setSubmitted(false);
     pinMarkerRef.current?.remove();
     pinMarkerRef.current = null;
-    setIsPlacingPin(true);
   }
 
   function cancelForm() {
     setView('list');
-    setIsPlacingPin(false);
     setPendingLocation(null);
     setForm(EMPTY_FORM);
     setPhoto(null);
@@ -298,12 +296,6 @@ export default function CommunityModule() {
             onRemovePhoto={() => setPhoto(null)}
             onSubmit={submitForm}
             onCancel={cancelForm}
-            onRepin={() => {
-              setPendingLocation(null);
-              pinMarkerRef.current?.remove();
-              pinMarkerRef.current = null;
-              setIsPlacingPin(true);
-            }}
           />
         )}
       </aside>

@@ -23,7 +23,10 @@ make rescue     # solo modulo Emergenze
 make base       # solo modulo Base (frazioni, statistiche ISTAT)
 make community  # solo modulo Segnala (inizializza DuckDB)
 make tiles      # PMTiles LTS (richiede Tippecanoe)
+make basemap    # Basemap vettoriale dark self-hosted (planetiler + OpenMapTiles, ~450MB, Java 21+)
 ```
+
+`make basemap` è un'alternativa documentata ma non usata in produzione: il frontend usa gli stili live hosted di Maptoolkit (`styles.maptoolkit.org`), non questo basemap self-hosted.
 
 Ogni target è indipendente: puoi eseguirli singolarmente senza rieseguire l'intera pipeline.
 

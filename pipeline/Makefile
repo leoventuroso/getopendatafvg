@@ -2,7 +2,7 @@ PYTHON := python
 
 SCRIPTS := scripts
 
-.PHONY: help all base outdoor rescue green community
+.PHONY: help all base outdoor rescue green community basemap
 
 help:
 	@echo "Montereale Valcellina — pipeline GIS"
@@ -15,6 +15,7 @@ help:
 	@echo "  make green      NDVI, NBR, LST, shade corridors (Sentinel-2 + LiDAR)"
 	@echo "  make community  Initialise community_data.duckdb"
 	@echo "  make tiles      PMTiles from LTS CSV (requires Tippecanoe + DEM)"
+	@echo "  make basemap    Dark vector basemap (planetiler + OpenMapTiles, ~450MB, needs Java 21+)"
 	@echo ""
 	@echo "CI-safe targets (run in GitHub Actions, no local data needed):"
 	@echo "  make rescue     Emergency assets (Overpass only)"
@@ -51,3 +52,6 @@ community:
 
 tiles:
 	$(PYTHON) $(SCRIPTS)/build_pmtiles.py
+
+basemap:
+	$(PYTHON) $(SCRIPTS)/build_basemap.py

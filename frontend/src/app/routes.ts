@@ -1,12 +1,9 @@
 export type AppModule = 'base' | 'outdoor' | 'rescue' | 'green' | 'community';
 export type OutdoorSection = 'cyclability' | 'trails';
-export type CyclabilitySubsection = 'lts' | 'bike-infra' | 'slope';
-export type TrailsSubsection = 'trails' | 'slope';
+export type CyclabilitySubsection = 'lts' | 'bike-infra' | 'routing';
+export type TrailsSubsection = 'trails' | 'slope' | 'routing';
 
 const DEFAULT_MODULE: AppModule = 'base';
-const DEFAULT_OUTDOOR_SECTION: OutdoorSection = 'cyclability';
-const DEFAULT_CYCLABILITY_SUBSECTION: CyclabilitySubsection = 'lts';
-const DEFAULT_TRAILS_SUBSECTION: TrailsSubsection = 'trails';
 
 function isAppModule(value: string | null): value is AppModule {
   return value === 'base' || value === 'outdoor' || value === 'rescue' || value === 'green' || value === 'community';
@@ -17,11 +14,11 @@ function isOutdoorSection(value: string | null): value is OutdoorSection {
 }
 
 function isCyclabilitySubsection(value: string | null): value is CyclabilitySubsection {
-  return value === 'lts' || value === 'bike-infra' || value === 'slope';
+  return value === 'lts' || value === 'bike-infra' || value === 'routing';
 }
 
 function isTrailsSubsection(value: string | null): value is TrailsSubsection {
-  return value === 'trails' || value === 'slope';
+  return value === 'trails' || value === 'slope' || value === 'routing';
 }
 
 function getHashSegments(): string[] {
@@ -43,34 +40,31 @@ export function getActiveModuleFromHash(): AppModule {
   return DEFAULT_MODULE;
 }
 
-export function getActiveOutdoorSectionFromHash(): OutdoorSection {
+// No default: the section stays unchosen until the user clicks one.
+export function getActiveOutdoorSectionFromHash(): OutdoorSection | null {
   const [, section] = getHashSegments();
 
-  if (isOutdoorSection(section)) {
-    return section;
-  }
-
-  return DEFAULT_OUTDOOR_SECTION;
+  return isOutdoorSection(section) ? section : null;
 }
 
-export function getActiveCyclabilitySubsectionFromHash(): CyclabilitySubsection {
+export function getActiveCyclabilitySubsectionFromHash(): CyclabilitySubsection | null {
   const [, section, subsection] = getHashSegments();
 
   if (section === 'cyclability' && isCyclabilitySubsection(subsection)) {
     return subsection;
   }
 
-  return DEFAULT_CYCLABILITY_SUBSECTION;
+  return null;
 }
 
-export function getActiveTrailsSubsectionFromHash(): TrailsSubsection {
+export function getActiveTrailsSubsectionFromHash(): TrailsSubsection | null {
   const [, section, subsection] = getHashSegments();
 
   if (section === 'trails' && isTrailsSubsection(subsection)) {
     return subsection;
   }
 
-  return DEFAULT_TRAILS_SUBSECTION;
+  return null;
 }
 
 export function navigateToModule(module: AppModule): void {
@@ -111,20 +105,32 @@ export function getModuleLabel(module: AppModule): string {
 
 export function getOutdoorSectionLabel(section: OutdoorSection): string {
   if (section === 'cyclability') {
-    return 'Cyclability';
+    return 'Percorsi in bici';
   }
 
-  return 'Trails';
+  return 'Sentieri';
 }
 
 export function getCyclabilitySubsectionLabel(subsection: CyclabilitySubsection): string {
   if (subsection === 'lts') {
-    return 'LTS';
+    return 'Stress da traffico';
   }
 
   if (subsection === 'bike-infra') {
-    return 'Bike infrastructure';
+    return 'Infrastrutture ciclabili';
   }
 
-  return 'Slope';
+  return 'Pianifica percorso';
+}
+
+export function getTrailsSubsectionLabel(subsection: TrailsSubsection): string {
+  if (subsection === 'trails') {
+    return 'Sentieri e punti acqua';
+  }
+
+  if (subsection === 'slope') {
+    return 'Pendenza';
+  }
+
+  return 'Pianifica percorso';
 }

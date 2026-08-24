@@ -1,12 +1,25 @@
+/* Mobile-first: single column (panel above map). Side-by-side only from 700px. */
 .home-layout {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 56vw;
   min-height: 56vh;
   gap: 0.75rem;
 }
 
 .home-map {
-  border-radius: 0 12px 12px 0;
+  border-radius: 12px;
+}
+
+@media (min-width: 700px) {
+  .home-layout {
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: none;
+  }
+
+  .home-map {
+    border-radius: 0 12px 12px 0;
+  }
 }
 
 .home-panel {
@@ -192,13 +205,3 @@
   font-style: italic;
 }
 
-@media (max-width: 680px) {
-  .home-layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 56vw;
-  }
-
-  .home-map {
-    border-radius: 12px;
-  }
-}

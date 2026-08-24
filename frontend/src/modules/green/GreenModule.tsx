@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { useModuleMap } from '../../hooks/useModuleMap';
+import { onStyleReady } from '../../lib/map';
 import GreenLegend, {
   ALL_NDVI_CLASSES, NDVI_CLASS_CONFIG, NBR_CLASS_CONFIG, LST_CLASS_CONFIG,
-  type NdviClass, type NbrClass, type LstClass, type ClassStats,
+  type GreenTab, type NdviClass, type NbrClass, type LstClass, type ClassStats,
 } from './GreenLegend';
 import './green.css';
 
@@ -37,10 +38,14 @@ function computeStats(
 export default function GreenModule() {
   const { mapRef, mapInstanceRef } = useModuleMap('green');
   const [visibleClasses, setVisibleClasses] = useState<NdviClass[]>(ALL_NDVI_CLASSES);
-  const [showShade, setShowShade] = useState(false);
-  const [showLst, setShowLst] = useState(false);
-  const [showNbr, setShowNbr] = useState(false);
+  const [activeTab, setActiveTab] = useState<GreenTab>('ndvi');
   const [stats, setStats] = useState<Record<NdviClass, ClassStats> | null>(null);
+
+  // The three optional overlays are mutually exclusive, driven by which tab
+  // is open — only one indicator explains itself on the map at a time.
+  const showShade = activeTab === 'shade';
+  const showNbr = activeTab === 'nbr';
+  const showLst = activeTab === 'lst';
 
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data/greenery.geojson`)
@@ -64,7 +69,7 @@ export default function GreenModule() {
       if (map.getLayer('greenery-outline')) map.setFilter('greenery-outline', filter);
     };
 
-    if (map.isStyleLoaded()) apply(); else map.once('load', apply);
+    return onStyleReady(map, apply);
   }, [visibleClasses]);
 
   // Shade corridors toggle
@@ -76,7 +81,7 @@ export default function GreenModule() {
       if (map.getLayer('shade-corridors')) map.setLayoutProperty('shade-corridors', 'visibility', visibility);
       if (map.getLayer('shade-corridors-casing')) map.setLayoutProperty('shade-corridors-casing', 'visibility', visibility);
     };
-    if (map.isStyleLoaded()) apply(); else map.once('load', apply);
+    return onStyleReady(map, apply);
   }, [showShade]);
 
   // NBR toggle
@@ -88,7 +93,7 @@ export default function GreenModule() {
       if (map.getLayer('nbr-fill')) map.setLayoutProperty('nbr-fill', 'visibility', visibility);
       if (map.getLayer('nbr-outline')) map.setLayoutProperty('nbr-outline', 'visibility', visibility);
     };
-    if (map.isStyleLoaded()) apply(); else map.once('load', apply);
+    return onStyleReady(map, apply);
   }, [showNbr]);
 
   // NBR popup
@@ -109,8 +114,9 @@ export default function GreenModule() {
       map.on('mousemove', 'nbr-fill', handleMove);
       map.on('mouseleave', 'nbr-fill', handleLeave);
     };
-    if (map.isStyleLoaded()) attach(); else map.once('load', attach);
+    const offStyleReady = onStyleReady(map, attach);
     return () => {
+      offStyleReady();
       map.off('mousemove', 'nbr-fill', handleMove);
       map.off('mouseleave', 'nbr-fill', handleLeave);
       popup.remove();
@@ -126,7 +132,7 @@ export default function GreenModule() {
       if (map.getLayer('lst-fill')) map.setLayoutProperty('lst-fill', 'visibility', visibility);
       if (map.getLayer('lst-outline')) map.setLayoutProperty('lst-outline', 'visibility', visibility);
     };
-    if (map.isStyleLoaded()) apply(); else map.once('load', apply);
+    return onStyleReady(map, apply);
   }, [showLst]);
 
   // LST popup
@@ -147,8 +153,9 @@ export default function GreenModule() {
       map.on('mousemove', 'lst-fill', handleMove);
       map.on('mouseleave', 'lst-fill', handleLeave);
     };
-    if (map.isStyleLoaded()) attach(); else map.once('load', attach);
+    const offStyleReady = onStyleReady(map, attach);
     return () => {
+      offStyleReady();
       map.off('mousemove', 'lst-fill', handleMove);
       map.off('mouseleave', 'lst-fill', handleLeave);
       popup.remove();
@@ -172,8 +179,9 @@ export default function GreenModule() {
       map.on('mousemove', 'greenery-fill', handleMove);
       map.on('mouseleave', 'greenery-fill', handleLeave);
     };
-    if (map.isStyleLoaded()) attach(); else map.once('load', attach);
+    const offStyleReady = onStyleReady(map, attach);
     return () => {
+      offStyleReady();
       map.off('mousemove', 'greenery-fill', handleMove);
       map.off('mouseleave', 'greenery-fill', handleLeave);
       popup.remove();
@@ -207,8 +215,9 @@ export default function GreenModule() {
       map.on('mousemove', 'shade-corridors', handleMove);
       map.on('mouseleave', 'shade-corridors', handleLeave);
     };
-    if (map.isStyleLoaded()) attach(); else map.once('load', attach);
+    const offStyleReady = onStyleReady(map, attach);
     return () => {
+      offStyleReady();
       map.off('mousemove', 'shade-corridors', handleMove);
       map.off('mouseleave', 'shade-corridors', handleLeave);
       popup.remove();
@@ -218,10 +227,9 @@ export default function GreenModule() {
   return (
     <>
       <GreenLegend
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
         visibleClasses={visibleClasses}
-        showShade={showShade}
-        showNbr={showNbr}
-        showLst={showLst}
         stats={stats}
         onToggleClass={cls =>
           setVisibleClasses(prev =>
@@ -229,9 +237,6 @@ export default function GreenModule() {
           )
         }
         onShowAll={() => setVisibleClasses(ALL_NDVI_CLASSES)}
-        onToggleShade={setShowShade}
-        onToggleNbr={setShowNbr}
-        onToggleLst={setShowLst}
       />
       <section className="module-view" aria-label="Mappa copertura vegetale">
         <div ref={mapRef} className="map-canvas" />
