@@ -2,7 +2,7 @@ PYTHON := python
 
 SCRIPTS := scripts
 
-.PHONY: help all base outdoor rescue green community basemap
+.PHONY: help all base outdoor rescue rii fire green community basemap
 
 help:
 	@echo "Montereale Valcellina — pipeline GIS"
@@ -12,6 +12,8 @@ help:
 	@echo "  make base       Frazioni boundaries + ISTAT stats"
 	@echo "  make outdoor    Trails, water, bike infra (Overpass + DEM .tif)"
 	@echo "  make rescue     Emergency assets (Overpass)"
+	@echo "  make rii        Rii a rischio esondazione (from data/sources/output_rii_protezione_civile.zip)"
+	@echo "  make fire       Perimetri incendi boschivi (IRDAT FVG WFS, solo comuni FVG)"
 	@echo "  make green      NDVI, NBR, LST, shade corridors (Sentinel-2 + LiDAR)"
 	@echo "  make community  Initialise community_data.duckdb"
 	@echo "  make tiles      PMTiles from LTS CSV (requires Tippecanoe + DEM)"
@@ -19,13 +21,14 @@ help:
 	@echo ""
 	@echo "CI-safe targets (run in GitHub Actions, no local data needed):"
 	@echo "  make rescue     Emergency assets (Overpass only)"
+	@echo "  make fire       Perimetri incendi boschivi (IRDAT FVG WFS)"
 	@echo "  make cyclepaths Bike cyclepaths from committed transport.geojson"
 	@echo "  make base       Frazioni (Nominatim) + ISTAT stats (public API)"
 	@echo "  make community  Initialise DuckDB"
 	@echo ""
 	@echo "Setup: python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt"
 
-all: base outdoor cyclepaths rescue green community tiles
+all: base outdoor cyclepaths rescue fire green community tiles
 
 base:
 	$(PYTHON) $(SCRIPTS)/build_frazioni_geojson.py
@@ -40,6 +43,12 @@ cyclepaths:
 
 rescue:
 	$(PYTHON) $(SCRIPTS)/build_rescue_geojson.py
+
+rii:
+	$(PYTHON) $(SCRIPTS)/build_rii_geojson.py
+
+fire:
+	$(PYTHON) $(SCRIPTS)/build_fire_geojson.py
 
 green:
 	$(PYTHON) $(SCRIPTS)/process_green_layers.py

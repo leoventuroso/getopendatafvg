@@ -11,7 +11,7 @@ const MODULES = [
     id: 'rescue' as const,
     label: 'Soccorso ed Emergenza',
     icon: 'bi-shield-plus',
-    description: 'Zone di rischio idraulico e frana, AED, HEMS, idranti e punti di raccolta',
+    description: 'Rii a rischio esondazione, AED, HEMS, idranti e punti di raccolta',
   },
   {
     id: 'green' as const,

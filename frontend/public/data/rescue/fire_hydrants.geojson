@@ -1,1 +1,1 @@
-{"type": "FeatureCollection", "features": [{"id": "fire-hydrant-1", "type": "Feature", "properties": {"class": "fire_hydrant", "name": "Idrante simulato", "status": "verifica richiesta", "most_recent_event": "2025-01-15", "note": "Placeholder per i punti idrante disponibili sul territorio."}, "geometry": {"type": "Point", "coordinates": [12.6461, 46.1486]}}]}
+{"type":"FeatureCollection","features":[]}

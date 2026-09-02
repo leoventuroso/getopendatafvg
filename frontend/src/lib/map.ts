@@ -216,51 +216,143 @@ function addEmergencyLayers(
   });
 }
 
-function addRiskFillLayers(
-  layers: maplibregl.StyleSpecification['layers'],
-  sourceId: string,
-  fillLayerId: string,
-  outlineLayerId: string,
-  color: string,
-  label: string,
-  labelOffset: [number, number] = [0, 0]
-): void {
-  layers.push({
-    id: fillLayerId,
-    type: 'fill',
-    source: sourceId,
-    paint: {
-      'fill-color': color,
-      'fill-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.36, 0.22],
-      'fill-outline-color': color
-    }
-  });
+// "Rii a rischio esondazione" — the volunteer stream census (Censimento RII).
+// Geometry is a mix: the real watercourse line from OpenStreetMap where it has
+// the named stream, otherwise a single point (faded when its position is only
+// approximate). Colour encodes how current the survey is. The RescueModule
+// filters these layers by `stato` and drives the click popup.
+const RII_COLOR: maplibregl.ExpressionSpecification = [
+  'match', ['get', 'stato'],
+  'aggiornato_2024', '#1c7ed6',
+  'solo_foto_2024', '#4dabf7',
+  'storico_2013', '#f59f00',
+  'storico_2007', '#e8590c',
+  '#868e96'
+];
 
+const RII_HOVER: maplibregl.ExpressionSpecification = ['boolean', ['feature-state', 'hover'], false];
+
+function addRiiLayers(layers: maplibregl.StyleSpecification['layers']): void {
+  // White casing under the stream line, for legibility over the basemap.
   layers.push({
-    id: outlineLayerId,
+    id: 'rii-line-casing',
     type: 'line',
-    source: sourceId,
+    source: 'rii',
+    filter: ['==', ['geometry-type'], 'LineString'],
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: {
-      'line-color': color,
-      'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 3.5, 2],
-      'line-dasharray': [2, 1]
+      'line-color': '#ffffff',
+      'line-opacity': 0.7,
+      'line-width': ['interpolate', ['linear'], ['zoom'], 11, 4.5, 15, 9]
     }
   });
 
   layers.push({
-    id: `${fillLayerId}-label`,
+    id: 'rii-line',
+    type: 'line',
+    source: 'rii',
+    filter: ['==', ['geometry-type'], 'LineString'],
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': RII_COLOR,
+      'line-width': [
+        'interpolate', ['linear'], ['zoom'],
+        11, ['case', RII_HOVER, 4.5, 2.5],
+        15, ['case', RII_HOVER, 8, 5.5]
+      ]
+    }
+  });
+
+  layers.push({
+    id: 'rii-points',
+    type: 'circle',
+    source: 'rii',
+    filter: ['==', ['geometry-type'], 'Point'],
+    paint: {
+      'circle-radius': [
+        'interpolate', ['linear'], ['zoom'],
+        11, ['case', RII_HOVER, 8, 6],
+        15, ['case', RII_HOVER, 15, 11]
+      ],
+      'circle-color': RII_COLOR,
+      'circle-opacity': ['case', ['boolean', ['get', 'pos_approssimata'], false], 0.5, 0.9],
+      'circle-stroke-color': '#ffffff',
+      'circle-stroke-width': ['case', RII_HOVER, 3, 1.8]
+    }
+  });
+
+  layers.push({
+    id: 'rii-labels',
     type: 'symbol',
-    source: sourceId,
+    source: 'rii',
+    minzoom: 12,
     layout: {
-      'text-field': label,
-      'text-size': 11,
+      'text-field': ['get', 'nome'],
+      'text-offset': [0, 1.3],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 12, 10, 15, 13],
       'text-font': ['Noto Sans Regular'],
-      'text-offset': labelOffset
+      'text-optional': true
     },
     paint: {
-      'text-color': color,
+      'text-color': '#1b3a4b',
       'text-halo-color': '#ffffff',
-      'text-halo-width': 1.5
+      'text-halo-width': 1.6
+    }
+  });
+}
+
+// Forest fire perimeters (IRDAT FVG). Historical burned areas, coloured by
+// ignition cause. The RescueModule filters and drives the click popup.
+const FIRE_COLOR: maplibregl.ExpressionSpecification = [
+  'match', ['get', 'causa_classe'],
+  'dolosa', '#e03131',
+  'colposa', '#f76707',
+  'naturale', '#7048e8',
+  '#868e96'
+];
+
+function addFireLayers(layers: maplibregl.StyleSpecification['layers']): void {
+  // NBR overlay sits under the perimeters so they stay readable. Hidden until
+  // the user toggles it on in the Incendi boschivi tab.
+  layers.push({
+    id: 'nbr-fill',
+    type: 'fill',
+    source: 'nbr',
+    layout: { visibility: 'none' },
+    paint: {
+      'fill-color': ['get', 'color'],
+      'fill-opacity': 0.5
+    }
+  });
+  layers.push({
+    id: 'nbr-outline',
+    type: 'line',
+    source: 'nbr',
+    layout: { visibility: 'none' },
+    paint: {
+      'line-color': '#ffffff',
+      'line-width': 0.3,
+      'line-opacity': 0.35
+    }
+  });
+
+  layers.push({
+    id: 'fire-perimeters-fill',
+    type: 'fill',
+    source: 'firePerimeters',
+    paint: {
+      'fill-color': FIRE_COLOR,
+      'fill-opacity': ['case', RII_HOVER, 0.5, 0.25]
+    }
+  });
+
+  layers.push({
+    id: 'fire-perimeters-outline',
+    type: 'line',
+    source: 'firePerimeters',
+    paint: {
+      'line-color': FIRE_COLOR,
+      'line-width': ['case', RII_HOVER, 2.6, 1.1]
     }
   });
 }
@@ -354,15 +446,19 @@ function buildOverlayAdditions(options: CreateBaseMapOptions): {
       generateId: true,
       data: `${import.meta.env.BASE_URL}data/rescue/emergency_assembly_points.geojson`
     };
-    sources.hydraulicRisk = {
+    sources.rii = {
       type: 'geojson',
-      generateId: true,
-      data: `${import.meta.env.BASE_URL}data/rescue/hydraulic_risk.geojson`
+      data: `${import.meta.env.BASE_URL}data/rescue/rii.geojson`
     };
-    sources.landslideRisk = {
+    sources.firePerimeters = {
       type: 'geojson',
-      generateId: true,
-      data: `${import.meta.env.BASE_URL}data/rescue/landslide_risk.geojson`
+      data: `${import.meta.env.BASE_URL}data/rescue/fire_perimeters.geojson`
+    };
+    // Optional overlay in the "Incendi boschivi" tab: satellite burn/dryness
+    // index (same source as the Green module's NBR layer).
+    sources.nbr = {
+      type: 'geojson',
+      data: `${import.meta.env.BASE_URL}data/nbr.geojson`
     };
   }
 
@@ -720,8 +816,8 @@ function buildOverlayAdditions(options: CreateBaseMapOptions): {
   }
 
   if (isRescueModule) {
-    addRiskFillLayers(layers, 'hydraulicRisk', 'hydraulic-risk-fill', 'hydraulic-risk-outline', '#1c7ed6', 'Rischio idraulico P2', [0, 0]);
-    addRiskFillLayers(layers, 'landslideRisk', 'landslide-risk-fill', 'landslide-risk-outline', '#e8590c', 'Frana storica', [0, 0]);
+    addRiiLayers(layers);
+    addFireLayers(layers);
     addEmergencyLayers(layers, 'aed', 'aed-sites', 'aed-labels', '#e03131', '#7f1d1d');
     addEmergencyLayers(layers, 'hems', 'hems-sites', 'hems-labels', '#f59f00', '#7a4d00');
     addEmergencyLayers(layers, 'fireHydrants', 'fire-hydrant-sites', 'fire-hydrant-labels', '#0b7285', '#0b4f61');
@@ -1037,7 +1133,7 @@ function exportMapToPdf(map: Map, moduleLabel: string): void {
 
   doc.setFontSize(16);
   doc.setTextColor(30);
-  doc.text(`${APP_CONFIG.productName} — ${APP_CONFIG.municipality.name}`, margin, margin + 6);
+  doc.text(`${APP_CONFIG.productName} - ${APP_CONFIG.municipality.name}`, margin, margin + 6);
   doc.setFontSize(10);
   doc.setTextColor(100);
   doc.text(`${moduleLabel} — ${new Date().toLocaleDateString('it-IT')}`, margin, margin + 11);

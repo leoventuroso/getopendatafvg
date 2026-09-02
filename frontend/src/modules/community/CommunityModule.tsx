@@ -234,7 +234,7 @@ export default function CommunityModule() {
       ...(photo ? [``, `Fotografia allegata: ${photo.fileName}`, `   → Allegare il file all'email prima di inviare.`] : []),
       ``,
       `---`,
-      `Inviato dal portale ${APP_CONFIG.productName} — ${APP_CONFIG.municipality.name}`,
+      `Inviato dal portale ${APP_CONFIG.productName} - ${APP_CONFIG.municipality.name}`,
     ].join('\n');
 
     window.location.href = `mailto:${MUNICIPALITY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

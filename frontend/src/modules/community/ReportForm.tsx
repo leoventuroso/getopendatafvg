@@ -41,7 +41,7 @@ export default function ReportForm({
       ) : (
         <p className="community-pin-set">
           <i className="bi bi-check-circle-fill" style={{ color: '#2f9e44' }} aria-hidden="true" />
-          {' '}Posizione impostata — {pendingLocation[1].toFixed(5)}, {pendingLocation[0].toFixed(5)}
+          {' '}Posizione impostata - {pendingLocation[1].toFixed(5)}, {pendingLocation[0].toFixed(5)}
           {' '}· clicca di nuovo sulla mappa per spostarla
         </p>
       )}

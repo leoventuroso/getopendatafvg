@@ -52,7 +52,7 @@ Other frontend commands: `npm run build` (production build, `tsc -b && vite buil
 
 - **Home**: municipal overview map, key indicators (demographics, services, risk), frazioni list
 - **Outdoor**: cycling (traffic-stress map, bike infrastructure, route planner) and hiking (trails, slope, shade corridors)
-- **Soccorso ed Emergenza**: hydraulic/landslide risk zones and emergency assets (defibrillators, hydrants, HEMS, assembly points)
+- **Soccorso ed Emergenza**: flood-prone streams census (Censimento RII), forest fire perimeters (IRDAT FVG), and emergency assets (defibrillators, hydrants, HEMS, assembly points)
 - **Green**: satellite-derived vegetation health, natural shade, and surface temperature
 - **Segnala**: citizen reporting, place a pin, describe the issue, submit via a pre-filled email to the municipality
 
@@ -95,7 +95,8 @@ Static build published on GitHub Pages.
 | Demographic and statistical data | ISTAT, esploradati.istat.it SDMX REST | n/a | CC BY |
 | NDVI, NBR | Sentinel-2 L2A (ESA/Copernicus) | 10-20 m | Free/Open |
 | LST | Landsat 8/9 Collection 2 L2 (USGS) | 30 m | Public Domain |
-| Hydraulic/landslide risk | PAI, regional authority | n/a | Open Data |
+| Flood-prone streams (Censimento RII) | Gruppo Comunale di Protezione Civile, volunteer field survey (2013, 2024) | point | Provided by the comune |
+| Forest fire perimeters | Regione FVG, IRDAT dataset 1232 (Fogli Notizie Incendi Boschivi), WFS | polygon | Regional open data |
 | Elevation / slope | DEM/LiDAR | n/a | Open Data |
 | Live basemap tiles/styles | Maptoolkit (`styles.maptoolkit.org`) | n/a | See provider terms |
 | LTS (traffic stress) map | stressinbici.it / [LTSBikePlan](https://github.com/dclfbk/LTSBikePlan) (live iframe embed) | n/a | See project's own license |

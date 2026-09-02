@@ -37,18 +37,29 @@ Every legend/layer group (LTS levels, bike infrastructure categories, slope clas
 
 ## 2. Modulo Soccorso ed Emergenza
 
-Overlay di layer di rischio ufficiali e mappatura degli asset di emergenza del territorio. Due sotto-sezioni (Zone a rischio / Presidi di soccorso).
+Censimento dei rii a rischio esondazione, perimetri degli incendi boschivi e mappatura degli asset di emergenza. Tre sotto-sezioni (Rii a rischio / Incendi boschivi / Presidi di soccorso).
 
-**Zone a rischio** — a visible in-app warning banner (not just a note in this file) tells users the data is preliminary:
-- Zone di rischio idraulico (PAI, Direttiva Alluvioni regionale) — *placeholder, dati reali da geoportale regionale*
-- Aree a rischio frana (dissesto geologico storico) — *placeholder, dati reali da PAI regionale*
-- Collapsible FAQ explains the PAI/Direttiva Alluvioni methodology and that shown boundaries are placeholders, not a safety reference
+**Rii a rischio esondazione** — `frontend/public/data/rescue/rii.geojson`, generato da `pipeline/scripts/build_rii_geojson.py`:
+- Un rio per feature, dal Censimento RII del Gruppo Comunale di Protezione Civile (rilievo 2013, ri-rilievo parziale 2024); ogni rio ha un marcatore `Point` (bersaglio del clic) e, dove OpenStreetMap mappa il corso d'acqua, anche il `LineString` del tracciato reale
+- Colore di linea/marcatore per attualità del dato (rilievo 2024 / dati fermi al 2013 / 2007 / solo foto); punti sbiaditi = posizione solo indicativa
+- Filtri per vintage del rilievo; clic su marcatore o linea apre un popup sulla mappa (dimensionato sul viewport, con scroll interno) con foto, criticità, punti critici, interventi proposti, eventi recenti e note sull'attendibilità
+- A visible in-app caveat banner ricorda che è una ricognizione volontaria, non uno studio tecnico né un riferimento per decisioni in caso di allerta
+- FAQ: storia del censimento, precisione delle posizioni, il rio senza coordinate escluso dalla mappa, l'ambiguità dei toponimi "Cao Malnisio"/"Bala Busa"
+
+**Incendi boschivi** — `frontend/public/data/rescue/fire_perimeters.geojson`, generato da `pipeline/scripts/build_fire_geojson.py`:
+- Perimetri degli incendi boschivi dalla Regione FVG (IRDAT, dataset 1232 "Perimetro degli incendi boschivi"), estratti dal geoservizio regionale (WFS `ZONE_RISC:V_INCENDI_CT`) filtrando per comune
+- Poligoni colorati per causa dell'innesco (dolosa / colposa / naturale da fulmine / ignota); filtri per causa
+- Clic su un'area → popup con data di inizio, durata, luogo di innesco, stato della vegetazione, vincoli, codice foglio notizie
+- Overlay opzionale: **NBR** (`data/nbr.geojson`, stesso layer del modulo Green) come traccia satellitare di vegetazione secca/degradata/bruciata, disegnato sotto i perimetri con legenda inline
+- Caveat: archivio storico (dal 1990), non una mappa previsionale di pericolosità; precisione geometrica variabile per i rilievi più vecchi
+- CI-safe: singola GET HTTPS, nessun file locale (target `make fire`); per comuni fuori FVG la query torna vuota e la sotto-sezione resta senza dati
 
 **Presidi di soccorso:**
-- Defibrillatori DAE/AED — *placeholder, dati reali da OSM*
+- Defibrillatori (DAE) — elenco del Comune di Montereale Valcellina geocodificato (`aed_comune.geojson`), unito ai nodi OSM `emergency=defibrillator` da `build_rescue_geojson.py` (`merge_curated`, dedup ~60 m); popup con indirizzo, orari, accesso, e caveat per i punti geocodificati
 - Elisuperfici HEMS per elisoccorso — *placeholder, dati reali da OSM*
 - Rete idranti antincendio — *placeholder, dati reali da OSM*
 - Punti di raccolta per emergenze — *placeholder, dati reali da OSM*
+- Clic su un presidio → popup con i dettagli disponibili (nome/indirizzo, orari, gestore…)
 
 **Da implementare:** vedi [TODO.md](../TODO.md) per il dettaglio delle attività in sospeso.
 

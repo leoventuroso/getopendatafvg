@@ -427,10 +427,119 @@ body {
 .chip-hems { background: #f59f00; }
 .chip-fire-hydrant { background: #0b7285; }
 .chip-assembly-point { background: #2f9e44; }
-.chip-hydraulic-risk { background: #1c7ed6; }
-.chip-landslide-risk { background: #e8590c; }
+.chip-rii-2024 { background: #1c7ed6; }
+.chip-rii-storico { background: #f59f00; }
+.chip-fire-dolosa { background: #e03131; }
+.chip-fire-colposa { background: #f76707; }
+.chip-fire-naturale { background: #7048e8; }
+.chip-fire-ignota { background: #868e96; }
 .chip-canopy { background: #2b8a3e; }
 .chip-cooling-spectrum { background: linear-gradient(90deg, #1a9850 0%, #fee08b 50%, #d73027 100%); }
+
+/* Rii a rischio esondazione — click popup (Soccorso ed Emergenza) */
+
+/* The popup sizes itself to the viewport: never wider/taller than the map area,
+   and it scrolls inside instead of spilling out or being clipped on zoom-out. */
+.rii-popup-shell .maplibregl-popup-content {
+  padding: 0.7rem 0.8rem 0.6rem;
+  border-radius: 10px;
+}
+
+.rii-popup {
+  width: 100%;
+  max-height: min(48vh, 380px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: #2b3f4d;
+}
+
+.rii-popup strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #12232e;
+}
+
+.rii-photo {
+  display: block;
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 7px;
+  margin-bottom: 0.45rem;
+}
+
+.rii-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.35rem 0;
+}
+
+.rii-badge {
+  font-size: 0.72rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: #e7eef3;
+  color: #395262;
+  white-space: nowrap;
+}
+
+.rii-badge-aggiornato_2024 { background: #d3e7fb; color: #12507e; }
+.rii-badge-solo_foto_2024 { background: #e2effb; color: #2a6a9c; }
+.rii-badge-storico_2013 { background: #fdeecd; color: #7a5300; }
+.rii-badge-storico_2007 { background: #fbe0d1; color: #8a3b12; }
+.rii-badge-fire-dolosa { background: #fbdada; color: #a11212; }
+.rii-badge-fire-colposa { background: #fde3cf; color: #9a4409; }
+.rii-badge-fire-naturale { background: #e5ddfb; color: #4b32a3; }
+.rii-badge-fire-ignota { background: #e7eef3; color: #495862; }
+
+.rii-area {
+  margin: 0.15rem 0;
+  font-size: 0.78rem;
+  color: #6a808d;
+}
+
+.rii-field {
+  margin: 0.45rem 0 0;
+}
+
+.rii-field b {
+  color: #12507e;
+}
+
+.rii-evento {
+  margin: 0.55rem 0 0;
+}
+
+.rii-evento img {
+  width: 100%;
+  border-radius: 7px;
+  display: block;
+}
+
+.rii-evento figcaption {
+  font-size: 0.74rem;
+  color: #6a808d;
+  margin-top: 0.2rem;
+}
+
+.rii-note {
+  margin-top: 0.55rem;
+  font-size: 0.78rem;
+}
+
+.rii-note summary {
+  cursor: pointer;
+  color: #2563a8;
+  font-weight: 600;
+}
+
+.rii-note p {
+  margin: 0.35rem 0 0;
+  color: #526675;
+}
 
 .trail-swatch {
   width: 18px;
