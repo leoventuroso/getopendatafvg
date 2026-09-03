@@ -87,7 +87,7 @@ export default function App() {
       <footer className="app-footer">
         <span>
           {APP_CONFIG.productName} · realizzato da{' '}
-          <a href="https://github.com/leoventuroso" target="_blank" rel="noopener noreferrer">Leo Venturoso</a>
+          <a href="https://github.com/leoventuroso" target="_blank" rel="noopener noreferrer">Leonardo Venturoso</a>
         </span>
         <a href="https://github.com/leoventuroso/mappa-civica" target="_blank" rel="noopener noreferrer">
           <i className="bi bi-github" aria-hidden="true" /> Codice sorgente

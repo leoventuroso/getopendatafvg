@@ -10,6 +10,8 @@ The entry point of the platform. Serves as a landing and orientation screen for 
 
 - **App introduction:** brief description of the platform and its four modules, with clickable module cards (Bootstrap Icons) that navigate directly to each module via hash-based routing
 - **Municipal overview map:** OSM base map with the municipal boundary highlighted
+- **Current weather:** temperature, condition, rolling 24h rainfall, wind, humidity from [Open-Meteo](https://open-meteo.com/) (client-side, no key, cached 4h in `localStorage`)
+- **Particelle catastali toggle:** off by default; when on, one marker per cadastral parcel (`catasto-points`/`catasto-labels`, minzoom 15), click near a marker to read `foglio` + `particella` with a link to the Agenzia delle Entrate consultation. Data: `frontend/public/data/catasto.geojson` from `build_catasto_geojson.py` (onData/dati_catastali, CC BY 4.0), a representative interior point per parcel - land parcels only, no owners/values, non-probatorio. The GeoJSON (~140 KB gzip) loads only on first toggle
 - **Frazioni list:** interactive sidebar list of official frazioni; clicking a frazione flies the map to that locality
 - **Municipal metadata panel:** key indicators from multiple sources, grouped by theme:
   - *Territorio:* area (km²), population density, waterways, peaks with elevation, dense vegetation %, CAI trails km, MTB routes km, cycling paths km

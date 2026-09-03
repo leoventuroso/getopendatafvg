@@ -266,3 +266,38 @@
 .weather-source a {
   color: inherit;
 }
+
+/* Particelle catastali (toggle nel pannello Home) */
+.catasto-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.catasto-detail {
+  margin-top: 0.55rem;
+  font-size: 0.85rem;
+  color: #385063;
+}
+
+.catasto-detail strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #12232e;
+}
+
+.catasto-detail p {
+  margin: 0.4rem 0 0;
+  line-height: 1.45;
+}
+
+.catasto-links a {
+  color: #2563a8;
+}
+
+.catasto-caveat {
+  font-size: 0.78rem;
+  color: #7a90a0;
+}

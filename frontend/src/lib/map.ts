@@ -459,6 +459,13 @@ function buildOverlayAdditions(options: CreateBaseMapOptions): {
       type: 'geojson',
       data: `${import.meta.env.BASE_URL}data/boundary.geojson`
     };
+    // Cadastral parcels: empty until the Home toggle loads the real data, so a
+    // plain Home visit doesn't pull the ~140 KB file.
+    sources.catasto = {
+      type: 'geojson',
+      generateId: true,
+      data: { type: 'FeatureCollection', features: [] }
+    };
   }
 
   if (isRescueModule) {
@@ -593,6 +600,42 @@ function buildOverlayAdditions(options: CreateBaseMapOptions): {
         'line-width': 2,
         'line-opacity': 0.7,
         'line-dasharray': [4, 3]
+      }
+    });
+
+    // Cadastral parcels: one marker per particella, only near the ground.
+    // Hidden until toggled on in the Home panel.
+    layers.push({
+      id: 'catasto-points',
+      type: 'circle',
+      source: 'catasto',
+      minzoom: 15,
+      layout: { visibility: 'none' },
+      paint: {
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 3.5, 18, 6.5],
+        'circle-color': '#8a5a00',
+        'circle-stroke-color': '#ffffff',
+        'circle-stroke-width': 1.2,
+        'circle-opacity': 0.9
+      }
+    });
+    layers.push({
+      id: 'catasto-labels',
+      type: 'symbol',
+      source: 'catasto',
+      minzoom: 16,
+      layout: {
+        visibility: 'none',
+        'text-field': ['get', 'particella'],
+        'text-size': ['interpolate', ['linear'], ['zoom'], 16, 9, 19, 13],
+        'text-font': ['Noto Sans Regular'],
+        'text-optional': true,
+        'text-ignore-placement': false
+      },
+      paint: {
+        'text-color': '#5c3d00',
+        'text-halo-color': '#ffffff',
+        'text-halo-width': 1.6
       }
     });
   }

@@ -8,6 +8,7 @@ export const APP_CONFIG = {
   municipality: {
     name: comune.name,
     email: comune.email,
+    cadastralCode: (comune as { cadastralCode?: string }).cadastralCode,
     // Vista di default per l'embed stressinbici.it (Percorsi in bici → Stress da traffico).
     // area=italia usa il tileset nazionale, che fa lo swap automatico sul comune giusto in base
     // a queste coordinate/zoom (nessuno slug/nome comune da conoscere). Per un'altra città:

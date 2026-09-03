@@ -38,6 +38,8 @@ Open work: external data to receive, field surveys, future integrations.
 - Lightweight in-browser model (YOLO/MobileNet) to suggest the category from the attached photo (e.g. pothole -> "Viabilità e strade").
 
 ### Cadastral (parcel) integration
-- **In Segnala:** when the citizen drops the pin, look up which cadastral parcel it falls in and pre-fill the report with `foglio` + `particella` (and optionally show the parcel outline). Gives the comune an unambiguous legal reference for the location.
-- **Dedicated view:** add a "Particelle catastali" toggle layer in the **Home** module (off by default; click a parcel to see foglio/particella and area). Home already shows the boundary, so the parcels fit its "know your territory" theme without adding a top-level nav item. A full standalone module would be overkill for how niche this is.
-- Source: [ondata/dati_catastali](https://github.com/ondata/dati_catastali) - vector parcels for all of Italy as GeoParquet, CC BY 4.0 (credit OnData). Queryable via DuckDB-Wasm over HTTP Parquet, already used in the project. Caveats: parcel geometry is tens of MB per comune (Montereale is small, manageable), needs the DuckDB spatial extension in Wasm, and cadastral data has its own accuracy limits (a legal map, not a survey).
+- **Done:** "Particelle catastali" toggle in the Home module - one marker per parcel from `build_catasto_geojson.py` (onData/dati_catastali, a point per parcel: `foglio`, `particella`), click to read the identifiers.
+- **Next - Segnala autofill:** when the citizen drops the pin, snap to the nearest parcel point (or a real point-in-polygon lookup) and pre-fill the report with `foglio` + `particella`.
+- **Next - risk cross-reference:** in Soccorso ed Emergenza, "is this parcel in a fire-danger zone / near a flood-prone rio?" by overlaying parcels with the module's layers.
+- **Later - real polygons:** the onData data is points only. Parcel boundaries + area would need the Agenzia delle Entrate INSPIRE WFS (`wfs.cartografia.agenziaentrate.gov.it`, GML, bbox-tiled, MapServer quirks) built into a PMTiles layer.
+- **Later - "banca della terra":** cross parcel points with the Verde module's NDVI to flag likely uncultivated agricultural parcels, for land-abandonment initiatives.

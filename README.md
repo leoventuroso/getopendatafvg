@@ -101,6 +101,8 @@ Static build published on GitHub Pages.
 | Live basemap tiles/styles | Maptoolkit (`styles.maptoolkit.org`) | n/a | See provider terms |
 | LTS (traffic stress) map | stressinbici.it / [LTSBikePlan](https://github.com/dclfbk/LTSBikePlan) (live iframe embed) | n/a | See project's own license |
 | 3D terrain DEM | Mapterhorn terrarium-encoded DEM | n/a | Free/Open |
+| Cadastral parcels (particelle) | onData / dati_catastali (Agenzia delle Entrate) | point per parcel | CC BY 4.0 |
+| Current weather | Open-Meteo forecast API | n/a | CC BY 4.0 / free |
 | UI icons | Bootstrap Icons | n/a | MIT |
 
 ---

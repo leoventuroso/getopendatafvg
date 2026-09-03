@@ -20,6 +20,7 @@ and by every Python pipeline script (`pipeline/lib/comune_config.py`).
   "region": "Region name",
   "istatCode": "123456",          // comune ISTAT code
   "provinceIstatCode": "ITDxx",   // province NUTS3 ISTAT code
+  "cadastralCode": "X000",        // codice catastale / Belfiore (for the parcels layer)
   "osmAreaId": 3600000000,        // OSM relation + 3600000000, see below
   "email": "info@comune.example.it",
   "boundaryFile": "frontend/src/data/municipalBoundary.json",
@@ -33,6 +34,7 @@ and by every Python pipeline script (`pipeline/lib/comune_config.py`).
   open the administrative boundary relation, take its ID and add `3600000000`
   (the Overpass convention for area queries: `relation id + 3600000000`).
 - `istatCode` / `provinceIstatCode` - [ISTAT statistical codes of administrative units](https://www.istat.it/it/archivio/6789).
+- `cadastralCode` - the comune's codice catastale (a.k.a. codice Belfiore, e.g. `F596`). Used by `make catasto` to pull the parcels layer; omit it (or leave outside FVG-style regions with no AdE cadastre, e.g. Bolzano/Trento) and the layer is simply empty. Look it up in the ISTAT "Codici statistici" table (it lists the cadastral code alongside the ISTAT one).
 - `ltsEmbedView` - lat/lon/zoom of any point inside the comune: the
   [stressinbici.it](https://stressinbici.it) embed swaps to the right comune on
   its own, no slug needed.

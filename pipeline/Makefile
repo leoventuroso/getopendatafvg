@@ -2,7 +2,7 @@ PYTHON := python
 
 SCRIPTS := scripts
 
-.PHONY: help all base outdoor rescue rii fire green community basemap
+.PHONY: help all base outdoor rescue rii fire catasto green community basemap
 
 help:
 	@echo "Montereale Valcellina - pipeline GIS"
@@ -14,6 +14,7 @@ help:
 	@echo "  make rescue     Emergency assets (Overpass)"
 	@echo "  make rii        Rii a rischio esondazione (from data/sources/output_rii_protezione_civile.zip)"
 	@echo "  make fire       Perimetri incendi boschivi (IRDAT FVG WFS, solo comuni FVG)"
+	@echo "  make catasto    Particelle catastali (onData/dati_catastali, per codice catastale)"
 	@echo "  make green      NDVI, NBR, LST, shade corridors (Sentinel-2 + LiDAR)"
 	@echo "  make community  Initialise community_data.duckdb"
 	@echo "  make tiles      PMTiles from LTS CSV (requires Tippecanoe + DEM)"
@@ -64,3 +65,6 @@ tiles:
 
 basemap:
 	$(PYTHON) $(SCRIPTS)/build_basemap.py
+
+catasto:
+	$(PYTHON) $(SCRIPTS)/build_catasto_geojson.py

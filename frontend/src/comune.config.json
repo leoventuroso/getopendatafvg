@@ -4,6 +4,7 @@
   "region": "Friuli-Venezia Giulia",
   "istatCode": "093027",
   "provinceIstatCode": "ITD41",
+  "cadastralCode": "F596",
   "osmAreaId": 3600179223,
   "email": "info@comune.montereale-valcellina.pn.it",
   "boundaryFile": "frontend/src/data/municipalBoundary.json",
