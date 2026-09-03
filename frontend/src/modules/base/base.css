@@ -205,3 +205,64 @@
   font-style: italic;
 }
 
+
+/* Meteo attuale (Open-Meteo) */
+.weather-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  padding: 0.6rem 0.8rem;
+  background: #f8fbff;
+  border: 1px solid #bcd0df;
+  border-radius: 10px;
+}
+
+.weather-icon {
+  font-size: 1.9rem;
+  color: #2563a8;
+}
+
+.weather-main {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.weather-temp {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #12232e;
+}
+
+.weather-label {
+  font-size: 0.82rem;
+  color: #587089;
+}
+
+.weather-meta {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.8rem;
+  font-size: 0.82rem;
+  color: #385063;
+}
+
+.weather-meta li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.weather-source {
+  flex-basis: 100%;
+  font-size: 0.72rem;
+  color: #7a90a0;
+}
+
+.weather-source a {
+  color: inherit;
+}

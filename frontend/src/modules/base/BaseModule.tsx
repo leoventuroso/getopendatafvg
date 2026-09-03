@@ -4,6 +4,7 @@ import { useModuleMap } from '../../hooks/useModuleMap';
 import ModuleCards from './ModuleCards';
 import FrazioniList, { type FrazioneFeature } from './FrazioniList';
 import MunicipalityStatsPanel, { type MunicipalityStats } from './MunicipalityStats';
+import WeatherCard from './WeatherCard';
 import './base.css';
 
 export default function BaseModule() {
@@ -47,6 +48,8 @@ export default function BaseModule() {
             Piattaforma civica open-source per la mobilità sostenibile, l'ambiente, la resilienza del territorio e la partecipazione della comunità.
           </p>
         </div>
+
+        <WeatherCard />
 
         <ModuleCards />
 

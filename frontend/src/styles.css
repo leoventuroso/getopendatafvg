@@ -14,10 +14,33 @@ body {
 
 .app-shell {
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto 1fr auto;
   min-height: 100vh;
   gap: 0.75rem;
   padding: 1rem;
+}
+
+.app-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.7rem 1rem;
+  background: #f9fcff;
+  border: 1px solid #c6d8e6;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  color: #587089;
+}
+
+.app-footer a {
+  color: #2563a8;
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
 }
 
 .app-header {
