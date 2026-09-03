@@ -161,7 +161,7 @@ export default function BaseModule() {
               </p>
               <p className="catasto-links">
                 <a
-                  href="https://www.agenziaentrate.gov.it/portale/web/guest/schede/fabbricatiterreni/consultazione-rendite-catastali"
+                  href="https://www.agenziaentrate.gov.it/portale/schede/fabbricatiterreni/visura-catastale/consultazione-rendite-catastali"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
