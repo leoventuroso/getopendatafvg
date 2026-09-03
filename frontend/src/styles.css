@@ -792,45 +792,63 @@ body {
 
 .route-profile-panel {
   position: absolute;
-  right: 2rem;
-  bottom: 2rem;
+  right: 1.25rem;
+  bottom: 1.25rem;
   z-index: 5;
-  width: min(440px, calc(100vw - 2rem));
-  background: rgba(249, 252, 255, 0.95);
+  width: min(380px, calc(100vw - 2rem));
+  max-height: min(calc(100% - 2.5rem), 620px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: rgba(249, 252, 255, 0.97);
   border: 1px solid #9fb9cc;
   border-radius: 12px;
-  padding: 0.7rem 0.75rem 0.6rem;
-  box-shadow: 0 10px 28px rgba(19, 32, 52, 0.18);
-  pointer-events: none;
+  padding: 0.7rem 0.8rem 0.7rem;
+  box-shadow: 0 10px 28px rgba(19, 32, 52, 0.2);
+  pointer-events: auto;
   backdrop-filter: blur(6px);
 }
 
 .route-profile-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
 }
 
-.route-profile-header span {
-  color: #587089;
+.route-planner-collapse {
+  border: 1px solid #c8d8e4;
+  background: #fff;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  color: #385063;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.route-planner-hint {
+  margin: 0.5rem 0 0;
   font-size: 0.82rem;
+  color: #587089;
+  line-height: 1.4;
 }
 
-.route-profile-metrics {
-  display: flex;
-  gap: 0.55rem;
-  margin-top: 0.35rem;
-  font-size: 0.84rem;
+.route-planner-status {
+  margin: 0.45rem 0 0;
+  font-size: 0.85rem;
   color: #385063;
 }
+
+.route-planner-profile { margin-top: 0.75rem; }
 
 .route-profile-svg {
   display: block;
   width: 100%;
-  height: 210px;
-  margin-top: 0.35rem;
+  height: 150px;
+  margin-top: 0.3rem;
 }
 
 .route-profile-grid {

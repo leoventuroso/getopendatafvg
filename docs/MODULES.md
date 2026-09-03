@@ -26,12 +26,12 @@ A guided journey rather than an all-at-once map: opening the module shows only t
 **Percorsi in bici** (3 sub-tabs, each with its own icon and collapsible FAQ):
 - **Stress da traffico:** live iframe embed of [stressinbici.it](https://stressinbici.it) (the [LTSBikePlan](https://github.com/dclfbk/LTSBikePlan) project) rather than a locally computed layer — `area=italia` auto-swaps to the configured comune's own data based on `APP_CONFIG.municipality.ltsEmbedView` (lat/lon/zoom), no comune slug needed
 - **Infrastrutture ciclabili:** cyclepaths, bike parking, rental, repair stations, e-bike charging
-- **Pianifica percorso:** route planner over the bike network. Draggable start/end markers + waypoints (click to add, drag to move, list with per-point remove and A/B swap). Shows length, estimated time for **a piedi / bici / bici elettrica** on the same route, elevation profile, and a road-type (`highway`/`surface`) breakdown. Download as GeoJSON / GPX / KML / CSV. Slope/grade still read from the precomputed pipeline fields.
+- **Pianifica percorso:** route planner over the bike network. Left panel has only the on/off switch; everything else lives in a floating panel on the map (modelled on LTSBikePlan's routing control, collapsible): draggable start/end/waypoint markers (click to add, drag to move), point list with per-point remove + Inverti/Indietro/Pulisci, then once a route is computed — length, estimated time for **a piedi / bici / bici elettrica**, road-type (`highway`/`surface`) breakdown, elevation profile, and GeoJSON/GPX/KML/CSV download. Slope/grade still read from the precomputed pipeline fields.
 
 **Sentieri** (3 sub-tabs):
 - **Sentieri e punti acqua:** CAI hiking trails and MTB routes, drinking water fountains, mountain springs, and picnic areas, plus **natural shade corridors** — trail and road segments colored by vegetation canopy coverage (green gradient from partial to full shade), derived from Sentinel-2 NDVI
 - **Pendenza:** slope classification for trails (kept only here — cycling infrastructure has no separate slope legend, since LTS already captures cycling stress)
-- **Pianifica percorso:** same planner over the walking network (roads + trails); same features (3 travel-mode times, road-type breakdown, elevation profile, GeoJSON/GPX/KML/CSV export, draggable markers)
+- **Pianifica percorso:** same planner over the walking network (roads + trails); same on-map floating panel and features (3 travel-mode times, road-type breakdown, elevation profile, GeoJSON/GPX/KML/CSV export, draggable markers)
 
 Every legend/layer group (LTS levels, bike infrastructure categories, slope classes) has plain-language explanations plus a collapsible "Cos'è e come è calcolato?" FAQ.
 

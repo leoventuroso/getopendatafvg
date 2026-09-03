@@ -473,127 +473,38 @@ function SlopeLegend({
   );
 }
 
+// Left legend: just the on/off switch. All the route data lives in the
+// on-map panel (RoutePlannerOverlay).
 function RoutingPanel({
   enabled,
   mode,
-  points,
-  summary,
-  status,
-  onToggleEnabled,
-  onUndo,
-  onClear,
-  onRemovePoint,
-  onSwapEnds
+  onToggleEnabled
 }: {
   enabled: boolean;
   mode: RoutingMode;
-  points: RouteStatePoint[];
-  summary: RouteSummary | null;
-  status: string;
   onToggleEnabled: () => void;
-  onUndo: () => void;
-  onClear: () => void;
-  onRemovePoint: (id: string) => void;
-  onSwapEnds: () => void;
 }) {
-  const pointCount = points.length;
-  const pointLabel = (index: number): string =>
-    index === 0 ? 'Partenza' : index === pointCount - 1 ? 'Arrivo' : `Tappa ${index}`;
-
   return (
-    <section className="legend-panel routing-panel" aria-label="Calcolo percorso">
+    <section className="legend-panel routing-panel" aria-label="Pianifica percorso">
       <strong>Pianifica percorso</strong>
       <div className="legend-row routing-row">
         <button type="button" className={enabled ? 'module-link active' : 'module-link'} onClick={onToggleEnabled}>
           {enabled ? 'Pianificazione attiva' : 'Attiva pianificazione'}
         </button>
-        <button type="button" onClick={onSwapEnds} disabled={pointCount < 2}>Inverti</button>
-        <button type="button" onClick={onUndo} disabled={pointCount === 0}>Indietro</button>
-        <button type="button" onClick={onClear} disabled={pointCount === 0}>Pulisci</button>
       </div>
       <p className="section-description">
         {enabled
-          ? `Clicca sulla mappa per porre partenza, arrivo e tappe; trascina i pallini per spostarli. Rete: ${mode === 'biking' ? 'strade e ciclabili' : 'strade e sentieri'}.`
+          ? `Clicca sulla mappa per porre partenza, arrivo e tappe; trascina i pallini per spostarli. I dati del percorso compaiono nel riquadro sulla mappa. Rete: ${mode === 'biking' ? 'strade e ciclabili' : 'strade e sentieri'}.`
           : 'Attiva la pianificazione, poi clicca sulla mappa per porre i punti.'}
       </p>
-
-      {pointCount > 0 && (
-        <ul className="routing-points">
-          {points.map((point, index) => (
-            <li key={point.id}>
-              <span className={`routing-point-dot routing-point-dot--${index === 0 ? 'start' : index === pointCount - 1 ? 'end' : 'via'}`} aria-hidden="true" />
-              <span className="routing-point-name">{pointLabel(index)}</span>
-              <span className="routing-point-coord">{point.lat.toFixed(4)}, {point.lng.toFixed(4)}</span>
-              <button type="button" className="routing-point-remove" title="Rimuovi" onClick={() => onRemovePoint(point.id)}>
-                <i className="bi bi-x-lg" aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="routing-stats">
-        <span className="routing-stat">{status}</span>
-        {summary && <span className="routing-stat">{formatDistance(summary.distanceKm)}</span>}
-        {summary && <span className="routing-stat">+{Math.round(summary.elevationGainM)} m</span>}
-        {summary && <span className="routing-stat">-{Math.round(summary.elevationLossM)} m</span>}
-      </div>
-
-      {summary && (
-        <>
-          <div className="routing-times">
-            <div className="routing-time"><i className="bi bi-person-walking" aria-hidden="true" /> {formatTime(summary.times.walking)}<small>a piedi</small></div>
-            <div className="routing-time"><i className="bi bi-bicycle" aria-hidden="true" /> {formatTime(summary.times.biking)}<small>bici</small></div>
-            <div className="routing-time"><i className="bi bi-bicycle" aria-hidden="true" /> {formatTime(summary.times.ebike)}<small>bici elettrica</small></div>
-          </div>
-
-          {summary.surfaceBreakdown.length > 0 && (
-            <div className="routing-surface">
-              <span className="routing-surface-title">Tipologia di strada</span>
-              <div className="routing-surface-bar">
-                {summary.surfaceBreakdown.map((run) => (
-                  <span
-                    key={run.label}
-                    className="routing-surface-seg"
-                    style={{ width: `${(run.km / summary.distanceKm) * 100}%` }}
-                    title={`${run.label}: ${run.km.toFixed(2)} km`}
-                  />
-                ))}
-              </div>
-              <ul className="routing-surface-list">
-                {summary.surfaceBreakdown.map((run) => (
-                  <li key={run.label}><span>{run.label}</span><span>{run.km.toFixed(run.km >= 10 ? 1 : 2)} km</span></li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div className="routing-downloads">
-            <span className="routing-downloads-title">Scarica</span>
-            <button type="button" onClick={() => exportRoute(summary, 'geojson')}>GeoJSON</button>
-            <button type="button" onClick={() => exportRoute(summary, 'gpx')}>GPX</button>
-            <button type="button" onClick={() => exportRoute(summary, 'kml')}>KML</button>
-            <button type="button" onClick={() => exportRoute(summary, 'csv')}>CSV</button>
-          </div>
-        </>
-      )}
     </section>
   );
 }
 
-function RouteElevationProfile({ summary }: { summary: RouteSummary | null }) {
-  if (!summary || summary.profile.length < 2) {
-    return null;
-  }
-
+function ElevationSvg({ summary }: { summary: RouteSummary }) {
   const width = 420;
-  const height = 210;
-  const margin = {
-    top: 14,
-    right: 16,
-    bottom: 36,
-    left: 54
-  };
+  const height = 190;
+  const margin = { top: 12, right: 14, bottom: 32, left: 48 };
   const minElevation = Math.min(...summary.profile.map((point) => point.elevationM));
   const maxElevation = Math.max(...summary.profile.map((point) => point.elevationM));
   const distanceKm = Math.max(summary.distanceKm, 0.001);
@@ -601,62 +512,181 @@ function RouteElevationProfile({ summary }: { summary: RouteSummary | null }) {
   const xTicks = [0, 0.25, 0.5, 0.75, 1];
   const yTicks = [0, 0.25, 0.5, 0.75, 1];
   const elevationLabelDigits = elevationRange < 20 ? 1 : 0;
-
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
-
   const xFor = (distance: number) => margin.left + (distance / distanceKm) * plotWidth;
   const yFor = (elevation: number) =>
     margin.top + plotHeight - ((elevation - minElevation) / elevationRange) * plotHeight;
-
   const linePoints = summary.profile.map((point) => `${xFor(point.distanceKm)} ${yFor(point.elevationM)}`).join(' ');
   const areaPoints = `${margin.left} ${height - margin.bottom} ${linePoints} ${width - margin.right} ${height - margin.bottom}`;
 
   return (
-    <section className="route-profile-panel" aria-label="Profilo altimetrico percorso">
+    <svg className="route-profile-svg" viewBox={`0 0 ${width} ${height}`} role="img" aria-hidden="true">
+      <defs>
+        <linearGradient id="route-profile-fill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="#8ecae6" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#8ecae6" stopOpacity="0.08" />
+        </linearGradient>
+      </defs>
+      {xTicks.map((tick) => {
+        const x = margin.left + tick * plotWidth;
+        return (
+          <g key={`x-${tick}`}>
+            <line x1={x} y1={margin.top} x2={x} y2={height - margin.bottom} className="route-profile-grid" />
+            <text x={x} y={height - 12} className="route-profile-axis-label route-profile-axis-label-x" textAnchor="middle">
+              {Math.round(distanceKm * tick * 10) / 10} km
+            </text>
+          </g>
+        );
+      })}
+      {yTicks.map((tick) => {
+        const elevation = minElevation + tick * elevationRange;
+        const y = yFor(elevation);
+        return (
+          <g key={`y-${tick}`}>
+            <line x1={margin.left} y1={y} x2={width - margin.right} y2={y} className="route-profile-grid" />
+            <text x={margin.left - 8} y={y + 3} className="route-profile-axis-label route-profile-axis-label-y">
+              {`${elevation.toFixed(elevationLabelDigits)} m`}
+            </text>
+          </g>
+        );
+      })}
+      <line x1={margin.left} y1={height - margin.bottom} x2={width - margin.right} y2={height - margin.bottom} className="route-profile-axis" />
+      <line x1={margin.left} y1={margin.top} x2={margin.left} y2={height - margin.bottom} className="route-profile-axis" />
+      <polygon points={areaPoints} fill="url(#route-profile-fill)" />
+      <polyline points={linePoints} fill="none" stroke="#1d4ed8" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// The on-map floating panel: hint, point list, controls and — once a route is
+// computed — length, per-mode times, road-type breakdown, elevation profile
+// and the download buttons. Modelled on LTSBikePlan's routing control.
+function RoutePlannerOverlay({
+  active,
+  mode,
+  points,
+  summary,
+  status,
+  onRemovePoint,
+  onSwapEnds,
+  onUndo,
+  onClear
+}: {
+  active: boolean;
+  mode: RoutingMode;
+  points: RouteStatePoint[];
+  summary: RouteSummary | null;
+  status: string;
+  onRemovePoint: (id: string) => void;
+  onSwapEnds: () => void;
+  onUndo: () => void;
+  onClear: () => void;
+}) {
+  const [collapsed, setCollapsed] = useState(false);
+  if (!active) return null;
+
+  const pointCount = points.length;
+  const pointLabel = (index: number): string =>
+    index === 0 ? 'Partenza' : index === pointCount - 1 ? 'Arrivo' : `Tappa ${index}`;
+
+  return (
+    <section className="route-profile-panel route-planner-panel" aria-label="Pianifica percorso">
       <div className="route-profile-header">
-        <strong>Profilo altimetrico</strong>
-        <span>relativo</span>
+        <strong>Pianifica percorso</strong>
+        <button
+          type="button"
+          className="route-planner-collapse"
+          aria-expanded={!collapsed}
+          onClick={() => setCollapsed((value) => !value)}
+        >
+          <i className={`bi ${collapsed ? 'bi-chevron-down' : 'bi-chevron-up'}`} aria-hidden="true" />
+        </button>
       </div>
-      <div className="route-profile-metrics">
-        <span>+{Math.round(summary.elevationGainM)} m</span>
-        <span>-{Math.round(summary.elevationLossM)} m</span>
-      </div>
-      <svg className="route-profile-svg" viewBox={`0 0 ${width} ${height}`} role="img" aria-hidden="true">
-        <defs>
-          <linearGradient id="route-profile-fill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#8ecae6" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="#8ecae6" stopOpacity="0.08" />
-          </linearGradient>
-        </defs>
-        {xTicks.map((tick) => {
-          const x = margin.left + tick * plotWidth;
-          return (
-            <g key={`x-${tick}`}>
-              <line x1={x} y1={margin.top} x2={x} y2={height - margin.bottom} className="route-profile-grid" />
-              <text x={x} y={height - 12} className="route-profile-axis-label route-profile-axis-label-x" textAnchor="middle">
-                {Math.round(distanceKm * tick * 10) / 10} km
-              </text>
-            </g>
-          );
-        })}
-        {yTicks.map((tick) => {
-          const elevation = minElevation + tick * elevationRange;
-          const y = yFor(elevation);
-          return (
-            <g key={`y-${tick}`}>
-              <line x1={margin.left} y1={y} x2={width - margin.right} y2={y} className="route-profile-grid" />
-              <text x={margin.left - 8} y={y + 3} className="route-profile-axis-label route-profile-axis-label-y">
-                {`${elevation.toFixed(elevationLabelDigits)} m`}
-              </text>
-            </g>
-          );
-        })}
-        <line x1={margin.left} y1={height - margin.bottom} x2={width - margin.right} y2={height - margin.bottom} className="route-profile-axis" />
-        <line x1={margin.left} y1={margin.top} x2={margin.left} y2={height - margin.bottom} className="route-profile-axis" />
-        <polygon points={areaPoints} fill="url(#route-profile-fill)" />
-        <polyline points={linePoints} fill="none" stroke="#1d4ed8" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-      </svg>
+
+      {!collapsed && (
+        <div className="route-planner-body">
+          <p className="route-planner-hint">
+            Clicca sulla mappa per porre partenza, arrivo e tappe; trascina i pallini per spostarli.
+            Rete: {mode === 'biking' ? 'strade e ciclabili' : 'strade e sentieri'}.
+          </p>
+
+          {pointCount > 0 && (
+            <ul className="routing-points">
+              {points.map((point, index) => (
+                <li key={point.id}>
+                  <span className={`routing-point-dot routing-point-dot--${index === 0 ? 'start' : index === pointCount - 1 ? 'end' : 'via'}`} aria-hidden="true" />
+                  <span className="routing-point-name">{pointLabel(index)}</span>
+                  <span className="routing-point-coord">{point.lat.toFixed(4)}, {point.lng.toFixed(4)}</span>
+                  <button type="button" className="routing-point-remove" title="Rimuovi" onClick={() => onRemovePoint(point.id)}>
+                    <i className="bi bi-x-lg" aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="legend-row routing-row">
+            <button type="button" onClick={onSwapEnds} disabled={pointCount < 2}>Inverti</button>
+            <button type="button" onClick={onUndo} disabled={pointCount === 0}>Indietro</button>
+            <button type="button" onClick={onClear} disabled={pointCount === 0}>Pulisci</button>
+          </div>
+
+          {!summary && <p className="route-planner-status">{status}</p>}
+
+          {summary && (
+            <>
+              <div className="routing-stats">
+                <span className="routing-stat">{formatDistance(summary.distanceKm)}</span>
+                <span className="routing-stat">+{Math.round(summary.elevationGainM)} m</span>
+                <span className="routing-stat">-{Math.round(summary.elevationLossM)} m</span>
+              </div>
+
+              <div className="routing-times">
+                <div className="routing-time"><i className="bi bi-person-walking" aria-hidden="true" /> {formatTime(summary.times.walking)}<small>a piedi</small></div>
+                <div className="routing-time"><i className="bi bi-bicycle" aria-hidden="true" /> {formatTime(summary.times.biking)}<small>bici</small></div>
+                <div className="routing-time"><i className="bi bi-bicycle" aria-hidden="true" /> {formatTime(summary.times.ebike)}<small>bici elettrica</small></div>
+              </div>
+
+              {summary.surfaceBreakdown.length > 0 && (
+                <div className="routing-surface">
+                  <span className="routing-surface-title">Tipologia di strada</span>
+                  <div className="routing-surface-bar">
+                    {summary.surfaceBreakdown.map((run) => (
+                      <span
+                        key={run.label}
+                        className="routing-surface-seg"
+                        style={{ width: `${(run.km / summary.distanceKm) * 100}%` }}
+                        title={`${run.label}: ${run.km.toFixed(2)} km`}
+                      />
+                    ))}
+                  </div>
+                  <ul className="routing-surface-list">
+                    {summary.surfaceBreakdown.map((run) => (
+                      <li key={run.label}><span>{run.label}</span><span>{run.km.toFixed(run.km >= 10 ? 1 : 2)} km</span></li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {summary.profile.length >= 2 && (
+                <div className="route-planner-profile">
+                  <span className="routing-surface-title">Profilo altimetrico <small>(dislivello relativo)</small></span>
+                  <ElevationSvg summary={summary} />
+                </div>
+              )}
+
+              <div className="routing-downloads">
+                <span className="routing-downloads-title">Scarica</span>
+                <button type="button" onClick={() => exportRoute(summary, 'geojson')}>GeoJSON</button>
+                <button type="button" onClick={() => exportRoute(summary, 'gpx')}>GPX</button>
+                <button type="button" onClick={() => exportRoute(summary, 'kml')}>KML</button>
+                <button type="button" onClick={() => exportRoute(summary, 'csv')}>CSV</button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </section>
   );
 }
@@ -1164,14 +1194,7 @@ export default function OutdoorModule() {
         <RoutingPanel
           enabled={routingEnabled}
           mode={routingMode}
-          points={routingPoints}
-          summary={routeSummary}
-          status={routeStatus}
           onToggleEnabled={() => setRoutingEnabled((previous) => !previous)}
-          onUndo={undoRoutePoint}
-          onClear={clearRoute}
-          onRemovePoint={removeRoutePoint}
-          onSwapEnds={swapRouteEnds}
         />
       )}
 
@@ -1229,7 +1252,17 @@ export default function OutdoorModule() {
         <LtsEmbed />
       ) : (
         <section className="module-view" aria-label="Mappa Outdoor">
-          <RouteElevationProfile summary={routeSummary} />
+          <RoutePlannerOverlay
+            active={isRoutingActive && routingEnabled}
+            mode={routingMode}
+            points={routingPoints}
+            summary={routeSummary}
+            status={routeStatus}
+            onRemovePoint={removeRoutePoint}
+            onSwapEnds={swapRouteEnds}
+            onUndo={undoRoutePoint}
+            onClear={clearRoute}
+          />
           <div ref={mapRef} className="map-canvas" />
         </section>
       )}
