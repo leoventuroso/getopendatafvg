@@ -1,16 +1,20 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { APP_CONFIG } from './config';
-import BaseModule from './modules/base/BaseModule';
-import CommunityModule from './modules/community/CommunityModule';
-import GreenModule from './modules/green/GreenModule';
-import OutdoorModule from './modules/outdoor/OutdoorModule';
-import RescueModule from './modules/rescue/RescueModule';
 import {
   getActiveModuleFromHash,
   getModuleLabel,
   navigateToModule,
   type AppModule
 } from './app/routes';
+
+// Each module pulls in its own maplibre layers, GeoJSON wiring and UI. Loading
+// them on demand keeps the first paint (almost always the Home/base module) from
+// downloading the other four.
+const BaseModule = lazy(() => import('./modules/base/BaseModule'));
+const CommunityModule = lazy(() => import('./modules/community/CommunityModule'));
+const GreenModule = lazy(() => import('./modules/green/GreenModule'));
+const OutdoorModule = lazy(() => import('./modules/outdoor/OutdoorModule'));
+const RescueModule = lazy(() => import('./modules/rescue/RescueModule'));
 
 export default function App() {
   const [activeModule, setActiveModule] = useState<AppModule>(getActiveModuleFromHash());
@@ -72,17 +76,19 @@ export default function App() {
         </nav>
       </header>
 
-      {activeModule === 'base' ? (
-        <BaseModule />
-      ) : activeModule === 'outdoor' ? (
-        <OutdoorModule />
-      ) : activeModule === 'rescue' ? (
-        <RescueModule />
-      ) : activeModule === 'community' ? (
-        <CommunityModule />
-      ) : (
-        <GreenModule />
-      )}
+      <Suspense fallback={<div className="module-loading" role="status">Caricamento…</div>}>
+        {activeModule === 'base' ? (
+          <BaseModule />
+        ) : activeModule === 'outdoor' ? (
+          <OutdoorModule />
+        ) : activeModule === 'rescue' ? (
+          <RescueModule />
+        ) : activeModule === 'community' ? (
+          <CommunityModule />
+        ) : (
+          <GreenModule />
+        )}
+      </Suspense>
 
       <footer className="app-footer">
         <span>

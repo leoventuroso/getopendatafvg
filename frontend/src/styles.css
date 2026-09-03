@@ -20,6 +20,15 @@ body {
   padding: 1rem;
 }
 
+.module-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  color: #587089;
+  font-size: 0.95rem;
+}
+
 .app-footer {
   display: flex;
   flex-wrap: wrap;

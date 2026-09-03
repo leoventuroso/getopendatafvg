@@ -1,7 +1,6 @@
 import * as maplibregl from 'maplibre-gl';
 import type { Map, IControl } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { jsPDF } from 'jspdf';
 import { APP_CONFIG } from '../config';
 
 // maplibre-gl-worker.mjs imports a sibling chunk (maplibre-gl-shared.mjs)
@@ -1205,7 +1204,12 @@ function formatCoord(value: number, positiveSuffix: string, negativeSuffix: stri
 // Same PDF layout as the integrated LTS map's print button (real A4 page,
 // title, scale bar, centre coordinates, attribution footer) - minus its
 // LTS-specific colour legend, which doesn't carry over to our other modules.
-function exportMapToPdf(map: Map, moduleLabel: string): void {
+async function exportMapToPdf(map: Map, moduleLabel: string): Promise<void> {
+  // jspdf (+ its lazy html2canvas) is ~150 KB gzip and only needed the moment
+  // someone actually clicks "print", so it's pulled in on demand rather than
+  // bundled into the shared map chunk that every page loads.
+  const { jsPDF } = await import('jspdf');
+
   const canvas = map.getCanvas();
   const imgData = canvas.toDataURL('image/png');
   const orientation = canvas.width >= canvas.height ? 'l' : 'p';
@@ -1287,7 +1291,14 @@ class MapPrintControl implements IControl {
       <rect x="4" y="13" width="15" height="6" rx="1" fill="#E31B1C"></rect>
       <text x="11.5" y="17.6" font-size="5.5" font-family="Arial, sans-serif" font-weight="bold" fill="white" text-anchor="middle">PDF</text>
     </svg>`;
-    button.addEventListener('click', () => exportMapToPdf(map, this.moduleLabel));
+    button.addEventListener('click', () => {
+      button.disabled = true;
+      exportMapToPdf(map, this.moduleLabel)
+        .catch((err) => console.error('PDF export failed', err))
+        .finally(() => {
+          button.disabled = false;
+        });
+    });
 
     container.appendChild(button);
     this.container = container;

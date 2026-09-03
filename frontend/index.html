@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mappa Civica - Montereale Valcellina</title>
+
+    <!-- Warm up the TLS connections to the basemap CDNs so the first tiles,
+         glyphs and terrain start downloading a few hundred ms sooner. -->
+    <link rel="preconnect" href="https://styles.maptoolkit.org" crossorigin />
+    <link rel="preconnect" href="https://tiles.maptoolkit.org" crossorigin />
+    <link rel="preconnect" href="https://fonts.maptoolkit.org" crossorigin />
+    <link rel="preconnect" href="https://icons.maptoolkit.org" crossorigin />
+    <link rel="preconnect" href="https://tiles.mapterhorn.com" crossorigin />
   </head>
   <body>
     <div id="root"></div>
