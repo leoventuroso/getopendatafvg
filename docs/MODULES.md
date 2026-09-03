@@ -50,7 +50,10 @@ Censimento dei rii a rischio esondazione, perimetri degli incendi boschivi e map
 - Perimetri degli incendi boschivi dalla Regione FVG (IRDAT, dataset 1232 "Perimetro degli incendi boschivi"), estratti dal geoservizio regionale (WFS `ZONE_RISC:V_INCENDI_CT`) filtrando per comune
 - Poligoni colorati per causa dell'innesco (dolosa / colposa / naturale da fulmine / ignota); filtri per causa
 - Clic su un'area → popup con data di inizio, durata, luogo di innesco, stato della vegetazione, vincoli, codice foglio notizie
-- Overlay opzionale: **NBR** (`data/nbr.geojson`, stesso layer del modulo Verde) come traccia satellitare di vegetazione secca/degradata/bruciata, disegnato sotto i perimetri con legenda inline
+- Overlay opzionali (toggle nella scheda, generati dallo stesso `build_fire_geojson.py`):
+  - **Classe di pericolo (SITFOR)** - `fire_danger.geojson`: zonazione regionale di pericolosità `ZONE_RISC:SITFOR_PERICOLO_INCENDI` ritagliata sul confine comunale (giallo = medio, rosso = alto); è propensione del territorio, non un allarme
+  - **Punti di innesco** - `fire_ignition_points.geojson`: `ZONE_RISC:V_INCENDI_PUNTOINIZIO` filtrati per stazione forestale e abbinati ai perimetri del comune per (SIGLA_STAZ, ANNO_FNIB, NUM_FNIB)
+  - **NBR** (`data/nbr.geojson`, stesso layer del modulo Verde): traccia satellitare di vegetazione secca/degradata/bruciata, con legenda inline
 - Caveat: archivio storico (dal 1990), non una mappa previsionale di pericolosità; precisione geometrica variabile per i rilievi più vecchi
 - CI-safe: singola GET HTTPS, nessun file locale (target `make fire`); per comuni fuori FVG la query torna vuota e la sotto-sezione resta senza dati
 

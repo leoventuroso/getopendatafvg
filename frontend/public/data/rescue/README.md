@@ -65,11 +65,20 @@ field surveys). Pulled from the regional GeoServer WFS and filtered by comune:
 python pipeline/scripts/build_fire_geojson.py     # make fire
 ```
 
-CI-safe (one HTTPS GET). Polygons carry year, locality, start date, duration,
-ignition place, vegetation state and cause; `causa_classe`
-(dolosa/colposa/naturale/ignota) drives colour and filtering. Only FVG comuni
-get data - elsewhere the query returns an empty `FeatureCollection`. It is a
-historical archive, not a predictive hazard map.
+The same script also writes two optional-overlay files from the ZONE_RISC WFS:
+
+- `fire_danger.geojson` - `SITFOR_PERICOLO_INCENDI` regional danger zonation
+  (`grado` = medio/alta), clipped to `municipalBoundary.json`.
+- `fire_ignition_points.geojson` - `V_INCENDI_PUNTOINIZIO`, filtered by the
+  comune's forest stations and matched to its perimeters by
+  (SIGLA_STAZ, ANNO_FNIB, NUM_FNIB), plus any point inside the boundary.
+
+Needs `shapely` (for the boundary clip; already in `requirements-ci.txt`).
+Polygons carry year, locality, start date, duration, ignition place, vegetation
+state and cause; `causa_classe` (dolosa/colposa/naturale/ignota) drives colour
+and filtering. Only FVG comuni get data - elsewhere the queries return empty
+`FeatureCollection`s. It is a historical archive, not a predictive hazard map;
+the SITFOR overlay is a coarse propensity zonation, not a live alert.
 
 The tab also offers an optional NBR overlay, reusing `../nbr.geojson` (the Green
 module's Normalized Burn Ratio layer) as a satellite burn/dryness backdrop.

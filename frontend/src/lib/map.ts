@@ -311,9 +311,31 @@ const FIRE_COLOR: maplibregl.ExpressionSpecification = [
   '#868e96'
 ];
 
+const FIRE_DANGER_COLOR: maplibregl.ExpressionSpecification = [
+  'match', ['get', 'grado'],
+  'alta', '#e03131',
+  'medio', '#f59f00',
+  '#adb5bd'
+];
+
 function addFireLayers(layers: maplibregl.StyleSpecification['layers']): void {
-  // NBR overlay sits under the perimeters so they stay readable. Hidden until
-  // the user toggles it on in the Incendi boschivi tab.
+  // Optional overlays, all hidden until toggled in the Incendi boschivi tab.
+  // Order matters: danger zonation and NBR sit under the perimeters.
+  layers.push({
+    id: 'fire-danger-fill',
+    type: 'fill',
+    source: 'fireDanger',
+    layout: { visibility: 'none' },
+    paint: { 'fill-color': FIRE_DANGER_COLOR, 'fill-opacity': 0.18 }
+  });
+  layers.push({
+    id: 'fire-danger-outline',
+    type: 'line',
+    source: 'fireDanger',
+    layout: { visibility: 'none' },
+    paint: { 'line-color': FIRE_DANGER_COLOR, 'line-width': 1.2, 'line-dasharray': [3, 2] }
+  });
+
   layers.push({
     id: 'nbr-fill',
     type: 'fill',
@@ -353,6 +375,20 @@ function addFireLayers(layers: maplibregl.StyleSpecification['layers']): void {
     paint: {
       'line-color': FIRE_COLOR,
       'line-width': ['case', RII_HOVER, 2.6, 1.1]
+    }
+  });
+
+  layers.push({
+    id: 'fire-ignition-points',
+    type: 'circle',
+    source: 'fireIgnition',
+    layout: { visibility: 'none' },
+    paint: {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 3, 15, 6],
+      'circle-color': '#7a1f1f',
+      'circle-stroke-color': '#ffffff',
+      'circle-stroke-width': 1.4,
+      'circle-opacity': 0.95
     }
   });
 }
@@ -454,8 +490,17 @@ function buildOverlayAdditions(options: CreateBaseMapOptions): {
       type: 'geojson',
       data: `${import.meta.env.BASE_URL}data/rescue/fire_perimeters.geojson`
     };
-    // Optional overlay in the "Incendi boschivi" tab: satellite burn/dryness
-    // index (same source as the Green module's NBR layer).
+    // Optional overlays in the "Incendi boschivi" tab.
+    sources.fireDanger = {
+      type: 'geojson',
+      data: `${import.meta.env.BASE_URL}data/rescue/fire_danger.geojson`
+    };
+    sources.fireIgnition = {
+      type: 'geojson',
+      generateId: true,
+      data: `${import.meta.env.BASE_URL}data/rescue/fire_ignition_points.geojson`
+    };
+    // NBR: satellite burn/dryness index (same source as the Green module).
     sources.nbr = {
       type: 'geojson',
       data: `${import.meta.env.BASE_URL}data/nbr.geojson`

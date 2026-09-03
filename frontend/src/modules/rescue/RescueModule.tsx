@@ -186,6 +186,8 @@ export default function RescueModule() {
   const [visibleRii, setVisibleRii] = useState<RiiFilter[]>([...RII_FILTERS]);
   const [visibleCauses, setVisibleCauses] = useState<FireCause[]>([...FIRE_CAUSES]);
   const [showBurnIndex, setShowBurnIndex] = useState(false);
+  const [showDanger, setShowDanger] = useState(false);
+  const [showIgnition, setShowIgnition] = useState(false);
   const [visibleAssets, setVisibleAssets] = useState<AssetLayer[]>([...ASSET_LAYERS]);
 
   const allowedStati = useMemo(() => visibleRii.flatMap(f => RII_STATI[f]), [visibleRii]);
@@ -257,6 +259,9 @@ export default function RescueModule() {
 
       setVisibility('nbr-fill', getLayerVisibility(fi && showBurnIndex));
       setVisibility('nbr-outline', getLayerVisibility(fi && showBurnIndex));
+      setVisibility('fire-danger-fill', getLayerVisibility(fi && showDanger));
+      setVisibility('fire-danger-outline', getLayerVisibility(fi && showDanger));
+      setVisibility('fire-ignition-points', getLayerVisibility(fi && showIgnition));
 
       setVisibility('aed-sites',             getLayerVisibility(as && visibleAssets.includes('aed')));
       setVisibility('aed-labels',            getLayerVisibility(as && visibleAssets.includes('aed')));
@@ -311,6 +316,24 @@ export default function RescueModule() {
       popup.setLngLat(event.lngLat).setHTML(firePopupHTML(feature.properties ?? {})).addTo(map);
     };
 
+    const handleDangerClick = (event: maplibregl.MapLayerMouseEvent) => {
+      const grado = String(event.features?.[0]?.properties?.grado ?? '');
+      const label = grado === 'alta' ? 'alto' : grado === 'medio' ? 'medio' : grado || 'n/d';
+      popup.setLngLat(event.lngLat).setHTML(
+        `<div class="rii-popup"><strong>Classe di pericolo incendi: ${label}</strong>` +
+        `<p class="rii-area">Zonazione regionale SITFOR (IRDAT FVG), ritagliata sul confine comunale. ` +
+        `Indica la propensione del territorio agli incendi, non un allarme in corso.</p></div>`
+      ).addTo(map);
+    };
+
+    const handleIgnitionClick = (event: maplibregl.MapLayerMouseEvent) => {
+      const p = event.features?.[0]?.properties ?? {};
+      popup.setLngLat(event.lngLat).setHTML(
+        `<div class="rii-popup"><strong>Punto di innesco${p.anno ? ` (${p.anno})` : ''}</strong>` +
+        `<p class="rii-area">Stazione forestale ${p.sigla_staz ?? ''} - foglio notizie n. ${p.num_fnib ?? ''}</p></div>`
+      ).addTo(map);
+    };
+
     const handleAssetClick = (event: maplibregl.MapLayerMouseEvent) => {
       const feature = event.features?.[0];
       if (!feature || feature.geometry.type !== 'Point') return;
@@ -325,6 +348,8 @@ export default function RescueModule() {
       map.on('click', 'rii-points', handleRiiClick);
       map.on('click', 'rii-line', handleRiiClick);
       map.on('click', 'fire-perimeters-fill', handleFireClick);
+      map.on('click', 'fire-danger-fill', handleDangerClick);
+      map.on('click', 'fire-ignition-points', handleIgnitionClick);
       for (const l of ASSET_SITE_LAYERS) map.on('click', l, handleAssetClick);
       listenersAttached = true;
     };
@@ -338,12 +363,14 @@ export default function RescueModule() {
         map.off('click', 'rii-points', handleRiiClick);
         map.off('click', 'rii-line', handleRiiClick);
         map.off('click', 'fire-perimeters-fill', handleFireClick);
+        map.off('click', 'fire-danger-fill', handleDangerClick);
+        map.off('click', 'fire-ignition-points', handleIgnitionClick);
         for (const l of ASSET_SITE_LAYERS) map.off('click', l, handleAssetClick);
       }
       clearHover();
       popup.remove();
     };
-  }, [activeGroup, allowedStati, visibleCauses, showBurnIndex, visibleAssets]);
+  }, [activeGroup, allowedStati, visibleCauses, showBurnIndex, showDanger, showIgnition, visibleAssets]);
 
   return (
     <>
@@ -435,10 +462,26 @@ export default function RescueModule() {
 
           <div className="legend-row">
             <label>
+              <input type="checkbox" checked={showDanger} onChange={() => setShowDanger(v => !v)} />
+              <span className="chip" style={{ background: '#f59f00' }} /> Classe di pericolo <span className="tech-name">(SITFOR)</span>
+            </label>
+            <label>
+              <input type="checkbox" checked={showIgnition} onChange={() => setShowIgnition(v => !v)} />
+              <span className="chip" style={{ background: '#7a1f1f' }} /> Punti di innesco
+            </label>
+          </div>
+          <div className="legend-row">
+            <label>
               <input type="checkbox" checked={showBurnIndex} onChange={() => setShowBurnIndex(v => !v)} />
               Indice satellitare vegetazione secca / bruciata <span className="tech-name">(NBR)</span>
             </label>
           </div>
+          {showDanger && (
+            <p className="section-description">
+              Zonazione regionale SITFOR (IRDAT FVG) ritagliata sul confine comunale: giallo = pericolo
+              medio, rosso = pericolo alto. È la propensione del territorio agli incendi, non un allarme.
+            </p>
+          )}
           {showBurnIndex && (
             <>
               <p className="section-description">

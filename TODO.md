@@ -16,13 +16,12 @@ Attività in sospeso: dati esterni da ricevere, rilievi sul campo, integrazioni 
 - **DAE**: i punti `geocoded: true` in `aed_comune.geojson` hanno posizione dall'indirizzo - verificarli sul posto o rimpiazzarli con i nodi OSM man mano che si rifiniscono (la dedup a ~60 m li assorbe). Aggiungere dove noti `access`, `opening_hours`, `defibrillator:location`, `operator`.
 
 ### Incendi boschivi - estensioni possibili (stesso WFS IRDAT FVG)
-- `ZONE_RISC:SITFOR_PERICOLO_INCENDI` - zonazione regionale di pericolosità (`GRADOPERICOLOSITA` MEDIO/ALTA): possibile overlay di sfondo "classe di pericolo".
-- `ZONE_RISC:V_INCENDI_PUNTOINIZIO` - punti di innesco (senza attributo COMUNE, serve filtro bbox).
-- `ZONE_RISC:SUPERFICIE_BOSCATA_BRUCIATA` / `_PASCOLO` / `_NON_BOSCATA_BRUCIATA` - superficie bruciata per copertura.
+- `ZONE_RISC:SUPERFICIE_BOSCATA_BRUCIATA` / `_PASCOLO` / `_NON_BOSCATA_BRUCIATA` - superficie bruciata per copertura del suolo (più granulare dei perimetri; ora non usata).
 
-### Widget meteo/idrometrico ARPA FVG
-- Pannello con dati real-time da API pubblica ARPA FVG: livello idrometrico del Torrente Cellina (stazione di Montereale), precipitazioni ultime 24h, stato allerta.
-- Fetch client-side, nessuna pipeline. Verificare l'endpoint ARPA FVG prima di implementare.
+### Widget meteo/idrometrico ARPA FVG - serve un feed lato server
+- Obiettivo: pannello con precipitazioni ultime 24h, livello idrometrico del Torrente Cellina, stato allerta.
+- Blocco: OSMER (`dev.meteo.fvg.it/xml/stazioni/<COD>.xml`) **non manda header CORS**, quindi un `fetch` dal sito statico è bloccato dal browser; inoltre OSMER ha solo dati meteo (niente livello idrometrico) e la stazione più vicina è Piancavallo (montagna, ~10 km), non rappresentativa dell'abitato.
+- Opzioni: (a) workflow GitHub Actions schedulato (es. ogni 1-2h) che interroga ARPA/OSMER lato CI e committa un piccolo `arpa.json` che il widget legge; (b) micro-proxy serverless (Cloudflare Worker) che aggiunge CORS. Il dato idrometrico va cercato nella rete idro della Protezione Civile FVG (non OSMER).
 
 ---
 
