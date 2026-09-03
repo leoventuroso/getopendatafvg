@@ -26,12 +26,12 @@ A guided journey rather than an all-at-once map: opening the module shows only t
 **Percorsi in bici** (3 sub-tabs, each with its own icon and collapsible FAQ):
 - **Stress da traffico:** live iframe embed of [stressinbici.it](https://stressinbici.it) (the [LTSBikePlan](https://github.com/dclfbk/LTSBikePlan) project) rather than a locally computed layer — `area=italia` auto-swaps to the configured comune's own data based on `APP_CONFIG.municipality.ltsEmbedView` (lat/lon/zoom), no comune slug needed
 - **Infrastrutture ciclabili:** cyclepaths, bike parking, rental, repair stations, e-bike charging
-- **Pianifica percorso:** cycling route planner with elevation profile
+- **Pianifica percorso:** route planner over the bike network. Draggable start/end markers + waypoints (click to add, drag to move, list with per-point remove and A/B swap). Shows length, estimated time for **a piedi / bici / bici elettrica** on the same route, elevation profile, and a road-type (`highway`/`surface`) breakdown. Download as GeoJSON / GPX / KML / CSV. Slope/grade still read from the precomputed pipeline fields.
 
 **Sentieri** (3 sub-tabs):
 - **Sentieri e punti acqua:** CAI hiking trails and MTB routes, drinking water fountains, mountain springs, and picnic areas, plus **natural shade corridors** — trail and road segments colored by vegetation canopy coverage (green gradient from partial to full shade), derived from Sentinel-2 NDVI
 - **Pendenza:** slope classification for trails (kept only here — cycling infrastructure has no separate slope legend, since LTS already captures cycling stress)
-- **Pianifica percorso:** walking route planner with elevation profile
+- **Pianifica percorso:** same planner over the walking network (roads + trails); same features (3 travel-mode times, road-type breakdown, elevation profile, GeoJSON/GPX/KML/CSV export, draggable markers)
 
 Every legend/layer group (LTS levels, bike infrastructure categories, slope classes) has plain-language explanations plus a collapsible "Cos'è e come è calcolato?" FAQ.
 
@@ -42,15 +42,15 @@ Censimento dei rii a rischio esondazione, perimetri degli incendi boschivi e map
 **Rii a rischio esondazione** — `frontend/public/data/rescue/rii.geojson`, generato da `pipeline/scripts/build_rii_geojson.py`:
 - Un rio per feature, dal Censimento RII del Gruppo Comunale di Protezione Civile (rilievo 2013, ri-rilievo parziale 2024); ogni rio ha un marcatore `Point` (bersaglio del clic) e, dove OpenStreetMap mappa il corso d'acqua, anche il `LineString` del tracciato reale
 - Colore di linea/marcatore per attualità del dato (rilievo 2024 / dati fermi al 2013 / 2007 / solo foto); punti sbiaditi = posizione solo indicativa
-- Filtri per vintage del rilievo; clic su marcatore o linea apre un popup sulla mappa (dimensionato sul viewport, con scroll interno) con foto, criticità, punti critici, interventi proposti, eventi recenti e note sull'attendibilità
+- Filtri per vintage del rilievo; clic su marcatore o linea apre un popup sulla mappa (dimensionato sul viewport, con scroll interno) con foto, criticità, punti critici, interventi proposti ed eventi recenti
 - A visible in-app caveat banner ricorda che è una ricognizione volontaria, non uno studio tecnico né un riferimento per decisioni in caso di allerta
-- FAQ: storia del censimento, precisione delle posizioni, il rio senza coordinate escluso dalla mappa, l'ambiguità dei toponimi "Cao Malnisio"/"Bala Busa"
+- FAQ: storia del censimento, uso dei tracciati OpenStreetMap, il rio senza coordinate escluso dalla mappa, e il nome del documento («Censimento RII») in gestione alla Protezione Civile
 
 **Incendi boschivi** — `frontend/public/data/rescue/fire_perimeters.geojson`, generato da `pipeline/scripts/build_fire_geojson.py`:
 - Perimetri degli incendi boschivi dalla Regione FVG (IRDAT, dataset 1232 "Perimetro degli incendi boschivi"), estratti dal geoservizio regionale (WFS `ZONE_RISC:V_INCENDI_CT`) filtrando per comune
 - Poligoni colorati per causa dell'innesco (dolosa / colposa / naturale da fulmine / ignota); filtri per causa
 - Clic su un'area → popup con data di inizio, durata, luogo di innesco, stato della vegetazione, vincoli, codice foglio notizie
-- Overlay opzionale: **NBR** (`data/nbr.geojson`, stesso layer del modulo Green) come traccia satellitare di vegetazione secca/degradata/bruciata, disegnato sotto i perimetri con legenda inline
+- Overlay opzionale: **NBR** (`data/nbr.geojson`, stesso layer del modulo Verde) come traccia satellitare di vegetazione secca/degradata/bruciata, disegnato sotto i perimetri con legenda inline
 - Caveat: archivio storico (dal 1990), non una mappa previsionale di pericolosità; precisione geometrica variabile per i rilievi più vecchi
 - CI-safe: singola GET HTTPS, nessun file locale (target `make fire`); per comuni fuori FVG la query torna vuota e la sotto-sezione resta senza dati
 
@@ -65,7 +65,7 @@ Censimento dei rii a rischio esondazione, perimetri degli incendi boschivi e map
 
 **Future scope:** modelli predittivi localizzati per allagamenti e accumulo acque meteoriche, integrabili con dati pluviometrici regionali.
 
-## 3. Modulo Green
+## 3. Modulo Verde
 
 Satellite-based environmental monitoring derived from Sentinel-2 L2A and Landsat 8/9 imagery, processed at 10-30 m resolution and clipped to the municipal boundary. Presented as 4 tabs, one indicator at a time, each with an icon, plain-language label, and a collapsible "Cos'è e come è calcolato?" FAQ:
 
@@ -90,7 +90,7 @@ A lightweight, serverless reporting interface inspired by FixMyStreet and Stadt 
 - **Photo attachment:** client-side image resize (canvas, max 1024 px, JPEG 75%) with thumbnail preview; photo filename included in the email body as a reminder to attach manually
 - **Map markers:** white circle with category icon (Bootstrap Icons), hover popup showing title, category, and photo thumbnail
 - **Category filters:** chip bar to filter the report list by category
-- **Local persistence:** pending reports stored in `localStorage` — visible immediately on the map after submission, survive page refresh
+- **Local persistence:** pending reports stored in `localStorage` — visible immediately on the map after submission, survive page refresh. Each own report can be deleted from its expanded detail ("Elimina segnalazione"), which also drops its vote state. There is no shared backend, so reports are per-device: one browser does not see another's.
 - **Submission via `mailto:`:** pre-filled email to the municipality (subject + body with coordinates and description); no server required
 - **Sidebar sync:** clicking a map marker selects and expands the corresponding sidebar item with smooth scroll
 - **Upvoting:** each report has a "thumbs up" button with vote count; votes persist in `localStorage` (one vote per report per browser); clicking again removes the vote

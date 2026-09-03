@@ -28,8 +28,7 @@ duplicate. `geocoded: true` / `geo_precision` mark points placed from an address
 
 The "Rii a rischio" tab. A comune-specific volunteer field survey (Censimento
 RII) by the Gruppo Comunale di Protezione Civile — one point per rio, with a
-representative photo, the described criticality, proposed interventions and a
-reliability note. **Not** a technical study and **not** a live feed.
+representative photo, the described criticality and proposed interventions. **Not** a technical study and **not** a live feed.
 
 Rebuilt only when a new source package is delivered:
 
@@ -49,7 +48,7 @@ Every rio has a `Point` marker feature (the dot people click); rii that OSM
 maps also carry a `LineString` for spatial context, sharing the feature id.
 Marker/line colour encodes how current the survey is (`stato`); faded points
 have only an approximate position. Clicking a rio opens a map popup with its
-card (photo, criticality, proposed works, reliability note). Rii without any
+card (photo, criticality, proposed works). Rii without any
 usable location are skipped (mentioned in the module FAQ instead).
 
 For a comune without this data, leave `rii.geojson` as an empty

@@ -1172,7 +1172,7 @@ const MODULE_PRINT_LABELS: Record<MapModule, string> = {
   base: 'Home',
   outdoor: 'Outdoor',
   rescue: 'Soccorso ed Emergenza',
-  green: 'Green',
+  green: 'Verde',
   community: 'Segnala'
 };
 

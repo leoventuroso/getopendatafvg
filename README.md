@@ -53,7 +53,7 @@ Other frontend commands: `npm run build` (production build, `tsc -b && vite buil
 - **Home**: municipal overview map, key indicators (demographics, services, risk), frazioni list
 - **Outdoor**: cycling (traffic-stress map, bike infrastructure, route planner) and hiking (trails, slope, shade corridors)
 - **Soccorso ed Emergenza**: flood-prone streams census (Censimento RII), forest fire perimeters (IRDAT FVG), and emergency assets (defibrillators, hydrants, HEMS, assembly points)
-- **Green**: satellite-derived vegetation health, natural shade, and surface temperature
+- **Verde** (Green): satellite-derived vegetation health, natural shade, and surface temperature
 - **Segnala**: citizen reporting, place a pin, describe the issue, submit via a pre-filled email to the municipality
 
 Full feature breakdown, data sources per layer, and shared map controls: [docs/MODULES.md](docs/MODULES.md).

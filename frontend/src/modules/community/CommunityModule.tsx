@@ -181,6 +181,27 @@ export default function CommunityModule() {
     saveVotedIds(newVotedIds);
   }
 
+  function deleteReport(reportId: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!window.confirm('Eliminare questa segnalazione? Verrà rimossa solo da questo dispositivo.')) return;
+    setReports((prev) => {
+      const updated = prev.filter((r) => r.id !== reportId);
+      savePending(updated);
+      return updated;
+    });
+    setSelectedReport((prev) => (prev?.id === reportId ? null : prev));
+    if (votes[reportId] !== undefined || votedIds.has(reportId)) {
+      const newVotes = { ...votes };
+      delete newVotes[reportId];
+      const newVotedIds = new Set(votedIds);
+      newVotedIds.delete(reportId);
+      setVotes(newVotes);
+      setVotedIds(newVotedIds);
+      saveVotes(newVotes);
+      saveVotedIds(newVotedIds);
+    }
+  }
+
   function startNewReport() {
     setView('form');
     setSelectedReport(null);
@@ -284,6 +305,7 @@ export default function CommunityModule() {
                 }
               }}
               onVote={handleVote}
+              onDelete={deleteReport}
             />
           </>
         ) : (

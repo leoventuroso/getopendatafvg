@@ -2,7 +2,17 @@ import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import type { Map } from 'maplibre-gl';
 import { createBaseMap, onStyleReady } from '../../lib/map';
-import { buildRouteSummary, loadRoutingGraphForMode, type RouteSummary, type RoutingInputPoint, type RoutingMode } from '../../lib/routing';
+import {
+  buildRouteSummary,
+  loadRoutingGraphForMode,
+  routeToGeoJSON,
+  routeToGPX,
+  routeToKML,
+  routeToCSV,
+  type RouteSummary,
+  type RoutingInputPoint,
+  type RoutingMode
+} from '../../lib/routing';
 import Faq from '../../components/Faq';
 import { APP_CONFIG } from '../../config';
 import {
@@ -243,6 +253,31 @@ function formatTime(timeMin: number): string {
   return `${hours} h ${minutes} min`;
 }
 
+function downloadTextFile(filename: string, mimeType: string, content: string): void {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+type RouteExportFormat = 'geojson' | 'gpx' | 'kml' | 'csv';
+
+function exportRoute(summary: RouteSummary, format: RouteExportFormat): void {
+  const map: Record<RouteExportFormat, [string, string, string]> = {
+    geojson: ['percorso.geojson', 'application/geo+json', routeToGeoJSON(summary)],
+    gpx: ['percorso.gpx', 'application/gpx+xml', routeToGPX(summary)],
+    kml: ['percorso.kml', 'application/vnd.google-earth.kml+xml', routeToKML(summary)],
+    csv: ['percorso-altimetria.csv', 'text/csv', routeToCSV(summary)]
+  };
+  const [name, mime, content] = map[format];
+  downloadTextFile(name, mime, content);
+}
+
 function CyclabilityTabs({
   activeSubsection,
   onSelectSubsection
@@ -441,52 +476,107 @@ function SlopeLegend({
 function RoutingPanel({
   enabled,
   mode,
-  pointCount,
+  points,
   summary,
   status,
   onToggleEnabled,
   onUndo,
-  onClear
+  onClear,
+  onRemovePoint,
+  onSwapEnds
 }: {
   enabled: boolean;
   mode: RoutingMode;
-  pointCount: number;
+  points: RouteStatePoint[];
   summary: RouteSummary | null;
   status: string;
   onToggleEnabled: () => void;
   onUndo: () => void;
   onClear: () => void;
+  onRemovePoint: (id: string) => void;
+  onSwapEnds: () => void;
 }) {
+  const pointCount = points.length;
+  const pointLabel = (index: number): string =>
+    index === 0 ? 'Partenza' : index === pointCount - 1 ? 'Arrivo' : `Tappa ${index}`;
+
   return (
     <section className="legend-panel routing-panel" aria-label="Calcolo percorso">
-      <strong>Routing</strong>
+      <strong>Pianifica percorso</strong>
       <div className="legend-row routing-row">
         <button type="button" className={enabled ? 'module-link active' : 'module-link'} onClick={onToggleEnabled}>
-          {enabled ? 'Routing attivo' : 'Attiva routing'}
+          {enabled ? 'Pianificazione attiva' : 'Attiva pianificazione'}
         </button>
-        <button type="button" onClick={onUndo} disabled={pointCount === 0}>
-          Indietro
-        </button>
-        <button type="button" onClick={onClear} disabled={pointCount === 0}>
-          Pulisci
-        </button>
+        <button type="button" onClick={onSwapEnds} disabled={pointCount < 2}>Inverti</button>
+        <button type="button" onClick={onUndo} disabled={pointCount === 0}>Indietro</button>
+        <button type="button" onClick={onClear} disabled={pointCount === 0}>Pulisci</button>
       </div>
       <p className="section-description">
         {enabled
-          ? `Clicca sulla mappa per aggiungere partenza, arrivo e punti intermedi. Modalita: ${mode === 'biking' ? 'bici' : 'piedi'}.`
-          : 'Attiva il routing per calcolare un percorso cliccando sulla mappa.'}
+          ? `Clicca sulla mappa per porre partenza, arrivo e tappe; trascina i pallini per spostarli. Rete: ${mode === 'biking' ? 'strade e ciclabili' : 'strade e sentieri'}.`
+          : 'Attiva la pianificazione, poi clicca sulla mappa per porre i punti.'}
       </p>
+
+      {pointCount > 0 && (
+        <ul className="routing-points">
+          {points.map((point, index) => (
+            <li key={point.id}>
+              <span className={`routing-point-dot routing-point-dot--${index === 0 ? 'start' : index === pointCount - 1 ? 'end' : 'via'}`} aria-hidden="true" />
+              <span className="routing-point-name">{pointLabel(index)}</span>
+              <span className="routing-point-coord">{point.lat.toFixed(4)}, {point.lng.toFixed(4)}</span>
+              <button type="button" className="routing-point-remove" title="Rimuovi" onClick={() => onRemovePoint(point.id)}>
+                <i className="bi bi-x-lg" aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <div className="routing-stats">
-        <span className="routing-stat">Punti: {pointCount}</span>
         <span className="routing-stat">{status}</span>
-        {summary ? (
-          <span className="routing-stat">
-            {formatDistance(summary.distanceKm)} · {formatTime(summary.timeMin)}
-          </span>
-        ) : null}
-        {summary ? <span className="routing-stat">+{Math.round(summary.elevationGainM)} m</span> : null}
-        {summary ? <span className="routing-stat">-{Math.round(summary.elevationLossM)} m</span> : null}
+        {summary && <span className="routing-stat">{formatDistance(summary.distanceKm)}</span>}
+        {summary && <span className="routing-stat">+{Math.round(summary.elevationGainM)} m</span>}
+        {summary && <span className="routing-stat">-{Math.round(summary.elevationLossM)} m</span>}
       </div>
+
+      {summary && (
+        <>
+          <div className="routing-times">
+            <div className="routing-time"><i className="bi bi-person-walking" aria-hidden="true" /> {formatTime(summary.times.walking)}<small>a piedi</small></div>
+            <div className="routing-time"><i className="bi bi-bicycle" aria-hidden="true" /> {formatTime(summary.times.biking)}<small>bici</small></div>
+            <div className="routing-time"><i className="bi bi-bicycle" aria-hidden="true" /> {formatTime(summary.times.ebike)}<small>bici elettrica</small></div>
+          </div>
+
+          {summary.surfaceBreakdown.length > 0 && (
+            <div className="routing-surface">
+              <span className="routing-surface-title">Tipologia di strada</span>
+              <div className="routing-surface-bar">
+                {summary.surfaceBreakdown.map((run) => (
+                  <span
+                    key={run.label}
+                    className="routing-surface-seg"
+                    style={{ width: `${(run.km / summary.distanceKm) * 100}%` }}
+                    title={`${run.label}: ${run.km.toFixed(2)} km`}
+                  />
+                ))}
+              </div>
+              <ul className="routing-surface-list">
+                {summary.surfaceBreakdown.map((run) => (
+                  <li key={run.label}><span>{run.label}</span><span>{run.km.toFixed(run.km >= 10 ? 1 : 2)} km</span></li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="routing-downloads">
+            <span className="routing-downloads-title">Scarica</span>
+            <button type="button" onClick={() => exportRoute(summary, 'geojson')}>GeoJSON</button>
+            <button type="button" onClick={() => exportRoute(summary, 'gpx')}>GPX</button>
+            <button type="button" onClick={() => exportRoute(summary, 'kml')}>KML</button>
+            <button type="button" onClick={() => exportRoute(summary, 'csv')}>CSV</button>
+          </div>
+        </>
+      )}
     </section>
   );
 }
@@ -601,6 +691,7 @@ function LtsEmbed() {
 export default function OutdoorModule() {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<Map | null>(null);
+  const routingMarkersRef = useRef(new globalThis.Map<string, maplibregl.Marker>());
   const [activeSection, setActiveSection] = useState<OutdoorSection | null>(
     getActiveOutdoorSectionFromHash()
   );
@@ -691,6 +782,14 @@ export default function OutdoorModule() {
     setRoutingPoints((previous) => previous.slice(0, -1));
   }
 
+  function removeRoutePoint(id: string): void {
+    setRoutingPoints((previous) => previous.filter((point) => point.id !== id));
+  }
+
+  function swapRouteEnds(): void {
+    setRoutingPoints((previous) => (previous.length < 2 ? previous : [...previous].reverse()));
+  }
+
   useEffect(() => {
     clearRoute();
   }, [activeSection, activeCyclabilitySubsection, activeTrailsSubsection]);
@@ -779,7 +878,8 @@ export default function OutdoorModule() {
       return;
     }
 
-    const routeFeatures = routeSummary ? [routeSummary.line, ...routeSummary.points.features] : [];
+    // Line only: the start/end/waypoints are interactive draggable markers now.
+    const routeFeatures = routeSummary ? [routeSummary.line] : [];
 
     const applyData = () => {
       const source = map.getSource('route') as maplibregl.GeoJSONSource | undefined;
@@ -790,6 +890,36 @@ export default function OutdoorModule() {
 
     return onStyleReady(map, applyData);
   }, [routeSummary, activeSection, activeCyclabilitySubsection, activeTrailsSubsection]);
+
+  // Draggable A / B / waypoint markers. Small N, so the whole set is rebuilt
+  // whenever any point changes; dragging one updates it and re-runs the route.
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const markers = routingMarkersRef.current;
+    const clearAll = () => {
+      for (const marker of markers.values()) marker.remove();
+      markers.clear();
+    };
+    clearAll();
+
+    if (!map || !isRoutingActive) return clearAll;
+
+    routingPoints.forEach((point, index) => {
+      const color = index === 0 ? '#2f9e44' : index === routingPoints.length - 1 ? '#e03131' : '#f59f00';
+      const marker = new maplibregl.Marker({ color, draggable: true })
+        .setLngLat([point.lng, point.lat])
+        .addTo(map);
+      marker.on('dragend', () => {
+        const { lng, lat } = marker.getLngLat();
+        setRoutingPoints((previous) =>
+          previous.map((entry) => (entry.id === point.id ? { ...entry, lng, lat } : entry))
+        );
+      });
+      markers.set(point.id, marker);
+    });
+
+    return clearAll;
+  }, [routingPoints, isRoutingActive]);
 
   useEffect(() => {
     const onHashChange = () => {
@@ -1034,12 +1164,14 @@ export default function OutdoorModule() {
         <RoutingPanel
           enabled={routingEnabled}
           mode={routingMode}
-          pointCount={routingPoints.length}
+          points={routingPoints}
           summary={routeSummary}
           status={routeStatus}
           onToggleEnabled={() => setRoutingEnabled((previous) => !previous)}
           onUndo={undoRoutePoint}
           onClear={clearRoute}
+          onRemovePoint={removeRoutePoint}
+          onSwapEnds={swapRouteEnds}
         />
       )}
 

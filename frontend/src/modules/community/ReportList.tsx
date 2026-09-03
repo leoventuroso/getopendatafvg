@@ -8,9 +8,10 @@ type Props = {
   votedIds: Set<string>;
   onSelect: (report: CommunityReport) => void;
   onVote: (reportId: string, e: React.MouseEvent) => void;
+  onDelete: (reportId: string, e: React.MouseEvent) => void;
 };
 
-export default function ReportList({ reports, selectedReport, votes, votedIds, onSelect, onVote }: Props) {
+export default function ReportList({ reports, selectedReport, votes, votedIds, onSelect, onVote, onDelete }: Props) {
   if (reports.length === 0) {
     return (
       <p className="community-empty">
@@ -61,6 +62,15 @@ export default function ReportList({ reports, selectedReport, votes, votedIds, o
               <p className="community-report-coords">
                 {r.lat.toFixed(5)}, {r.lon.toFixed(5)}
               </p>
+              {r.pending && (
+                <button
+                  type="button"
+                  className="community-report-delete"
+                  onClick={e => onDelete(r.id, e)}
+                >
+                  <i className="bi bi-trash" aria-hidden="true" /> Elimina segnalazione
+                </button>
+              )}
             </div>
           )}
         </li>

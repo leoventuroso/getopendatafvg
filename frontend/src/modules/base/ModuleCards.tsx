@@ -15,7 +15,7 @@ const MODULES = [
   },
   {
     id: 'green' as const,
-    label: 'Green',
+    label: 'Verde',
     icon: 'bi-tree',
     description: 'NDVI, corridoi di ombra, NBR e temperatura superficiale del territorio',
   },

@@ -97,7 +97,7 @@ export function getModuleLabel(module: AppModule): string {
   }
 
   if (module === 'green') {
-    return 'Modulo Green';
+    return 'Modulo Verde';
   }
 
   return 'Segnala';

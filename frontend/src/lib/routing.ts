@@ -8,14 +8,28 @@ export type RoutingInputPoint = {
   lat: number;
 };
 
+export type RouteMode = 'walking' | 'biking' | 'ebike';
+
+export type SurfaceRun = {
+  label: string;
+  km: number;
+};
+
 export type RouteSummary = {
   distanceKm: number;
   timeMin: number;
+  // Estimated time on the SAME route geometry for each travel mode, so the
+  // planner can show piedi / bici / bici elettrica side by side.
+  times: Record<RouteMode, number>;
   elevationGainM: number;
   elevationLossM: number;
+  // Route length grouped by road/path type (OSM highway, plus surface for
+  // trails), most-used first.
+  surfaceBreakdown: SurfaceRun[];
   profile: Array<{
     distanceKm: number;
     elevationM: number;
+    grade: number;
   }>;
   line: {
     type: 'Feature';
@@ -47,6 +61,8 @@ type TransportFeature = {
     lts?: number | string;
     slope?: number | string;
     grade?: number | string;
+    highway?: string | null;
+    surface?: string | null;
   };
   geometry?: {
     type?: string;
@@ -62,6 +78,8 @@ type CombinedFeature = {
     lts?: number | string;
     slope?: number | string;
     grade?: number | string;
+    highway?: string | null;
+    surface?: string | null;
   };
   geometry?: {
     type?: string;
@@ -77,6 +95,8 @@ type GraphEdge = {
   lts: number;
   slope: number;
   grade: number;
+  highway?: string;
+  surface?: string;
 };
 
 type GraphNode = {
@@ -128,7 +148,7 @@ function getTraversalGrade(edge: GraphEdge, fromNode: NodeId): number {
   return edge.from === fromNode ? edge.grade : -edge.grade;
 }
 
-function estimateSpeedKmh(edge: GraphEdge, mode: RoutingMode, fromNode: NodeId): number {
+function speedKmhForMode(edge: GraphEdge, mode: RouteMode, fromNode: NodeId): number {
   const grade = getTraversalGrade(edge, fromNode) / 100;
 
   if (mode === 'walking') {
@@ -136,16 +156,21 @@ function estimateSpeedKmh(edge: GraphEdge, mode: RoutingMode, fromNode: NodeId):
     return clamp(6 * Math.exp(-3.5 * Math.abs(grade + 0.05)), 1.0, 6.0);
   }
 
-  const baseSpeed = 16;
-  const uphillFactor = Math.exp(-5.0 * Math.max(0, grade));
+  // Bike: an e-bike's motor flattens climbs, so it loses far less speed
+  // uphill and cruises a little faster on the flat; both share descent
+  // behaviour and the LTS (traffic-stress) penalty.
+  const flatSpeed = mode === 'ebike' ? 19 : 16;
+  const climbDecay = mode === 'ebike' ? 1.6 : 5.0;
+  const uphillFactor = Math.exp(-climbDecay * Math.max(0, grade));
   const downhillFactor = grade < 0 ? 1 + Math.min(0.5, Math.abs(grade) * 1.5) : 1;
   const ltsPenalty = 1 + Math.max(0, edge.lts - 1) * 0.25;
+  const cap = mode === 'ebike' ? 25 : 28;
 
-  return clamp((baseSpeed * uphillFactor * downhillFactor) / ltsPenalty, 3.0, 28.0);
+  return clamp((flatSpeed * uphillFactor * downhillFactor) / ltsPenalty, 3.0, cap);
 }
 
-function edgeTravelTimeMinutes(edge: GraphEdge, mode: RoutingMode, fromNode: NodeId): number {
-  const speedKmh = estimateSpeedKmh(edge, mode, fromNode);
+function edgeTravelTimeMinutes(edge: GraphEdge, mode: RouteMode, fromNode: NodeId): number {
+  const speedKmh = speedKmhForMode(edge, mode, fromNode);
   const distanceKm = edge.length / 1000;
   return distanceKm > 0 ? (distanceKm / speedKmh) * 60 : 0;
 }
@@ -264,7 +289,9 @@ export function buildTransportRoutingGraph(features: TransportFeature[]): Routin
       length,
       lts: toNumber(properties.lts, 2),
       slope: toNumber(properties.slope, 0),
-      grade: toNumber(properties.grade, 0)
+      grade: toNumber(properties.grade, 0),
+      highway: properties.highway ? String(properties.highway) : undefined,
+      surface: properties.surface ? String(properties.surface) : undefined
     };
 
     const edgeIndex = edges.push(edge) - 1;
@@ -305,7 +332,7 @@ function addSegmentEdge(
   graph: { nodes: Map<NodeId, GraphNode>; edges: GraphEdge[] },
   fromCoord: Coord,
   toCoord: Coord,
-  properties: { lts?: number; slope?: number; grade?: number }
+  properties: { lts?: number; slope?: number; grade?: number; highway?: string; surface?: string }
 ): void {
   const from = coordKey(fromCoord, 6);
   const to = coordKey(toCoord, 6);
@@ -322,7 +349,9 @@ function addSegmentEdge(
     length,
     lts: properties.lts ?? 1,
     slope: properties.slope ?? 0,
-    grade: properties.grade ?? 0
+    grade: properties.grade ?? 0,
+    highway: properties.highway,
+    surface: properties.surface
   };
 
   const edgeIndex = graph.edges.push(edge) - 1;
@@ -352,9 +381,11 @@ function buildWalkingRoutingGraph(features: CombinedFeature[]): RoutingGraph {
     const lts = toNumber(properties.lts, 1);
     const slope = toNumber(properties.slope, 0);
     const grade = toNumber(properties.grade, 0);
+    const highway = properties.highway ? String(properties.highway) : undefined;
+    const surface = properties.surface ? String(properties.surface) : undefined;
 
     for (let index = 1; index < coords.length; index += 1) {
-      addSegmentEdge({ nodes, edges }, coords[index - 1], coords[index], { lts, slope, grade });
+      addSegmentEdge({ nodes, edges }, coords[index - 1], coords[index], { lts, slope, grade, highway, surface });
     }
   }
 
@@ -529,6 +560,29 @@ function appendSegmentCoordinates(
   return merged;
 }
 
+const SURFACE_LABELS: Record<string, string> = {
+  asphalt: 'Asfalto', paved: 'Asfalto', concrete: 'Asfalto', paving_stones: 'Pavimentazione',
+  sett: 'Pavé', cobblestone: 'Pavé',
+  unpaved: 'Sterrato', compacted: 'Sterrato', fine_gravel: 'Sterrato', gravel: 'Ghiaia',
+  ground: 'Sterrato', dirt: 'Sterrato', earth: 'Sterrato', grass: 'Prato', sand: 'Sabbia'
+};
+
+const HIGHWAY_LABELS: Record<string, string> = {
+  cycleway: 'Pista ciclabile', path: 'Sentiero', track: 'Strada bianca',
+  footway: 'Percorso pedonale', pedestrian: 'Area pedonale', steps: 'Scalini',
+  residential: 'Strada urbana', living_street: 'Strada urbana', service: 'Strada di servizio',
+  unclassified: 'Strada minore', tertiary: 'Strada extraurbana', secondary: 'Strada extraurbana',
+  primary: 'Strada principale', trunk: 'Strada principale'
+};
+
+function surfaceRunLabel(edge: GraphEdge): string {
+  if (edge.surface && SURFACE_LABELS[edge.surface]) return SURFACE_LABELS[edge.surface];
+  if (edge.highway && HIGHWAY_LABELS[edge.highway]) return HIGHWAY_LABELS[edge.highway];
+  if (edge.surface) return edge.surface.charAt(0).toUpperCase() + edge.surface.slice(1).replace(/_/g, ' ');
+  if (edge.highway) return edge.highway.charAt(0).toUpperCase() + edge.highway.slice(1).replace(/_/g, ' ');
+  return 'Non classificato';
+}
+
 export function buildRouteSummary(
   graph: RoutingGraph,
   points: RoutingInputPoint[],
@@ -551,14 +605,16 @@ export function buildRouteSummary(
   let totalElevationGainM = 0;
   let totalElevationLossM = 0;
   const routeCoordinates: Coord[] = [];
-  const profile: Array<{ distanceKm: number; elevationM: number }> = [];
+  const profile: Array<{ distanceKm: number; elevationM: number; grade: number }> = [];
   let profileDistanceMeters = 0;
   let profileElevationM = 0;
+  const timesMin: Record<RouteMode, number> = { walking: 0, biking: 0, ebike: 0 };
+  const surfaceMeters = new Map<string, number>();
 
-  const appendProfilePoint = (distanceMeters: number, elevationMeters: number): void => {
+  const appendProfilePoint = (distanceMeters: number, elevationMeters: number, grade: number): void => {
     const last = profile[profile.length - 1];
     if (!last || last.distanceKm !== distanceMeters / 1000 || last.elevationM !== elevationMeters) {
-      profile.push({ distanceKm: distanceMeters / 1000, elevationM: elevationMeters });
+      profile.push({ distanceKm: distanceMeters / 1000, elevationM: elevationMeters, grade });
     }
   };
 
@@ -582,9 +638,15 @@ export function buildRouteSummary(
 
       totalDistanceMeters += edge.length;
       totalTimeMin += edgeTravelTimeMinutes(edge, mode, fromNode);
+      timesMin.walking += edgeTravelTimeMinutes(edge, 'walking', fromNode);
+      timesMin.biking += edgeTravelTimeMinutes(edge, 'biking', fromNode);
+      timesMin.ebike += edgeTravelTimeMinutes(edge, 'ebike', fromNode);
+
+      const runLabel = surfaceRunLabel(edge);
+      surfaceMeters.set(runLabel, (surfaceMeters.get(runLabel) ?? 0) + edge.length);
 
        if (profile.length === 0) {
-        appendProfilePoint(profileDistanceMeters, profileElevationM);
+        appendProfilePoint(profileDistanceMeters, profileElevationM, traversedGrade);
       }
 
       let edgeAccumulatedGeometryMeters = 0;
@@ -598,7 +660,7 @@ export function buildRouteSummary(
         const progress = Math.min(1, edgeAccumulatedGeometryMeters / edgeGeometryLength);
         const distanceOnRouteMeters = profileDistanceMeters + edge.length * progress;
         const elevationOnRouteM = profileElevationM + edgeElevationDeltaM * progress;
-        appendProfilePoint(distanceOnRouteMeters, elevationOnRouteM);
+        appendProfilePoint(distanceOnRouteMeters, elevationOnRouteM, traversedGrade);
       }
 
       profileDistanceMeters += edge.length;
@@ -650,11 +712,17 @@ export function buildRouteSummary(
     };
   });
 
+  const surfaceBreakdown: SurfaceRun[] = Array.from(surfaceMeters.entries())
+    .map(([label, meters]) => ({ label, km: meters / 1000 }))
+    .sort((a, b) => b.km - a.km);
+
   return {
     distanceKm,
     timeMin,
+    times: timesMin,
     elevationGainM: totalElevationGainM,
     elevationLossM: totalElevationLossM,
+    surfaceBreakdown,
     profile,
     line,
     points: {
@@ -662,4 +730,89 @@ export function buildRouteSummary(
       features: pointFeatures
     }
   };
+}
+
+// --- Route export -------------------------------------------------------
+// Turn a computed route into a downloadable file. GeoJSON keeps the summary
+// numbers as properties; GPX/KML are the line as a track; CSV is the
+// elevation/grade profile, one row per sampled point.
+
+function xmlEscape(value: string): string {
+  return value
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
+export function routeToGeoJSON(summary: RouteSummary): string {
+  const fc = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        geometry: summary.line.geometry,
+        properties: {
+          distanza_km: Number(summary.distanceKm.toFixed(3)),
+          tempo_piedi_min: Math.round(summary.times.walking),
+          tempo_bici_min: Math.round(summary.times.biking),
+          tempo_ebike_min: Math.round(summary.times.ebike),
+          dislivello_positivo_m: Math.round(summary.elevationGainM),
+          dislivello_negativo_m: Math.round(summary.elevationLossM),
+          fondo: summary.surfaceBreakdown.map((r) => `${r.label}: ${r.km.toFixed(2)} km`).join('; ')
+        }
+      },
+      ...summary.points.features
+    ]
+  };
+  return JSON.stringify(fc, null, 2);
+}
+
+export function routeToGPX(summary: RouteSummary): string {
+  const pts = summary.line.geometry.coordinates
+    .map(([lon, lat]) => `      <trkpt lat="${lat.toFixed(7)}" lon="${lon.toFixed(7)}"/>`)
+    .join('\n');
+  const wpts = summary.points.features
+    .map((f) => {
+      const [lon, lat] = f.geometry.coordinates;
+      return `  <wpt lat="${lat.toFixed(7)}" lon="${lon.toFixed(7)}"><name>${xmlEscape(f.properties.label)}</name></wpt>`;
+    })
+    .join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Mappa Civica" xmlns="http://www.topografix.com/GPX/1/1">
+${wpts}
+  <trk><name>Percorso</name><trkseg>
+${pts}
+  </trkseg></trk>
+</gpx>
+`;
+}
+
+export function routeToKML(summary: RouteSummary): string {
+  const coords = summary.line.geometry.coordinates
+    .map(([lon, lat]) => `${lon.toFixed(7)},${lat.toFixed(7)},0`)
+    .join(' ');
+  const marks = summary.points.features
+    .map((f) => {
+      const [lon, lat] = f.geometry.coordinates;
+      return `    <Placemark><name>${xmlEscape(f.properties.label)}</name><Point><coordinates>${lon.toFixed(7)},${lat.toFixed(7)},0</coordinates></Point></Placemark>`;
+    })
+    .join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Percorso</name>
+${marks}
+    <Placemark><name>Percorso</name><LineString><tessellate>1</tessellate><coordinates>${coords}</coordinates></LineString></Placemark>
+  </Document>
+</kml>
+`;
+}
+
+export function routeToCSV(summary: RouteSummary): string {
+  // elevationM is cumulative height change from the start (can be negative),
+  // not an absolute altitude - the source data only carries per-edge grade.
+  const header = 'distanza_km,dislivello_dalla_partenza_m,pendenza_pct';
+  const rows = summary.profile.map(
+    (p) => `${p.distanceKm.toFixed(3)},${p.elevationM.toFixed(1)},${p.grade.toFixed(1)}`
+  );
+  return [header, ...rows].join('\n') + '\n';
 }

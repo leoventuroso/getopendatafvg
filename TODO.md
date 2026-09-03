@@ -1,62 +1,48 @@
 # TODO — Montereale Valcellina Open
 
-Questo file traccia le attività in sospeso che richiedono dati esterni, rilevamento sul campo, o integrazioni future.
+Attività in sospeso: dati esterni da ricevere, rilievi sul campo, integrazioni future.
 
 ---
 
-## Modulo Resilienza & Protezione Civile
+## Modulo Soccorso ed Emergenza
 
-### Rii a rischio esondazione (Censimento RII)
-- **Stato:** FATTO (dati reali dal Gruppo Comunale di Protezione Civile)
-- **Sorgente:** `data/sources/output_rii_protezione_civile.zip` → `pipeline/scripts/build_rii_geojson.py` → `frontend/public/data/rescue/rii.geojson` + foto in `frontend/public/data/rescue/rii/`
-- **Da confermare col Gruppo PC:** posizione esatta del sistema Cian/Cjasarile/Bennata (ora su punto di zona); se "Rio Cao Malnisio"/"Rio Bala Busa" siano lo stesso sopralluogo del Cjasarile; il rio "06" senza nome né coordinate (foto 2007), oggi escluso dalla mappa
+### Rii a rischio — da validare con il Gruppo Comunale di Protezione Civile
+- Posizione esatta del sistema Cian/Cjasarile/Bennata (ora su un punto di zona, marcatore sbiadito).
+- Se "Rio Cao Malnisio" / "Rio Bala Busa" siano lo stesso sopralluogo del Cjasarile.
+- Il rio "06" (senza nome né coordinate, foto 2007), oggi escluso dalla mappa.
 
-### Incendi boschivi (Perimetro incendi IRDAT FVG)
-- **Stato:** FATTO (dati aperti Regione FVG)
-- **Sorgente:** IRDAT FVG dataset 1232, WFS `https://serviziogc.regione.fvg.it/geoserver/ZONE_RISC/wfs` layer `ZONE_RISC:V_INCENDI_CT` → `pipeline/scripts/build_fire_geojson.py` (filtro `COMUNE=...`) → `frontend/public/data/rescue/fire_perimeters.geojson`. Target `make fire`, CI-safe.
-- **Estensioni possibili (stesso WFS):**
-  - `ZONE_RISC:SITFOR_PERICOLO_INCENDI` — zonazione regionale di pericolosità (`GRADOPERICOLOSITA` MEDIO/ALTA), poligoni grossi non comunali: possibile overlay di sfondo "classe di pericolo"
-  - `ZONE_RISC:V_INCENDI_PUNTOINIZIO` — punti di innesco (senza attributo COMUNE, serve filtro bbox)
-  - `ZONE_RISC:SUPERFICIE_BOSCATA_BRUCIATA` / `_PASCOLO` / `_NON_BOSCATA_BRUCIATA` — superficie bruciata per copertura
+### Dati rischio idraulico e frana (PAI) — layer ufficiale regionale
+- In attesa del file ufficiale dalla Regione FVG (shapefile o GeoJSON, consegna diretta).
+- Quando arriva: `pipeline/scripts/process_pai.py` che clippa i poligoni al confine comunale, separa rischio idraulico e frana in due layer e produce i geojson in `frontend/public/data/rescue/`, da aggiungere come layer poligonali nel tab "Rii a rischio".
 
-### Dati rischio idraulico e frana (PAI) — layer ufficiale, futuro
-- **Stato:** in attesa di ricezione file ufficiale dalla Regione FVG (indipendente dal censimento rii volontario)
-- **Flusso atteso:** il file PAI arriverà direttamente (shapefile o GeoJSON) — non sarà scaricato automaticamente
-- **Azione:** quando arriva il file, scrivere `pipeline/scripts/process_pai.py` che:
-  - Accetta il file PAI come input esplicito (path da argomento o posizione convenzionale in `frontend/src/data/`)
-  - Clippa i poligoni al confine comunale (`municipalBoundary.json`)
-  - Separa rischio idraulico da rischio frana in due layer distinti
-  - Produce nuovi geojson in `frontend/public/data/rescue/` e li aggiunge come layer poligonali nel tab "Rii a rischio"
+### Presidi di soccorso — dati mancanti
+- **Idranti** e **punti di raccolta**: nessun dato (placeholder svuotati). Servono un elenco del gestore/Comune o un rilievo, poi inserimento su OpenStreetMap e `make rescue`.
+- **DAE**: i punti `geocoded: true` in `aed_comune.geojson` hanno posizione dall'indirizzo — verificarli sul posto o rimpiazzarli con i nodi OSM man mano che si rifiniscono (la dedup a ~60 m li assorbe). Aggiungere dove noti `access`, `opening_hours`, `defibrillator:location`, `operator`.
 
-### Asset di emergenza (AED, HEMS, idranti, punti raccolta)
-- **DAE:** FATTO in prima battuta — elenco del Comune (12 indirizzi) geocodificato in `frontend/public/data/rescue/aed_comune.geojson`; `build_rescue_geojson.py` lo unisce ai nodi OSM (`emergency`/`amenity=defibrillator`) e scrive `aed.geojson`.
-  - **Da rifinire:** i punti `geocoded: true` hanno posizione dall'indirizzo — verificare sul posto e/o rimpiazzare con i nodi OSM man mano che vengono mappati (la dedup a ~60 m li assorbe senza duplicati). Aggiungere dove noti: `access`, `opening_hours`, `defibrillator:location`, `operator`.
-- **HEMS / idranti / punti raccolta:** ancora placeholder, in attesa di rilevamento sul campo + inserimento su OpenStreetMap, poi `pipeline/scripts/build_rescue_geojson.py` (Overpass).
+### Incendi boschivi — estensioni possibili (stesso WFS IRDAT FVG)
+- `ZONE_RISC:SITFOR_PERICOLO_INCENDI` — zonazione regionale di pericolosità (`GRADOPERICOLOSITA` MEDIO/ALTA): possibile overlay di sfondo "classe di pericolo".
+- `ZONE_RISC:V_INCENDI_PUNTOINIZIO` — punti di innesco (senza attributo COMUNE, serve filtro bbox).
+- `ZONE_RISC:SUPERFICIE_BOSCATA_BRUCIATA` / `_PASCOLO` / `_NON_BOSCATA_BRUCIATA` — superficie bruciata per copertura.
 
 ### Widget meteo/idrometrico ARPA FVG
-- **Stato:** TODO — da implementare in una sessione futura
-- **Descrizione:** pannello nel modulo Resilienza con dati real-time da API pubblica ARPA FVG:
-  - Livello idrometrico del Torrente Cellina (stazione di Montereale)
-  - Precipitazioni ultime 24h
-  - Stato allerta (normale / attenzione / allarme)
-- **Note tecniche:** fetch client-side, nessun pipeline Python necessario. Verificare endpoint ARPA FVG prima di implementare.
+- Pannello con dati real-time da API pubblica ARPA FVG: livello idrometrico del Torrente Cellina (stazione di Montereale), precipitazioni ultime 24h, stato allerta.
+- Fetch client-side, nessuna pipeline. Verificare l'endpoint ARPA FVG prima di implementare.
 
 ---
 
 ## Modulo Segnala (Community Participation)
 
-### Da implementare — future sessioni
+### Segnalazioni condivise fra utenti — serve un backend
+- Oggi ogni segnalazione vive solo nel `localStorage` di chi la crea (+ email `mailto:`); nessuno vede quelle degli altri, ed è attivo solo l'"Elimina" locale.
+- Opzioni: (a) backend gestito tipo Supabase (Postgres + API + RLS, chiave anon nel frontend) — CRUD e cancellazione veri, ma rompe il "no backend / zero costi"; (b) `repository_dispatch` → GitHub Actions che ricostruisce un file condiviso nel repo (abbozzato in `functions/`) — latenza di minuti, serve un proxy per il token.
+- La cancellazione "vera" e i voti condivisi dipendono da questa scelta.
 
-#### Export report per l'amministrazione
-- **Stato:** idea futura
-- **Descrizione:** l'amministrazione può scaricare un CSV/PDF con le segnalazioni ordinate per numero di voti e zona, per prioritizzare gli interventi
+### Export report per l'amministrazione
+- Download CSV/PDF delle segnalazioni ordinate per voti e zona, per prioritizzare gli interventi.
 
-#### Classificazione automatica foto (YOLO)
-- **Stato:** idea futura
-- **Descrizione:** modello leggero lato browser (YOLO o MobileNet) per suggerire automaticamente la categoria in base alla foto allegata (es. riconosce buca → suggerisce "Viabilità e strade")
+### Classificazione automatica foto
+- Modello leggero lato browser (YOLO/MobileNet) per suggerire la categoria dalla foto allegata (es. buca → "Viabilità e strade").
 
-#### Integrazione dati catastali (ondata/dati_catastali)
-- **Stato:** idea futura
-- **Descrizione:** permettere al cittadino di selezionare la propria particella catastale sulla mappa per georeferenziare la segnalazione in modo preciso; il form si pre-compila automaticamente con foglio e numero particella
-- **Fonte:** [ondata/dati_catastali](https://github.com/ondata/dati_catastali) — particelle vettoriali per tutta l'Italia in formato Parquet, licenza CC BY 4.0 (citare OnData)
-- **Note tecniche:** dataset interrogabile via DuckDB su file Parquet via HTTP — compatibile con DuckDB-Wasm già in uso nel progetto, nessuna infrastruttura aggiuntiva necessaria
+### Integrazione dati catastali
+- Selezione della particella catastale sulla mappa per georeferenziare la segnalazione; il form si pre-compila con foglio e numero particella.
+- Fonte: [ondata/dati_catastali](https://github.com/ondata/dati_catastali) — particelle vettoriali per l'Italia in Parquet, CC BY 4.0 (citare OnData). Interrogabile via DuckDB-Wasm su Parquet HTTP, già in uso nel progetto.

@@ -91,11 +91,6 @@ function riiPopupHTML(props: Record<string, unknown>): string {
       `<figcaption>${esc(props.foto_evento_didascalia)}</figcaption></figure>`
     : '';
 
-  const note = String(props.note ?? '').trim();
-  const noteBlock = note
-    ? `<details class="rii-note"><summary>Note sull'attendibilità del dato</summary><p>${esc(note)}</p></details>`
-    : '';
-
   return (
     `<div class="rii-popup">` +
     photo +
@@ -109,7 +104,6 @@ function riiPopupHTML(props: Record<string, unknown>): string {
     riiSection('Interventi proposti', props.interventi) +
     riiSection('Eventi recenti', props.eventi_recenti) +
     evento +
-    noteBlock +
     `</div>`
   );
 }
@@ -404,16 +398,13 @@ export default function RescueModule() {
           </div>
           <Faq>
             Il censimento nasce nel 2013 su 10 corsi d'acqua; nel 2024 il Gruppo Comunale di Protezione
-            Civile ne ha ri-rilevati 3 (Povoleit, Spia, sistema Cian/Cjasarile) dopo le allerte del
-            novembre 2023 e la piena del 10 ottobre 2024. Le coordinate del censimento erano singoli
-            punti da foto, spesso lontani dal rio reale: dove OpenStreetMap ha il corso d'acqua (Rio
-            Spia, Rio Ciasarile, Rio Bennata, e il rio senza nome presso Cao Malnisio) usiamo il suo
-            tracciato; per il Ru de Cian, privo di un tracciato dedicato, resta un punto indicativo
-            (marcatore sbiadito) sulla testa del sistema Cjasarile. Un ulteriore rio censito nel 2013
-            non compare in mappa perché privo di coordinate e di nome certo (foto datate 2007). "Rio
-            Cao Malnisio" e "Rio Bala Busa" sono nomi presenti solo nelle cartelle foto: con ogni
-            probabilità lo stesso sopralluogo del sistema Cjasarile con toponimi locali, da confermare
-            con il Gruppo PC.
+            Civile ne ha rilevati nuovamente 3 (Povoleit, Spia, sistema Cian/Cjasarile) dopo le allerte
+            del novembre 2023 e la piena del 10 ottobre 2024. In questa visualizzazione, dove
+            OpenStreetMap ha il corso d'acqua (Rio Spia, Rio Ciasarile, Rio Bennata, e il rio senza
+            nome presso Cao Malnisio) abbiamo usato il suo tracciato. Un ulteriore rio censito nel 2013
+            non compare in mappa perché privo di coordinate e di nome certo (foto datate 2007). Il
+            documento di riferimento è il «Censimento RII», in gestione al Gruppo Comunale di Protezione
+            Civile di Montereale Valcellina.
           </Faq>
         </section>
       )}

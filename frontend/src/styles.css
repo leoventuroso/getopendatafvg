@@ -525,21 +525,6 @@ body {
   margin-top: 0.2rem;
 }
 
-.rii-note {
-  margin-top: 0.55rem;
-  font-size: 0.78rem;
-}
-
-.rii-note summary {
-  cursor: pointer;
-  color: #2563a8;
-  font-weight: 600;
-}
-
-.rii-note p {
-  margin: 0.35rem 0 0;
-  color: #526675;
-}
 
 .trail-swatch {
   width: 18px;
@@ -617,6 +602,134 @@ body {
   padding: 0.22rem 0.55rem;
   font-size: 0.92rem;
 }
+
+.routing-points {
+  list-style: none;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.routing-points li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.86rem;
+}
+
+.routing-point-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #b7c6d0;
+  flex-shrink: 0;
+}
+
+.routing-point-dot--start { background: #2f9e44; }
+.routing-point-dot--end { background: #e03131; }
+.routing-point-dot--via { background: #f59f00; }
+
+.routing-point-name { font-weight: 600; }
+.routing-point-coord { color: #7a90a0; font-size: 0.78rem; margin-left: auto; }
+
+.routing-point-remove {
+  border: 1px solid #d4e0e8;
+  background: #f7fafc;
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+  cursor: pointer;
+  color: #7a5c00;
+  line-height: 1;
+}
+
+.routing-point-remove:hover { background: #fdece0; border-color: #e8a87c; }
+
+.routing-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.routing-time {
+  flex: 1 1 30%;
+  min-width: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.4rem 0.3rem;
+  border: 1px solid #c8d8e4;
+  border-radius: 8px;
+  background: #f7fbff;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.routing-time i { font-size: 1.05rem; color: #2563a8; }
+.routing-time small { font-weight: 400; font-size: 0.72rem; color: #7a90a0; }
+
+.routing-surface { margin-top: 0.7rem; }
+
+.routing-surface-title,
+.routing-downloads-title {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #385063;
+  margin-bottom: 0.3rem;
+}
+
+.routing-surface-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #c8d8e4;
+}
+
+.routing-surface-seg { background: #4a90d9; }
+.routing-surface-seg:nth-child(2) { background: #74c0fc; }
+.routing-surface-seg:nth-child(3) { background: #f59f00; }
+.routing-surface-seg:nth-child(4) { background: #63b06b; }
+.routing-surface-seg:nth-child(5) { background: #b197fc; }
+.routing-surface-seg:nth-child(n+6) { background: #adb5bd; }
+
+.routing-surface-list {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  font-size: 0.82rem;
+}
+
+.routing-surface-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.1rem 0;
+  color: #385063;
+}
+
+.routing-downloads {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.routing-downloads button {
+  border: 1px solid #9fb9cc;
+  background: #fff;
+  border-radius: 7px;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.routing-downloads button:hover { background: #eef4f8; }
 
 .census-panel {
   position: absolute;

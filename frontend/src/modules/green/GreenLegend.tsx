@@ -59,8 +59,8 @@ export default function GreenLegend({
 }: Props) {
   return (
     <>
-      <section className="legend-panel" aria-label="Modulo Green">
-        <strong>Modulo Green: ambiente e vegetazione</strong>
+      <section className="legend-panel" aria-label="Modulo Verde">
+        <strong>Modulo Verde: ambiente e vegetazione</strong>
         <p className="section-description">
           Scegli cosa vuoi vedere sulla mappa. Ogni scheda mostra un solo indicatore alla volta.
         </p>

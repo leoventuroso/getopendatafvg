@@ -33,6 +33,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import re
 import sys
 import zipfile
 from pathlib import Path
@@ -103,6 +104,23 @@ def classify_affidabilita(row: dict) -> str:
 def blank_to_none(value: str | None) -> str | None:
     value = (value or "").strip()
     return value or None
+
+
+def strip_refs(value: str | None) -> str | None:
+    """Drop the analyst's internal pointers to source files, photo names and
+    other rows so the visible text stays a plain description of the rio."""
+    text = (value or "").strip()
+    if not text:
+        return None
+    text = re.sub(r"\s*\((?:IMG_[\w.]+|foto\b[^)]*|\d{1,2}:\d{2}[^)]*)\)", "", text)
+    text = re.sub(r"\s*\(vedi[^)]*\)", "", text, flags=re.I)
+    text = re.sub(r"[;,.]?\s*vedi\s+[^.;,]*\.(?:pdf|docx)\b", "", text, flags=re.I)
+    text = re.sub(r"^(?:Non descritta testualmente[^.]*\.\s*|Non documentata[^.]*\.\s*)", "", text, flags=re.I)
+    text = re.sub(r"\bLe foto\b[^.]*\bmostrano\b", "Le foto del sopralluogo mostrano", text)
+    text = re.sub(r"\s{2,}", " ", text).strip(" ;,.")
+    if not text or re.match(r"^Non disponibile", text, flags=re.I):
+        return None
+    return text + "." if text and text[-1] not in ".!?" else text or None
 
 
 def resize_photo(data: bytes, dest: Path) -> None:
@@ -201,11 +219,10 @@ def main() -> None:
                 "pos_affidabilita": pos_affidabilita,
                 "pos_fonte": pos_fonte,
                 "pos_approssimata": pos_approssimata,
-                "descrizione": blank_to_none(row.get("descrizione_criticita")),
-                "punti_critici": blank_to_none(row.get("punti_critici_specifici")),
-                "interventi": blank_to_none(row.get("interventi_proposti")),
-                "eventi_recenti": blank_to_none(row.get("eventi_recenti_confermati")),
-                "note": blank_to_none(row.get("note_attendibilita")),
+                "descrizione": strip_refs(row.get("descrizione_criticita")),
+                "punti_critici": strip_refs(row.get("punti_critici_specifici")),
+                "interventi": strip_refs(row.get("interventi_proposti")),
+                "eventi_recenti": strip_refs(row.get("eventi_recenti_confermati")),
                 "foto": photo_rel,
                 "foto_evento": evento_rel,
                 "foto_evento_didascalia": FLOOD_EVIDENCE_CAPTION if evento_rel else None,
