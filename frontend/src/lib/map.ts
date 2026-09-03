@@ -1,6 +1,7 @@
 import * as maplibregl from 'maplibre-gl';
 import type { Map, IControl } from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+// maplibre-gl.css is imported eagerly from main.tsx (before styles.css) so the
+// basemap-switcher overrides keep winning the cascade - see the note there.
 import { APP_CONFIG } from '../config';
 
 // maplibre-gl-worker.mjs imports a sibling chunk (maplibre-gl-shared.mjs)
