@@ -2,8 +2,8 @@ name: Refresh GIS data
 
 on:
   schedule:
-    - cron: '0 3 * * 1'    # ogni lunedì alle 3:00 UTC — rescue + cyclepaths
-    - cron: '0 3 1 * *'    # il 1° di ogni mese alle 3:00 UTC — base + community
+    - cron: '0 3 * * 1'    # ogni lunedì alle 3:00 UTC - rescue + cyclepaths
+    - cron: '0 3 1 * *'    # il 1° di ogni mese alle 3:00 UTC - base + community
   workflow_dispatch:
     inputs:
       target:

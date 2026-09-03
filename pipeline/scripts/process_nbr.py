@@ -8,7 +8,7 @@ NBR = (B8A - B12) / (B8A + B12)
 High NBR  → healthy moist vegetation (low fire risk)
 Low/neg   → dry, stressed, or burned vegetation (higher risk)
 
-Inputs (gitignored — must be present locally):
+Inputs (gitignored - must be present locally):
   frontend/src/data/*.SAFE    one Sentinel-2 L2A .SAFE directory
 
 Output:
@@ -132,7 +132,7 @@ def main() -> None:
     nbr[nodata_mask | shadow_mask] = np.nan
 
     valid = nbr[np.isfinite(nbr)]
-    print(f'[INFO] NBR range: {valid.min():.3f} — {valid.max():.3f}  mean: {valid.mean():.3f}')
+    print(f'[INFO] NBR range: {valid.min():.3f} - {valid.max():.3f}  mean: {valid.mean():.3f}')
 
     native_res_m = abs(native_transform.a)
     scale = native_res_m / OUTPUT_RESOLUTION_M

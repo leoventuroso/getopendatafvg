@@ -6,7 +6,7 @@ import { APP_CONFIG } from '../config';
 
 // maplibre-gl-worker.mjs imports a sibling chunk (maplibre-gl-shared.mjs)
 // via a relative import. Bundling the worker through Vite (e.g. a `?url`
-// import) copies only the worker file itself — Vite treats `?url` assets as
+// import) copies only the worker file itself - Vite treats `?url` assets as
 // opaque, so it never notices or copies that sibling, and the worker fails
 // to load in production (works in dev only, since `optimizeDeps.exclude`
 // in vite.config.ts serves node_modules files as-is there). Both files are
@@ -27,7 +27,7 @@ type CreateBaseMapOptions = {
   trailsSubsection?: TrailsSubsection | null;
 };
 
-// Live basemap styles from Maptoolkit — the same tile+style service the
+// Live basemap styles from Maptoolkit - the same tile+style service the
 // integrated stressinbici.it (LTS) map uses, so the look is consistent and
 // switchable the same way. "estivo" (summer) is the default.
 type BasemapStyleKey = 'light' | 'summer' | 'cycling' | 'dark';
@@ -51,7 +51,7 @@ const BASEMAP_STYLE_LABELS: Record<BasemapStyleKey, string> = {
 const DEFAULT_BASEMAP_STYLE: BasemapStyleKey = 'summer';
 
 // Free public terrarium-encoded DEM (same source the integrated LTS map uses)
-// — kept as our own overlay source so 3D terrain works regardless of which
+// - kept as our own overlay source so 3D terrain works regardless of which
 // Maptoolkit style is currently active (their raster-dem source names differ
 // between styles).
 const TERRAIN_SOURCE_ID = 'mapterhorn-dem';
@@ -216,7 +216,7 @@ function addEmergencyLayers(
   });
 }
 
-// "Rii a rischio esondazione" — the volunteer stream census (Censimento RII).
+// "Rii a rischio esondazione" - the volunteer stream census (Censimento RII).
 // Geometry is a mix: the real watercourse line from OpenStreetMap where it has
 // the named stream, otherwise a single point (faded when its position is only
 // approximate). Colour encodes how current the survey is. The RescueModule
@@ -1030,7 +1030,7 @@ class MapSearchControl implements IControl {
       return;
     }
     // A newer keystroke already triggered another request while this one
-    // was in flight — drop this stale response instead of racing it into
+    // was in flight - drop this stale response instead of racing it into
     // the dropdown out of order.
     if (requestId !== this.requestId || !this.resultsList) return;
 
@@ -1058,9 +1058,9 @@ class MapSearchControl implements IControl {
 }
 
 // Custom (not MapLibre's built-in TerrainControl) to match the integrated
-// LTS map's own terrain button exactly — same 🏔️ emoji icon, same toggle.
+// LTS map's own terrain button exactly - same 🏔️ emoji icon, same toggle.
 // `setStyle()` (the basemap switcher) replaces the whole style document,
-// which silently drops `map.setTerrain(...)` — the camera stays tilted but
+// which silently drops `map.setTerrain(...)` - the camera stays tilted but
 // the relief disappears until re-toggled. `onTerrainChange` lets the caller
 // track the on/off flag outside this control and restore it after every
 // style load (see createBaseMap's 'style.load' handler).
@@ -1086,7 +1086,7 @@ class MapTerrainControl implements IControl {
       const nextOn = !isOn;
       map.setTerrain(nextOn ? { source: TERRAIN_SOURCE_ID, exaggeration: 1.3 } : null);
       button.classList.toggle('active', nextOn);
-      // Exaggeration is nearly invisible from a straight-down view — tilt
+      // Exaggeration is nearly invisible from a straight-down view - tilt
       // the camera along with the toggle, same as the integrated LTS map.
       map.easeTo({ pitch: nextOn ? 60 : 0, duration: 800 });
       this.onTerrainChange(nextOn);
@@ -1103,7 +1103,7 @@ class MapTerrainControl implements IControl {
 }
 
 // Ground resolution (metres per CSS pixel) of standard Web Mercator tiles at
-// a given latitude/zoom — same formula behind every slippy-map scale bar.
+// a given latitude/zoom - same formula behind every slippy-map scale bar.
 // Used to turn the on-screen map into a real cartographic scale ("1:25 000")
 // once it's placed at a known physical size on the PDF page.
 function metersPerPixel(lat: number, zoom: number): number {
@@ -1115,7 +1115,7 @@ function formatCoord(value: number, positiveSuffix: string, negativeSuffix: stri
 }
 
 // Same PDF layout as the integrated LTS map's print button (real A4 page,
-// title, scale bar, centre coordinates, attribution footer) — minus its
+// title, scale bar, centre coordinates, attribution footer) - minus its
 // LTS-specific colour legend, which doesn't carry over to our other modules.
 function exportMapToPdf(map: Map, moduleLabel: string): void {
   const canvas = map.getCanvas();
@@ -1136,7 +1136,7 @@ function exportMapToPdf(map: Map, moduleLabel: string): void {
   doc.text(`${APP_CONFIG.productName} - ${APP_CONFIG.municipality.name}`, margin, margin + 6);
   doc.setFontSize(10);
   doc.setTextColor(100);
-  doc.text(`${moduleLabel} — ${new Date().toLocaleDateString('it-IT')}`, margin, margin + 11);
+  doc.text(`${moduleLabel} - ${new Date().toLocaleDateString('it-IT')}`, margin, margin + 11);
 
   const availableWidth = pageWidth - margin * 2;
   const availableHeight = pageHeight - margin * 2 - titleHeight - footerHeight;
@@ -1162,7 +1162,7 @@ function exportMapToPdf(map: Map, moduleLabel: string): void {
   doc.setFontSize(8);
   doc.setTextColor(130);
   doc.text(`${centerText}  ·  ${scaleText}`, margin, pageHeight - 10);
-  doc.text(`© Maptoolkit © OpenStreetMap contributors — ${municipalitySlug}`, margin, pageHeight - 5);
+  doc.text(`© Maptoolkit © OpenStreetMap contributors - ${municipalitySlug}`, margin, pageHeight - 5);
 
   const fileSlug = moduleLabel.toLowerCase().replace(/\s+/g, '-');
   doc.save(`${municipalitySlug}-${fileSlug}.pdf`);
@@ -1212,7 +1212,7 @@ class MapPrintControl implements IControl {
 }
 
 // Runs `fn` once immediately if the style is already loaded, and again after
-// every future style load — the basemap switcher calls setStyle(), which
+// every future style load - the basemap switcher calls setStyle(), which
 // fires 'style.load' (not the one-shot 'load') and wipes anything not part
 // of the new style document. Module code that sets a filter, a layer's
 // visibility, or attaches a hover popup should use this instead of the old
@@ -1242,7 +1242,7 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
             ? 12
             : APP_CONFIG.map.zoom;
 
-  // The Green module centers on the NDVI coverage centroid — the municipality's
+  // The Green module centers on the NDVI coverage centroid - the municipality's
   // forested territory is ~3.5 km SW of the app's default urban center.
   const initialCenter: [number, number] = isGreenModule
     ? [12.620, 46.110]
@@ -1262,14 +1262,14 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
   });
 
   // setStyle() (the basemap switcher) drops map.setTerrain() along with
-  // everything else the new style doesn't define — tracked here so
+  // everything else the new style doesn't define - tracked here so
   // 'style.load' can restore it instead of leaving the camera tilted with
   // no relief until the user re-clicks the terrain button.
   let terrainOn = false;
 
   // 'style.load' fires on the initial load AND after every setStyle() call
-  // (the style switcher), so registering once keeps our overlays — and the
-  // terrain toggle — alive across basemap switches without extra bookkeeping.
+  // (the style switcher), so registering once keeps our overlays - and the
+  // terrain toggle - alive across basemap switches without extra bookkeeping.
   map.on('style.load', () => {
     for (const [id, source] of Object.entries(overlaySources)) {
       if (!map.getSource(id)) map.addSource(id, source);
@@ -1292,7 +1292,7 @@ export function createBaseMap(container: HTMLElement, options: CreateBaseMapOpti
   map.addControl(new MapStyleControl(DEFAULT_BASEMAP_STYLE), 'top-left');
   // No options object: AttributionControl's own default already gives
   // {compact: true, customAttribution: '<a href="maplibre.org">MapLibre</a>'}
-  // — passing {compact: true} on its own replaces that default entirely
+  // - passing {compact: true} on its own replaces that default entirely
   // (JS default params only apply when the argument is omitted), silently
   // dropping the "MapLibre" credit. Maptoolkit's own style sources already
   // carry the "© Maptoolkit © Openstreetmap" part, links included.

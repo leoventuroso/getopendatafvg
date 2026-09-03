@@ -12,7 +12,7 @@
     "istat_code": "093027"
   },
   "demographic": {
-    "_source": "ISTAT — dataset 22_289 e 22_315 (comunale), 22_293 (provinciale PN)",
+    "_source": "ISTAT - dataset 22_289 e 22_315 (comunale), 22_293 (provinciale PN)",
     "population": 4221,
     "population_year": 2024,
     "population_scope": "municipal",
@@ -79,7 +79,7 @@
     "seismic_zone": "1",
     "seismic_zone_label": "Alta pericolosità",
     "hydrogeological_risk_class": null,
-    "hydrogeological_risk_note": "PAI FVG — dato in attesa"
+    "hydrogeological_risk_note": "PAI FVG - dato in attesa"
   },
   "services": {
     "_source": "OpenStreetMap / ISTAT 117_1035",

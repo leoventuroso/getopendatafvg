@@ -1,7 +1,7 @@
 import comune from './comune.config.json';
 
 // Tutto ciò che è specifico del comune (nome, email, confine, viste mappa)
-// vive in comune.config.json — unica fonte, letta anche dalla pipeline Python
+// vive in comune.config.json - unica fonte, letta anche dalla pipeline Python
 // (pipeline/lib/comune_config.py). Per un nuovo comune: vedi SETUP.md.
 export const APP_CONFIG = {
   productName: 'Mappa Civica',

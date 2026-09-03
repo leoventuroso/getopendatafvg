@@ -7,8 +7,8 @@ Method:
   4. Compute shade coverage % per segment.
 
 Outputs:
-  frontend/public/data/shade_corridors.geojson   — segments with >= MIN_SHADE_PCT (for Green module)
-  frontend/public/data/outdoor/trails_shaded.geojson — ALL trail segments with shade_pct property
+  frontend/public/data/shade_corridors.geojson   - segments with >= MIN_SHADE_PCT (for Green module)
+  frontend/public/data/outdoor/trails_shaded.geojson - ALL trail segments with shade_pct property
 """
 
 from __future__ import annotations

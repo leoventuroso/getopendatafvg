@@ -3,7 +3,7 @@
 Script Python per produrre gli asset statici della piattaforma (Jamstack).
 
 Per usare questa pipeline su un comune diverso da Montereale Valcellina,
-vedi [SETUP.md](../SETUP.md) alla radice del repo — elenca i file di
+vedi [SETUP.md](../SETUP.md) alla radice del repo - elenca i file di
 configurazione da compilare e i dati grezzi da procurarsi. Ogni script legge
 i valori specifici del comune da `pipeline/lib/comune_config.py`, che a sua
 volta legge `frontend/src/comune.config.json`.
@@ -41,7 +41,7 @@ Ogni target è indipendente: puoi eseguirli singolarmente senza rieseguire l'int
 ```
 pipeline/
 ├── lib/                    # Moduli condivisi importati dagli script
-│   ├── comune_config.py    # Legge frontend/src/comune.config.json — vedi SETUP.md
+│   ├── comune_config.py    # Legge frontend/src/comune.config.json - vedi SETUP.md
 │   ├── dem_slope.py        # Campionamento DEM e calcolo pendenza
 │   └── exclusions.py       # Geometrie da escludere (opzionale, vedi SETUP.md)
 ├── scripts/                # Uno script per target applicativo
@@ -85,7 +85,7 @@ pipeline/
 
 Questi file devono essere presenti localmente ma non sono versionati:
 
-- `frontend/src/data/*.SAFE` — scena Sentinel-2 L2A per `process_green_layers.py`
-- `frontend/src/data/dem.tif` — DEM/LiDAR per gli script outdoor
-- `pipeline/data/*.osm.pbf` — dump OSM per `build_pmtiles.py`
-- `pipeline/tools/planetiler.jar` — per `build_pmtiles.py`
+- `frontend/src/data/*.SAFE` - scena Sentinel-2 L2A per `process_green_layers.py`
+- `frontend/src/data/dem.tif` - DEM/LiDAR per gli script outdoor
+- `pipeline/data/*.osm.pbf` - dump OSM per `build_pmtiles.py`
+- `pipeline/tools/planetiler.jar` - per `build_pmtiles.py`

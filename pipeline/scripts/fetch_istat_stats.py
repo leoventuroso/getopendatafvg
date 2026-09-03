@@ -5,25 +5,25 @@ frontend/public/data/municipality_stats.json.
 
 Reference: https://github.com/ondata/guida-api-istat
 
-Rate limit: 5 queries/minute — script stays well below that.
+Rate limit: 5 queries/minute - script stays well below that.
 
 Datasets used:
-  22_289  — Popolazione residente al 1° gennaio (comunale)
-  164_164 — Popolazione residente ricostruita 2002-2019 (comunale, via old API)
-  22_315  — Bilancio demografico: famiglie, densità (comunale)
-  22_293_DF_DCIS_INDDEMOG1_1 — Indicatori demografici (provinciale PN)
-  117_1035 — Servizi bancari per comune (comunale, via old API)
+  22_289  - Popolazione residente al 1° gennaio (comunale)
+  164_164 - Popolazione residente ricostruita 2002-2019 (comunale, via old API)
+  22_315  - Bilancio demografico: famiglie, densità (comunale)
+  22_293_DF_DCIS_INDDEMOG1_1 - Indicatori demografici (provinciale PN)
+  117_1035 - Servizi bancari per comune (comunale, via old API)
 
-  [ECONOMIA — to be verified when esploradati.istat.it is accessible]
-  DCCV_TAXOCCU1 — Tasso di occupazione (provinciale PN = ITD41)
+  [ECONOMIA - to be verified when esploradati.istat.it is accessible]
+  DCCV_TAXOCCU1 - Tasso di occupazione (provinciale PN = ITD41)
     key: A.ITD41.... (DATA_TYPE=OCCUP15_64 or TAXOCCU)
-  DCCV_PENDOLARIT or census 2021 — Pendolari per comune
+  DCCV_PENDOLARIT or census 2021 - Pendolari per comune
     Note: municipal-level commuter data typically comes from Censimento 2021
     and may not be available via SDMX; check esploradati.istat.it manually.
 
-  [TOURISM — municipal data not available for small comuni via SDMX]
-  DCSC_CAPTUR2 — Capacità degli esercizi ricettivi (municipal, if available)
-    key: A.093027.... — returns empty for MV (too small for dataset)
+  [TOURISM - municipal data not available for small comuni via SDMX]
+  DCSC_CAPTUR2 - Capacità degli esercizi ricettivi (municipal, if available)
+    key: A.093027.... - returns empty for MV (too small for dataset)
 
 Still manual (not available at municipal level via SDMX):
   - Seismic zone: zone 1 (from DPC national classification, hardcoded)

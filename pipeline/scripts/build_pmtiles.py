@@ -1,7 +1,7 @@
 """Build PMTiles from a road-network CSV (Fase 0, legacy).
 
 Pipeline minima:
-1) carica pipeline/data/road_network.csv (WKT `geometry` column) — raw input
+1) carica pipeline/data/road_network.csv (WKT `geometry` column) - raw input
    da procurarsi per il proprio comune, vedi SETUP.md;
 2) assegna CRS sorgente EPSG:32632 (UTM32N);
 3) riproietta in EPSG:4326;

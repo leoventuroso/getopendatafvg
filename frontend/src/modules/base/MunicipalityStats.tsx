@@ -44,7 +44,7 @@ type Props = { stats: MunicipalityStats };
 export type { MunicipalityStats };
 
 function fmt(v: number | null | undefined, suffix = ''): string {
-  if (v == null) return '—';
+  if (v == null) return '-';
   return `${v.toLocaleString('it-IT')}${suffix}`;
 }
 
@@ -73,26 +73,26 @@ export default function MunicipalityStatsPanel({ stats }: Props) {
           <div><dt>Residenti</dt><dd>
             {stats.demographic.population != null
               ? `${stats.demographic.population.toLocaleString('it-IT')} (${stats.demographic.population_year ?? ''})`
-              : '—'}
+              : '-'}
           </dd></div>
           <div><dt>Famiglie</dt><dd>{fmt(stats.demographic.households)}</dd></div>
           <div><dt>Componenti medi</dt><dd>{fmt(stats.demographic.avg_household_size)}</dd></div>
           <div><dt>Età media</dt>
             <dd>{stats.demographic.avg_age != null
               ? <>{stats.demographic.avg_age} anni{stats.demographic.avg_age_scope === 'provincial' ? <span className="stat-scope"> (PN)</span> : null}</>
-              : '—'}
+              : '-'}
             </dd>
           </div>
           <div><dt>Indice di vecchiaia</dt>
             <dd>{stats.demographic.old_age_index != null
               ? <>{stats.demographic.old_age_index}{stats.demographic.old_age_index_scope === 'provincial' ? <span className="stat-scope"> (PN)</span> : null}</>
-              : '—'}
+              : '-'}
             </dd>
           </div>
           <div><dt>Pop. ≥ 65 anni</dt>
             <dd>{stats.demographic.pct_pop_65_over != null
               ? <>{stats.demographic.pct_pop_65_over}%<span className="stat-scope"> (PN)</span></>
-              : '—'}
+              : '-'}
             </dd>
           </div>
         </dl>
@@ -103,11 +103,11 @@ export default function MunicipalityStatsPanel({ stats }: Props) {
         <dl>
           <div><dt>Zona sismica</dt>
             <dd>{stats.risk.seismic_zone != null
-              ? <>Zona {stats.risk.seismic_zone}{stats.risk.seismic_zone_label ? <span className="stat-scope"> — {stats.risk.seismic_zone_label}</span> : null}</>
-              : '—'}
+              ? <>Zona {stats.risk.seismic_zone}{stats.risk.seismic_zone_label ? <span className="stat-scope"> - {stats.risk.seismic_zone_label}</span> : null}</>
+              : '-'}
             </dd>
           </div>
-          <div><dt>Rischio idrogeologico</dt><dd>{stats.risk.hydrogeological_risk_class ?? '—'}</dd></div>
+          <div><dt>Rischio idrogeologico</dt><dd>{stats.risk.hydrogeological_risk_class ?? '-'}</dd></div>
         </dl>
       </section>
 
@@ -115,12 +115,12 @@ export default function MunicipalityStatsPanel({ stats }: Props) {
         <h3>Servizi</h3>
         <dl>
           <div><dt>Sportelli bancari</dt><dd>{fmt(stats.services.bank_branches)}</dd></div>
-          <div><dt>Farmacia</dt><dd>{stats.services.pharmacy_name ?? (stats.services.pharmacy ? 'Sì' : stats.services.pharmacy === false ? 'No' : '—')}</dd></div>
-          <div><dt>Scuole</dt><dd>{stats.services.schools ?? '—'}</dd></div>
+          <div><dt>Farmacia</dt><dd>{stats.services.pharmacy_name ?? (stats.services.pharmacy ? 'Sì' : stats.services.pharmacy === false ? 'No' : '-')}</dd></div>
+          <div><dt>Scuole</dt><dd>{stats.services.schools ?? '-'}</dd></div>
           <div><dt>Pronto soccorso</dt><dd>
             {stats.services.nearest_emergency_room.name
               ? <>{stats.services.nearest_emergency_room.name}<span className="stat-scope"> ({fmt(stats.services.nearest_emergency_room.distance_km, ' km')}, ~{stats.services.nearest_emergency_room.drive_minutes} min)</span></>
-              : '—'}
+              : '-'}
           </dd></div>
         </dl>
       </section>

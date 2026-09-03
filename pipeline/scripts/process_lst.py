@@ -4,7 +4,7 @@ Reads the lwir11 band (ST_B10, scaled DN), clips to the municipal boundary,
 converts to Celsius, classifies into heat zones, vectorises at 90 m resolution,
 and writes a GeoJSON ready for the frontend.
 
-Inputs (gitignored — must be present locally):
+Inputs (gitignored - must be present locally):
   frontend/src/data/*_lwir11.TIF    Landsat C2 L2 surface temperature band
 
 Output:
@@ -106,7 +106,7 @@ def main() -> None:
     lst_c[nodata_mask] = np.nan
     lst_c[lst_c > LST_MAX_VALID_C] = np.nan
 
-    print(f'[INFO] LST range (clipped): {np.nanmin(lst_c):.1f}°C — {np.nanmax(lst_c):.1f}°C')
+    print(f'[INFO] LST range (clipped): {np.nanmin(lst_c):.1f}°C - {np.nanmax(lst_c):.1f}°C')
 
     # Downsample to OUTPUT_RESOLUTION_M
     native_res_m = abs(native_transform.a)

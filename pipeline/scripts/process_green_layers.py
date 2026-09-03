@@ -5,7 +5,7 @@ frontend/src/data/, clips to the municipal boundary, classifies NDVI
 into vegetation categories, vectorises the result at 50 m resolution,
 and writes a GeoJSON ready for direct use in the frontend map.
 
-Inputs  (gitignored — must be present locally before running):
+Inputs  (gitignored - must be present locally before running):
   frontend/src/data/*.SAFE        one Sentinel-2 L2A .SAFE directory
 
 Output:
@@ -47,10 +47,10 @@ NDVI_CLASSES = [
     (0.65,  float('inf'), 'very_dense', '#00441b'),
 ]
 
-# Output pixel size for vectorisation — larger means a smaller, less-detailed file.
+# Output pixel size for vectorisation - larger means a smaller, less-detailed file.
 OUTPUT_RESOLUTION_M = 50
 
-# Drop polygons below this area (m²) — removes pixel-sized noise.
+# Drop polygons below this area (m²) - removes pixel-sized noise.
 MIN_AREA_M2 = 2_500
 
 # Polygon simplification tolerance in the projected CRS (metres).
@@ -94,7 +94,7 @@ def load_boundary_in_crs(dst_crs: CRS) -> list[dict]:
     # orient enforces CCW exterior rings so GDAL/rio_mask treats every
     # sub-polygon as a filled area, not a hole.
     geom_valid = orient(make_valid(geom_utm), sign=1.0)
-    # Flatten to individual Polygon/MultiPolygon — rio_mask wants a list of geoms.
+    # Flatten to individual Polygon/MultiPolygon - rio_mask wants a list of geoms.
     if geom_valid.geom_type == 'GeometryCollection':
         parts = [g for g in geom_valid.geoms if not g.is_empty]
     else:

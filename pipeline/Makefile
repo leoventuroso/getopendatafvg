@@ -5,7 +5,7 @@ SCRIPTS := scripts
 .PHONY: help all base outdoor rescue rii fire green community basemap
 
 help:
-	@echo "Montereale Valcellina — pipeline GIS"
+	@echo "Montereale Valcellina - pipeline GIS"
 	@echo ""
 	@echo "Targets (require full requirements.txt + local data files):"
 	@echo "  make all        Full pipeline"

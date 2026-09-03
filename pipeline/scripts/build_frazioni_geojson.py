@@ -2,7 +2,7 @@
 Generate frazioni.geojson for the configured comune.
 
 Creates approximate circular polygons for each locality (frazione/borgata/
-capoluogo) listed in frontend/src/data/localities.json — a hand-curated
+capoluogo) listed in frontend/src/data/localities.json - a hand-curated
 input file (name, coordinates, radius), since this kind of local
 subdivision isn't reliably queryable from OSM/Overpass for every comune.
 For a new comune: replace localities.json with your own list (see SETUP.md).
@@ -43,7 +43,7 @@ def main():
     if not LOCALITIES_PATH.exists():
         raise FileNotFoundError(
             f"{LOCALITIES_PATH} non trovato. Crea questo file con la lista delle "
-            "frazioni/borgate del tuo comune — vedi SETUP.md."
+            "frazioni/borgate del tuo comune - vedi SETUP.md."
         )
 
     with LOCALITIES_PATH.open(encoding='utf-8') as f:

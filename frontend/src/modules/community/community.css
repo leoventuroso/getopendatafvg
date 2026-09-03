@@ -426,7 +426,7 @@
   font-style: italic;
 }
 
-/* MapLibre elements — must remain global-compatible (not scoped) */
+/* MapLibre elements - must remain global-compatible (not scoped) */
 .community-map-popup {
   pointer-events: none;
 }

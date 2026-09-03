@@ -42,7 +42,7 @@ export default function GreenModule() {
   const [stats, setStats] = useState<Record<NdviClass, ClassStats> | null>(null);
 
   // The three optional overlays are mutually exclusive, driven by which tab
-  // is open — only one indicator explains itself on the map at a time.
+  // is open - only one indicator explains itself on the map at a time.
   const showShade = activeTab === 'shade';
   const showNbr = activeTab === 'nbr';
   const showLst = activeTab === 'lst';

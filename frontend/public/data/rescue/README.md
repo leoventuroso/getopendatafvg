@@ -7,7 +7,7 @@ Static layers for the Soccorso ed Emergenza module.
 `build_rescue_geojson.py` tries to refresh these from OpenStreetMap via Overpass
 and falls back to the committed placeholder when the area has nothing mapped yet.
 
-- `aed.geojson`: defibrillators (DAE) — **generated**, do not hand-edit
+- `aed.geojson`: defibrillators (DAE) - **generated**, do not hand-edit
 - `hems.geojson`: helicopter landing / HEMS points
 - `fire_hydrants.geojson`: fire hydrants
 - `emergency_assembly_points.geojson`: emergency assembly points
@@ -27,7 +27,7 @@ duplicate. `geocoded: true` / `geo_precision` mark points placed from an address
 ## Rii a rischio esondazione (`rii.geojson` + `rii/`)
 
 The "Rii a rischio" tab. A comune-specific volunteer field survey (Censimento
-RII) by the Gruppo Comunale di Protezione Civile — one point per rio, with a
+RII) by the Gruppo Comunale di Protezione Civile - one point per rio, with a
 representative photo, the described criticality and proposed interventions. **Not** a technical study and **not** a live feed.
 
 Rebuilt only when a new source package is delivered:
@@ -38,8 +38,8 @@ python pipeline/scripts/build_rii_geojson.py
 
 It merges two inputs and writes `rii.geojson` plus web-resized photos into `rii/`:
 
-- `data/sources/output_rii_protezione_civile.zip` — the CSV attributes and photos.
-- `pipeline/scripts/rii_osm_lines.geojson` — the real watercourse geometry from
+- `data/sources/output_rii_protezione_civile.zip` - the CSV attributes and photos.
+- `pipeline/scripts/rii_osm_lines.geojson` - the real watercourse geometry from
   OpenStreetMap (ODbL), keyed by census id. The CSV coordinates are single
   EXIF/estimate points, several far from the actual rio; where OSM has the named
   stream the layer draws its line instead, otherwise a point.
@@ -57,7 +57,7 @@ For a comune without this data, leave `rii.geojson` as an empty
 ## Incendi boschivi (`fire_perimeters.geojson`)
 
 The "Incendi boschivi" tab. Forest fire perimeters from Regione FVG, IRDAT
-dataset 1232 ("Perimetro degli incendi boschivi" — perimeters digitised from
+dataset 1232 ("Perimetro degli incendi boschivi" - perimeters digitised from
 the Fogli Notizie Incendi Boschivi filed by the Stazioni Forestali, with GPS
 field surveys). Pulled from the regional GeoServer WFS and filtered by comune:
 
@@ -68,7 +68,7 @@ python pipeline/scripts/build_fire_geojson.py     # make fire
 CI-safe (one HTTPS GET). Polygons carry year, locality, start date, duration,
 ignition place, vegetation state and cause; `causa_classe`
 (dolosa/colposa/naturale/ignota) drives colour and filtering. Only FVG comuni
-get data — elsewhere the query returns an empty `FeatureCollection`. It is a
+get data - elsewhere the query returns an empty `FeatureCollection`. It is a
 historical archive, not a predictive hazard map.
 
 The tab also offers an optional NBR overlay, reusing `../nbr.geojson` (the Green

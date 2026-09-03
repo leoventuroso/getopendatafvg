@@ -3,7 +3,7 @@
 Some datasets need a manual exclusion zone (e.g. a private area OSM tags
 inconsistently, or a known bad stretch of data). This is entirely optional
 and comune-specific: if frontend/src/data/exclusions.json doesn't exist,
-nothing is excluded — geometry_is_excluded() just returns False for
+nothing is excluded - geometry_is_excluded() just returns False for
 everything. See SETUP.md.
 """
 
@@ -33,7 +33,7 @@ def _load_exclusion_polygon():
     return unary_union(polygons)
 
 
-# Loaded once at import time — same lifetime as the old hardcoded constant.
+# Loaded once at import time - same lifetime as the old hardcoded constant.
 EXCLUSION_POLYGON = _load_exclusion_polygon()
 
 

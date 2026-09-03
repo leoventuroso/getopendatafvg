@@ -144,7 +144,7 @@ export default function CommunityModule() {
     return () => { map.off('click', handleClick); };
   }, [view]);
 
-  // Crosshair cursor for the whole time the form is open — the map stays clickable
+  // Crosshair cursor for the whole time the form is open - the map stays clickable
   // so the user can reposition the pin at any point, not just before the first click
   useEffect(() => {
     const map = mapInstanceRef.current;

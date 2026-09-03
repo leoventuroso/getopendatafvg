@@ -4,7 +4,7 @@ Produces `frontend/public/data/basemap_dark.pmtiles`: a full cartographic
 basemap (buildings, water, landuse, roads, boundaries, labels), styled by
 `frontend/src/lib/darkBasemapLayers.json` (Dark Matter style, adapted).
 
-Not committed to git (~450 MB, past GitHub's 100 MB limit) — CI must run
+Not committed to git (~450 MB, past GitHub's 100 MB limit) - CI must run
 this target before deploy. For another city/region, just change
 REGION_PBF_URL to the matching Geofabrik extract.
 """
@@ -27,7 +27,7 @@ PLANETILER_URL = (
 PLANETILER_JAR = TOOLS_DIR / "planetiler.jar"
 
 # Geofabrik regional extract covering the target city. Smallest region that
-# contains it — for another city, pick its region from download.geofabrik.de.
+# contains it - for another city, pick its region from download.geofabrik.de.
 REGION_PBF_URL = "https://download.geofabrik.de/europe/italy/nord-est-latest.osm.pbf"
 REGION_PBF_PATH = DATA_DIR / "nord-est-latest.osm.pbf"
 

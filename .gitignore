@@ -8,10 +8,10 @@ __pycache__/
 *.pyc
 .venv/
 
-# Data artifacts — pmtiles and duckdb are committed as pre-built artifacts,
+# Data artifacts - pmtiles and duckdb are committed as pre-built artifacts,
 # EXCEPT the basemap: it's ~450MB (full OpenMapTiles-schema vector basemap,
 # planetiler output), far past GitHub's 100MB file limit. Regenerate with
-# `make basemap` (see pipeline/README.md) — CI must build it at deploy time.
+# `make basemap` (see pipeline/README.md) - CI must build it at deploy time.
 frontend/src/data/*.tif
 frontend/src/data/*.TIF
 frontend/src/data/*.SAFE/

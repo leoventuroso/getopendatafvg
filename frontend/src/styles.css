@@ -207,7 +207,7 @@ body {
   font-weight: 600;
 }
 
-/* Search button — terrain/print use MapLibre's own default control-button
+/* Search button - terrain/print use MapLibre's own default control-button
    styling (plain .maplibregl-ctrl-group, same as the integrated LTS map). */
 /* No custom width/height here: .maplibregl-ctrl-group button already sets
    29x29px, same box as fullscreen/terrain/print right above/below it. */
@@ -283,7 +283,7 @@ body {
 }
 
 /* Search stays the same 29x29px box as terrain/print/fullscreen at every
-   width — matching the integrated LTS map's controls takes priority here
+   width - matching the integrated LTS map's controls takes priority here
    over the touch-target bump other in-page buttons get. */
 @media (max-width: 699px) {
   .map-style-switcher button,
@@ -302,7 +302,7 @@ body {
   overflow: hidden;
 }
 
-/* Shared legend primitives — used by Outdoor, Rescue, Green */
+/* Shared legend primitives - used by Outdoor, Rescue, Green */
 
 .legend-row .module-link .tab-icon {
   margin-right: 0.4rem;
@@ -436,7 +436,7 @@ body {
 .chip-canopy { background: #2b8a3e; }
 .chip-cooling-spectrum { background: linear-gradient(90deg, #1a9850 0%, #fee08b 50%, #d73027 100%); }
 
-/* Rii a rischio esondazione — click popup (Soccorso ed Emergenza) */
+/* Rii a rischio esondazione - click popup (Soccorso ed Emergenza) */
 
 /* The popup sizes itself to the viewport: never wider/taller than the map area,
    and it scrolls inside instead of spilling out or being clipped on zoom-out. */
@@ -573,7 +573,7 @@ body {
   display: inline-block;
 }
 
-/* Outdoor — routing and elevation profile */
+/* Outdoor - routing and elevation profile */
 
 .routing-panel {
   border-style: dashed;

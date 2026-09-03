@@ -2,12 +2,12 @@
 
 Two inputs, merged here:
 
-1. `data/sources/output_rii_protezione_civile.zip` — a manual reconnaissance
+1. `data/sources/output_rii_protezione_civile.zip` - a manual reconnaissance
    package by the Gruppo Comunale di Protezione Civile ("Censimento RII" 2013 +
    2024 re-survey): one row per rio in `metadata_rii.csv`, plus one photo each.
    A volunteer field survey, NOT a technical study, and comune-specific.
 
-2. `rii_osm_lines.geojson` (next to this script) — the real watercourse
+2. `rii_osm_lines.geojson` (next to this script) - the real watercourse
    geometry from OpenStreetMap, keyed by census id. The coordinates in the CSV
    are single EXIF/estimate points and several land far from the actual rio
    (e.g. Ru de Spia). Where OSM has the named stream we draw its line instead of
@@ -25,7 +25,7 @@ Output:
   frontend/public/data/rescue/rii/01_evento.jpg        (8 Oct 2024 flood evidence)
 
 Rii without any usable location (id "06": name unknown, photos dated 2007) are
-skipped and reported on stderr — they are mentioned in the module FAQ instead.
+skipped and reported on stderr - they are mentioned in the module FAQ instead.
 """
 
 from __future__ import annotations

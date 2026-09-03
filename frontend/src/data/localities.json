@@ -1,5 +1,5 @@
 {
-  "_comment": "Frazioni e borgate del comune, con coordinate (da Nominatim/OSM) e raggio approssimato in metri per il poligono circolare. Dato curato a mano — non derivabile automaticamente da OSM. Per un nuovo comune: sostituisci questa lista con le proprie località.",
+  "_comment": "Frazioni e borgate del comune, con coordinate (da Nominatim/OSM) e raggio approssimato in metri per il poligono circolare. Dato curato a mano - non derivabile automaticamente da OSM. Per un nuovo comune: sostituisci questa lista con le proprie località.",
   "localities": [
     {
       "name": "Montereale Valcellina",

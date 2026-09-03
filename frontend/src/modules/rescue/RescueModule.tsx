@@ -108,12 +108,12 @@ function riiPopupHTML(props: Record<string, unknown>): string {
   );
 }
 
-// Source values carry hyphen/dash separators ("Prati - Pascoli") and ISO dates
-// ("1993-01-08"). The house style avoids dashes in prose, so tidy them up.
+// Source values carry hyphen separators ("Prati - Pascoli") and ISO dates
+// ("1993-01-08"). Reformat both for display.
 function tidyDashes(text: string): string {
   const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
-  return text.replace(/\s+[-–—]\s+/g, ' / ');
+  return text.replace(/\s+-\s+/g, ' / ');
 }
 
 function fireRow(label: string, value: unknown): string {

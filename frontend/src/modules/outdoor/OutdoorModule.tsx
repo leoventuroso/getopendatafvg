@@ -559,8 +559,8 @@ function ElevationSvg({ summary }: { summary: RouteSummary }) {
   );
 }
 
-// The on-map floating panel: hint, point list, controls and — once a route is
-// computed — length, per-mode times, road-type breakdown, elevation profile
+// The on-map floating panel: hint, point list, controls and - once a route is
+// computed - length, per-mode times, road-type breakdown, elevation profile
 // and the download buttons. Modelled on LTSBikePlan's routing control.
 function RoutePlannerOverlay({
   active,

@@ -20,17 +20,17 @@ export const NDVI_CLASS_CONFIG: Record<NdviClass, { label: string; color: string
 
 export const NBR_CLASS_CONFIG: Record<NbrClass, { label: string; color: string; range: string }> = {
   sana:      { label: 'Vegetazione sana',     color: '#1a9641', range: '> 0.4' },
-  moderata:  { label: 'Vegetazione moderata', color: '#a6d96a', range: '0.2 – 0.4' },
-  stress:    { label: 'Stress idrico',        color: '#ffffbf', range: '0.0 – 0.2' },
-  degradata: { label: 'Vegetazione degradata',color: '#fdae61', range: '-0.2 – 0.0' },
+  moderata:  { label: 'Vegetazione moderata', color: '#a6d96a', range: '0.2 - 0.4' },
+  stress:    { label: 'Stress idrico',        color: '#ffffbf', range: '0.0 - 0.2' },
+  degradata: { label: 'Vegetazione degradata',color: '#fdae61', range: '-0.2 - 0.0' },
   bruciata:  { label: 'Suolo nudo / bruciato',color: '#d7191c', range: '< -0.2' },
 };
 
 export const LST_CLASS_CONFIG: Record<LstClass, { label: string; color: string; range: string }> = {
   fresco:          { label: 'Fresco',          color: '#4575b4', range: '< 18°C' },
-  moderato_fresco: { label: 'Moderato-fresco', color: '#91bfdb', range: '18–22°C' },
-  temperato:       { label: 'Temperato',       color: '#fee090', range: '22–26°C' },
-  caldo:           { label: 'Caldo',           color: '#fc8d59', range: '26–30°C' },
+  moderato_fresco: { label: 'Moderato-fresco', color: '#91bfdb', range: '18-22°C' },
+  temperato:       { label: 'Temperato',       color: '#fee090', range: '22-26°C' },
+  caldo:           { label: 'Caldo',           color: '#fc8d59', range: '26-30°C' },
   molto_caldo:     { label: 'Molto caldo',     color: '#d73027', range: '> 30°C' },
 };
 
