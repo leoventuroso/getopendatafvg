@@ -83,7 +83,7 @@ Everything comune-specific (name, OSM area, ISTAT code, municipal boundary, fraz
 Static build published on GitHub Pages.
 
 - `.github/workflows/deploy.yml`: builds and deploys on every push to `main`, also triggerable manually
-- `.github/workflows/refresh-data.yml`: scheduled pipeline runs, committed back to the repo: weekly (`make rescue cyclepaths`), monthly (`make base community`), or manual for any target
+- `.github/workflows/refresh-data.yml`: scheduled pipeline runs, committed back to the repo and then auto-deployed: weekly (`make rescue fire catasto cyclepaths`), monthly (`make base community`), or manual for any target
 
 ---
 
