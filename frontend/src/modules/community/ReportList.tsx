@@ -61,6 +61,9 @@ export default function ReportList({ reports, selectedReport, votes, votedIds, o
               )}
               <p className="community-report-coords">
                 {r.lat.toFixed(5)}, {r.lon.toFixed(5)}
+                {r.foglio && r.particella && (
+                  <> &middot; catasto F.{r.foglio} P.{r.particella}</>
+                )}
               </p>
               {r.pending && (
                 <button

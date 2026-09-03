@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { CATEGORIES, type CategoryId, type FormState, type PhotoState } from './communityStore';
+import type { ParcelPoint } from '../../lib/catasto';
 
 type Props = {
   pendingLocation: [number, number] | null;
+  parcel: ParcelPoint | null;
   form: FormState;
   photo: PhotoState | null;
   submitted: boolean;
@@ -14,7 +16,7 @@ type Props = {
 };
 
 export default function ReportForm({
-  pendingLocation, form, photo, submitted,
+  pendingLocation, parcel, form, photo, submitted,
   onFormChange, onPhotoChange, onRemovePhoto,
   onSubmit, onCancel,
 }: Props) {
@@ -43,6 +45,12 @@ export default function ReportForm({
           <i className="bi bi-check-circle-fill" style={{ color: '#2f9e44' }} aria-hidden="true" />
           {' '}Posizione impostata - {pendingLocation[1].toFixed(5)}, {pendingLocation[0].toFixed(5)}
           {' '}· clicca di nuovo sulla mappa per spostarla
+          {parcel && (
+            <span className="community-parcel">
+              <i className="bi bi-grid-3x3-gap" aria-hidden="true" />
+              {' '}Particella catastale: foglio <b>{parcel.foglio}</b>, particella <b>{parcel.particella}</b> (indicativa)
+            </span>
+          )}
         </p>
       )}
 

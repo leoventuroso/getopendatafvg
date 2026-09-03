@@ -4,6 +4,7 @@ import { APP_CONFIG } from '../../config';
 import { useModuleMap } from '../../hooks/useModuleMap';
 import { onStyleReady } from '../../lib/map';
 import { loadCommunityReports, type CommunityReport } from '../../lib/duckdb';
+import { loadParcels, nearestParcel, type ParcelPoint } from '../../lib/catasto';
 import {
   CATEGORIES, EMPTY_FORM, MUNICIPALITY_EMAIL,
   categoryLabel,
@@ -28,6 +29,8 @@ export default function CommunityModule() {
   const [selectedReport, setSelectedReport] = useState<CommunityReport | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [pendingLocation, setPendingLocation] = useState<[number, number] | null>(null);
+  const [pendingParcel, setPendingParcel] = useState<ParcelPoint | null>(null);
+  const [parcels, setParcels] = useState<ParcelPoint[]>([]);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [photo, setPhoto] = useState<PhotoState | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -202,6 +205,19 @@ export default function CommunityModule() {
     }
   }
 
+  // Load the parcel points once, the first time a report is started.
+  useEffect(() => {
+    if (view === 'form' && parcels.length === 0) {
+      loadParcels().then(setParcels);
+    }
+  }, [view, parcels.length]);
+
+  // Whenever the pin (or the loaded parcels) change, snap to the nearest parcel.
+  useEffect(() => {
+    if (!pendingLocation) { setPendingParcel(null); return; }
+    setPendingParcel(nearestParcel(parcels, pendingLocation[0], pendingLocation[1]));
+  }, [pendingLocation, parcels]);
+
   function startNewReport() {
     setView('form');
     setSelectedReport(null);
@@ -238,6 +254,8 @@ export default function CommunityModule() {
       created_at: now,
       pending: true,
       photo_data_url: photo?.dataUrl,
+      foglio: pendingParcel?.foglio,
+      particella: pendingParcel?.particella,
     };
 
     const updated = [...reports, newReport];
@@ -249,6 +267,7 @@ export default function CommunityModule() {
     const body = [
       `Categoria: ${catLabel}`,
       `Posizione: lat ${pendingLocation[1].toFixed(5)}, lon ${pendingLocation[0].toFixed(5)}`,
+      ...(pendingParcel ? [`Particella catastale (indicativa): foglio ${pendingParcel.foglio}, particella ${pendingParcel.particella}`] : []),
       ``,
       `Descrizione:`,
       form.description.trim() || '(nessuna descrizione)',
@@ -311,6 +330,7 @@ export default function CommunityModule() {
         ) : (
           <ReportForm
             pendingLocation={pendingLocation}
+            parcel={pendingParcel}
             form={form}
             photo={photo}
             submitted={submitted}

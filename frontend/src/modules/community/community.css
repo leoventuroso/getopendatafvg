@@ -290,6 +290,19 @@
   flex-wrap: wrap;
 }
 
+.community-parcel {
+  flex-basis: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+  padding: 0.28rem 0.5rem;
+  background: #f6f2ea;
+  border: 1px solid #e0d3bd;
+  border-radius: 7px;
+  color: #6b4e12;
+}
+
 .community-form-label {
   display: flex;
   flex-direction: column;

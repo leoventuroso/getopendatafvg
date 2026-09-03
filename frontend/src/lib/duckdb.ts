@@ -14,6 +14,8 @@ export type CommunityReport = {
   created_at: string;
   pending?: boolean;
   photo_data_url?: string;
+  foglio?: string;
+  particella?: string;
 };
 
 async function makeDuckDb(): Promise<{ db: duckdb.AsyncDuckDB; worker: Worker; workerUrl: string }> {
