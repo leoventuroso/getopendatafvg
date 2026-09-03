@@ -1,26 +1,26 @@
-# Deploy per un nuovo comune
+# Deploying for another comune
 
-Questa piattaforma è nata per Montereale Valcellina, ma il codice non è
-legato a quel comune: tutto ciò che è specifico del territorio vive in un
-unico file di configurazione più una manciata di file di dati grezzi. Per
-adattarla a un altro comune, procurati i tuoi dati grezzi (vedi sotto) e
-compila i file elencati qui - non serve toccare il codice applicativo.
+This platform was built for Montereale Valcellina, but the code is not tied to
+that comune: everything territory-specific lives in a single config file plus a
+handful of raw data files. To adapt it to another comune, source your own raw
+data (see below) and fill in the files listed here - you do not need to touch
+the application code.
 
 ---
 
-## 1. Configurazione - `frontend/src/comune.config.json`
+## 1. Configuration - `frontend/src/comune.config.json`
 
-Unica fonte di verità, letta sia dal frontend (`frontend/src/config.ts`) sia
-da ogni script della pipeline Python (`pipeline/lib/comune_config.py`).
+The single source of truth, read both by the frontend (`frontend/src/config.ts`)
+and by every Python pipeline script (`pipeline/lib/comune_config.py`).
 
 ```jsonc
 {
-  "name": "Nome del comune",
-  "province": "Nome provincia",
-  "region": "Nome regione",
-  "istatCode": "123456",          // codice ISTAT del comune
-  "provinceIstatCode": "ITDxx",   // codice ISTAT NUTS3 della provincia
-  "osmAreaId": 3600000000,        // relation OSM + 3600000000, vedi sotto
+  "name": "Comune name",
+  "province": "Province name",
+  "region": "Region name",
+  "istatCode": "123456",          // comune ISTAT code
+  "provinceIstatCode": "ITDxx",   // province NUTS3 ISTAT code
+  "osmAreaId": 3600000000,        // OSM relation + 3600000000, see below
   "email": "info@comune.example.it",
   "boundaryFile": "frontend/src/data/municipalBoundary.json",
   "map": { "center": [lon, lat], "zoom": 12 },
@@ -28,101 +28,100 @@ da ogni script della pipeline Python (`pipeline/lib/comune_config.py`).
 }
 ```
 
-**Come trovare i valori:**
-- `osmAreaId` - cerca il comune su [openstreetmap.org](https://www.openstreetmap.org),
-  apri la relation del confine amministrativo, prendi l'ID e sommaci
-  `3600000000` (è la convenzione Overpass per le area query: `relation id + 3600000000`).
-- `istatCode` / `provinceIstatCode` - [Codici statistici ISTAT delle unità amministrative](https://www.istat.it/it/archivio/6789).
-- `ltsEmbedView` - lat/lon/zoom di un punto qualsiasi dentro il comune: l'embed
-  di [stressinbici.it](https://stressinbici.it) fa da solo lo swap sul comune giusto,
-  non serve uno slug.
+**Finding the values:**
+- `osmAreaId` - look the comune up on [openstreetmap.org](https://www.openstreetmap.org),
+  open the administrative boundary relation, take its ID and add `3600000000`
+  (the Overpass convention for area queries: `relation id + 3600000000`).
+- `istatCode` / `provinceIstatCode` - [ISTAT statistical codes of administrative units](https://www.istat.it/it/archivio/6789).
+- `ltsEmbedView` - lat/lon/zoom of any point inside the comune: the
+  [stressinbici.it](https://stressinbici.it) embed swaps to the right comune on
+  its own, no slug needed.
 
 ---
 
-## 2. Confine comunale - `frontend/src/data/municipalBoundary.json`
+## 2. Municipal boundary - `frontend/src/data/municipalBoundary.json`
 
-Un singolo `Feature` GeoJSON (geometria `Polygon`/`MultiPolygon`, EPSG:4326)
-con il confine amministrativo. Usato per ritagliare NDVI, NBR e LST alla
-sola area del comune.
+A single GeoJSON `Feature` (`Polygon`/`MultiPolygon` geometry, EPSG:4326) with
+the administrative boundary. Used to clip NDVI, NBR and LST to the comune area,
+and the fire-danger overlay.
 
-**Dove trovarlo:** esporta il confine dalla relation OSM del comune (es. via
-Nominatim: `https://nominatim.openstreetmap.org/search?q=<comune>&polygon_geojson=1&format=jsonv2`),
-oppure dai confini amministrativi ISTAT.
-
----
-
-## 3. Frazioni e borgate - `frontend/src/data/localities.json`
-
-Lista a mano di frazioni/borgate con nome, coordinate e raggio approssimato
-(in metri) per il pannello Home. Non è derivabile in automatico da OSM in
-modo affidabile per ogni comune - è un dato curato, non un dato grezzo
-scaricabile. Formato: vedi il file esistente come esempio.
-
-Se il tuo comune non ha frazioni, lascia `"localities": []`.
+**Where to get it:** export the boundary from the comune's OSM relation (e.g.
+via Nominatim: `https://nominatim.openstreetmap.org/search?q=<comune>&polygon_geojson=1&format=jsonv2`),
+or from ISTAT administrative boundaries.
 
 ---
 
-## 4. Zone di esclusione (opzionale) - `frontend/src/data/exclusions.json`
+## 3. Frazioni and hamlets - `frontend/src/data/localities.json`
 
-Solo se hai bisogno di escludere manualmente un'area specifica da alcuni
-layer (es. una zona che OSM tagga in modo incoerente con la realtà). Se non
-ti serve, cancella il file o lascialo con `"features": []` - nessun errore,
-la pipeline semplicemente non esclude nulla.
+A hand-curated list of frazioni/hamlets with name, coordinates and an
+approximate radius (in metres) for the Home panel. It cannot be derived
+reliably from OSM for every comune - it is curated data, not a downloadable
+raw dataset. Format: use the existing file as an example.
 
----
-
-## 5. Statistiche comunali - `frontend/public/data/municipality_stats.json`
-
-Questo file è un "seed" che compili a mano una volta (nome, provincia,
-regione, codice ISTAT, e i fatti che nessuna API fornisce: cime, farmacia,
-scuole, pronto soccorso più vicino, zona sismica). Lo script
-`pipeline/scripts/fetch_istat_stats.py` lo legge e aggiorna **solo** i campi
-disponibili via SDMX ISTAT (popolazione, famiglie, densità, età media),
-lasciando intatti i campi manuali. Copia la struttura del file esistente,
-svuota i valori specifici di Montereale Valcellina e compila i tuoi.
+If your comune has no frazioni, leave `"localities": []`.
 
 ---
 
-## 6. Dati satellitari e DEM grezzi (te li procuri tu)
+## 4. Exclusion zones (optional) - `frontend/src/data/exclusions.json`
 
-Questi file **non sono nel repo** (sono gitignored, troppo pesanti) e vanno
-scaricati per l'area del tuo comune:
+Only if you need to manually exclude a specific area from some layers (e.g. a
+zone OSM tags inconsistently with reality). If you don't need it, delete the
+file or leave it with `"features": []` - no error, the pipeline simply excludes
+nothing.
 
-| File | Serve a | Dove scaricarlo |
+---
+
+## 5. Municipal statistics - `frontend/public/data/municipality_stats.json`
+
+This file is a seed you fill in by hand once (name, province, region, ISTAT
+code, and the facts no API provides: peaks, pharmacy, schools, nearest
+emergency room, seismic zone). `pipeline/scripts/fetch_istat_stats.py` reads it
+and updates **only** the fields available via the ISTAT SDMX API (population,
+households, density, average age), leaving the manual fields untouched. Copy
+the structure of the existing file, blank out the Montereale Valcellina values
+and fill in your own.
+
+---
+
+## 6. Raw satellite and DEM data (you source these)
+
+These files are **not in the repo** (gitignored, too large) and must be
+downloaded for your comune's area:
+
+| File | Used for | Where to download |
 |---|---|---|
-| `frontend/src/data/*.SAFE/` (scena Sentinel-2 L2A) | NDVI, NBR (moduli Green) | [Copernicus Browser](https://browser.dataspace.copernicus.eu/) |
-| `frontend/src/data/*.tif` (banda lwir11 Landsat) | LST - temperatura suolo | [USGS EarthExplorer](https://earthexplorer.usgs.gov/), Collection 2 L2 |
-| `frontend/src/data/dem.tif` (DEM/LiDAR) | Pendenza sentieri/ciclabili | Portale LiDAR/DEM della tua regione, o [Copernicus DEM](https://spacedata.copernicus.eu/collections/copernicus-digital-elevation-model) |
+| `frontend/src/data/*.SAFE/` (Sentinel-2 L2A scene) | NDVI, NBR (Verde module) | [Copernicus Browser](https://browser.dataspace.copernicus.eu/) |
+| `frontend/src/data/*.tif` (Landsat lwir11 band) | LST - surface temperature | [USGS EarthExplorer](https://earthexplorer.usgs.gov/), Collection 2 L2 |
+| `frontend/src/data/dem.tif` (DEM/LiDAR) | Trail / cycleway slope | Your region's LiDAR/DEM portal, or [Copernicus DEM](https://spacedata.copernicus.eu/collections/copernicus-digital-elevation-model) |
 
-Una volta scaricati, esegui la pipeline (`cd pipeline && make all` - vedi
-[pipeline/README.md](pipeline/README.md) per i target singoli).
+Once downloaded, run the pipeline (`cd pipeline && make all` - see
+[pipeline/README.md](pipeline/README.md) for individual targets).
 
 ---
 
 ## 7. Deploy
 
-GitHub Pages pubblica sempre alla radice del nome della repo
-(`<utente>.github.io/<nome-repo>/`). Due opzioni:
+GitHub Pages always publishes at the root of the repo name
+(`<user>.github.io/<repo-name>/`). Two options:
 
-**A - il nome del comune non serve nel link** (repo dedicata a un solo
-comune, es. `mappa-civica-<comune>`):
-1. Fai il fork/rename della repo con quel nome.
-2. Aggiorna `frontend/vite.config.ts` → `base: '/<nome-repo>/'`.
-3. `.github/workflows/deploy.yml` resta invariato (pubblica direttamente
-   `frontend/dist`).
+**A - the comune name is not in the link** (repo dedicated to one comune, e.g.
+`mappa-civica-<comune>`):
+1. Fork/rename the repo to that name.
+2. Update `frontend/vite.config.ts` -> `base: '/<repo-name>/'`.
+3. `.github/workflows/deploy.yml` stays as is (publishes `frontend/dist`
+   directly).
 
-**B - repo con nome generico, comune come segmento extra nell'URL** (es.
-repo `mappa-civica`, link `.../mappa-civica/<comune>/` - la configurazione
-di questo stesso repo):
-1. Aggiorna `frontend/vite.config.ts` → `base: '/<nome-repo>/<comune>/'`.
-2. In `.github/workflows/deploy.yml`, lo step "Assemble Pages artifact"
-   copia `frontend/dist` dentro `publish/<comune>/` invece di pubblicarlo
-   alla radice - cambia `montereale-valcellina` con lo slug del tuo comune
-   in quello step (è l'unico punto comune-specifico rimasto nel workflow).
+**B - generic repo name, comune as an extra URL segment** (e.g. repo
+`mappa-civica`, link `.../mappa-civica/<comune>/` - this repo's own setup):
+1. Update `frontend/vite.config.ts` -> `base: '/<repo-name>/<comune>/'`.
+2. In `.github/workflows/deploy.yml`, the "Assemble Pages artifact" step copies
+   `frontend/dist` into `publish/<comune>/` instead of publishing it at the
+   root - change `montereale-valcellina` to your comune slug in that step (the
+   only comune-specific point left in the workflow).
 
-`refresh-data.yml` funziona invariato in entrambi i casi: non ha nulla di
-comune-specifico, si limita a eseguire `make <target>`.
+`refresh-data.yml` works unchanged in both cases: it has nothing
+comune-specific, it just runs `make <target>`.
 
-A parte questo, non serve toccare nessun componente React o script Python
-oltre ai file elencati sopra: leggono tutti da `comune.config.json` o dai
-file dati.
+Beyond that, you don't need to touch any React component or Python script other
+than the files listed above: they all read from `comune.config.json` or the
+data files.

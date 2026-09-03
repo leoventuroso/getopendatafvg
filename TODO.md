@@ -1,43 +1,43 @@
 # TODO - Montereale Valcellina Open
 
-Attività in sospeso: dati esterni da ricevere, rilievi sul campo, integrazioni future.
+Open work: external data to receive, field surveys, future integrations.
 
 ---
 
-## Modulo Soccorso ed Emergenza
+## Soccorso ed Emergenza module
 
-### Rii a rischio - da validare con il Gruppo Comunale di Protezione Civile
-- Posizione esatta del sistema Cian/Cjasarile/Bennata (ora su un punto di zona, marcatore sbiadito).
-- Se "Rio Cao Malnisio" / "Rio Bala Busa" siano lo stesso sopralluogo del Cjasarile.
-- Il rio "06" (senza nome né coordinate, foto 2007), oggi escluso dalla mappa.
+### Rii a rischio - to validate with the Gruppo Comunale di Protezione Civile
+- Exact position of the Cian/Cjasarile/Bennata system (currently a zone point, faded marker).
+- Whether "Rio Cao Malnisio" / "Rio Bala Busa" are the same survey as Cjasarile.
+- The "06" rio (no name, no coordinates, 2007 photos), currently excluded from the map.
 
-### Presidi di soccorso - dati mancanti
-- **Idranti** e **punti di raccolta**: nessun dato (placeholder svuotati). Servono un elenco del gestore/Comune o un rilievo, poi inserimento su OpenStreetMap e `make rescue`.
-- **DAE**: i punti `geocoded: true` in `aed_comune.geojson` hanno posizione dall'indirizzo - verificarli sul posto o rimpiazzarli con i nodi OSM man mano che si rifiniscono (la dedup a ~60 m li assorbe). Aggiungere dove noti `access`, `opening_hours`, `defibrillator:location`, `operator`.
+### Emergency assets - missing data
+- **Hydrants** and **assembly points**: no data (placeholders emptied). Need a list from the water utility / comune or a survey, then mapping on OpenStreetMap and `make rescue`.
+- **AEDs**: the `geocoded: true` points in `aed_comune.geojson` are placed from an address - verify them on the ground or replace them with OSM nodes as they get refined (the ~60 m dedup absorbs them). Add `access`, `opening_hours`, `defibrillator:location`, `operator` where known.
 
-### Incendi boschivi - estensioni possibili (stesso WFS IRDAT FVG)
-- `ZONE_RISC:SUPERFICIE_BOSCATA_BRUCIATA` / `_PASCOLO` / `_NON_BOSCATA_BRUCIATA` - superficie bruciata per copertura del suolo (più granulare dei perimetri; ora non usata).
+### Forest fires - possible extensions (same IRDAT FVG WFS)
+- `ZONE_RISC:SUPERFICIE_BOSCATA_BRUCIATA` / `_PASCOLO` / `_NON_BOSCATA_BRUCIATA` - burned area by land cover (more granular than the perimeters; not used yet).
 
-### Widget meteo/idrometrico ARPA FVG - serve un feed lato server
-- Obiettivo: pannello con precipitazioni ultime 24h, livello idrometrico del Torrente Cellina, stato allerta.
-- Blocco: OSMER (`dev.meteo.fvg.it/xml/stazioni/<COD>.xml`) **non manda header CORS**, quindi un `fetch` dal sito statico è bloccato dal browser; inoltre OSMER ha solo dati meteo (niente livello idrometrico) e la stazione più vicina è Piancavallo (montagna, ~10 km), non rappresentativa dell'abitato.
-- Opzioni: (a) workflow GitHub Actions schedulato (es. ogni 1-2h) che interroga ARPA/OSMER lato CI e committa un piccolo `arpa.json` che il widget legge; (b) micro-proxy serverless (Cloudflare Worker) che aggiunge CORS. Il dato idrometrico va cercato nella rete idro della Protezione Civile FVG (non OSMER).
+### Hydrometric part of the weather widget - needs a server-side feed
+- The current-conditions + 24h rainfall widget on Home is done (Open-Meteo, client-side, cached).
+- The river level of the Torrente Cellina still needs a source: OSMER (`dev.meteo.fvg.it/xml/stazioni/<COD>.xml`) sends **no CORS header** (a `fetch` from the static site is blocked) and carries meteo only. Options: (a) a scheduled GitHub Actions job that queries the FVG civil-protection hydro network CI-side and commits a small JSON the widget reads; (b) a tiny serverless proxy (Cloudflare Worker) that adds CORS.
 
 ---
 
-## Modulo Segnala (Community Participation)
+## Segnala module (community participation)
 
-### Segnalazioni condivise fra utenti - serve un backend
-- Oggi ogni segnalazione vive solo nel `localStorage` di chi la crea (+ email `mailto:`); nessuno vede quelle degli altri, ed è attivo solo l'"Elimina" locale.
-- Opzioni: (a) backend gestito tipo Supabase (Postgres + API + RLS, chiave anon nel frontend) - CRUD e cancellazione veri, ma rompe il "no backend / zero costi"; (b) `repository_dispatch` → GitHub Actions che ricostruisce un file condiviso nel repo (abbozzato in `functions/`) - latenza di minuti, serve un proxy per il token.
-- La cancellazione "vera" e i voti condivisi dipendono da questa scelta.
+### Reports shared between users - needs a backend
+- Today every report lives only in its author's `localStorage` (+ `mailto:` email); nobody sees anyone else's, and only local "Delete" works.
+- Options: (a) a managed backend such as Supabase (Postgres + API + RLS, anon key in the frontend) - real CRUD and deletion, but breaks the "no backend / zero cost" model; (b) `repository_dispatch` -> GitHub Actions rebuilding a shared file in the repo (sketched in `functions/`) - minutes of latency, needs a token proxy.
+- "Real" deletion and shared votes depend on this choice.
 
-### Export report per l'amministrazione
-- Download CSV/PDF delle segnalazioni ordinate per voti e zona, per prioritizzare gli interventi.
+### Report export for the administration
+- CSV/PDF download of reports ordered by votes and area, to prioritise work.
 
-### Classificazione automatica foto
-- Modello leggero lato browser (YOLO/MobileNet) per suggerire la categoria dalla foto allegata (es. buca → "Viabilità e strade").
+### Automatic photo classification
+- Lightweight in-browser model (YOLO/MobileNet) to suggest the category from the attached photo (e.g. pothole -> "Viabilità e strade").
 
-### Integrazione dati catastali
-- Selezione della particella catastale sulla mappa per georeferenziare la segnalazione; il form si pre-compila con foglio e numero particella.
-- Fonte: [ondata/dati_catastali](https://github.com/ondata/dati_catastali) - particelle vettoriali per l'Italia in Parquet, CC BY 4.0 (citare OnData). Interrogabile via DuckDB-Wasm su Parquet HTTP, già in uso nel progetto.
+### Cadastral (parcel) integration
+- **In Segnala:** when the citizen drops the pin, look up which cadastral parcel it falls in and pre-fill the report with `foglio` + `particella` (and optionally show the parcel outline). Gives the comune an unambiguous legal reference for the location.
+- **Dedicated view:** add a "Particelle catastali" toggle layer in the **Home** module (off by default; click a parcel to see foglio/particella and area). Home already shows the boundary, so the parcels fit its "know your territory" theme without adding a top-level nav item. A full standalone module would be overkill for how niche this is.
+- Source: [ondata/dati_catastali](https://github.com/ondata/dati_catastali) - vector parcels for all of Italy as GeoParquet, CC BY 4.0 (credit OnData). Queryable via DuckDB-Wasm over HTTP Parquet, already used in the project. Caveats: parcel geometry is tens of MB per comune (Montereale is small, manageable), needs the DuckDB spatial extension in Wasm, and cadastral data has its own accuracy limits (a legal map, not a survey).
