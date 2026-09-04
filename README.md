@@ -7,7 +7,7 @@ An open-source, serverless civic tech platform for sustainable mobility, environ
 
 **Live:** https://leoventuroso.github.io/mappa-civica/montereale-valcellina/
 
-![Screenshot](docs/screenshot.jpg)
+![Mappa Civica – Home view](docs/screenshot.jpg)
 
 ---
 
