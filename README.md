@@ -12,6 +12,24 @@ infrastructure data via WFS, OpenStreetMap features, ISTAT statistics,
 cadastral parcels, and terrain slope. Every function takes a boundary
 (comune, custom polygon, bounding box) and returns data clipped to it.
 
+## Statement of need
+
+Extracting open data for Friuli Venezia Giulia means a different API,
+auth scheme, and set of undocumented quirks for every source: Copernicus'
+S3-based Sentinel-2 download, USGS's M2M product-ID matching, ISTAT's
+SDMX endpoint (which silently returns one year more than requested and
+blocks an IP for 1-2 days past 5 requests/minute), a regional GeoServer
+with over a thousand WFS layers and no single discovery point, and a
+Socrata portal with its own SoQL query language. Anyone doing GIS,
+environmental, or socio-economic analysis on this region - researchers,
+civic-tech developers, local public administrations - ends up
+re-discovering and re-fixing the same handful of undocumented behaviors
+before getting to the actual analysis. getopendatafvg is that discovery
+and fixing work, done once: a consistent function per data source
+(boundary in, clipped data out), with the quirks already handled and
+tested against the real services rather than left for the next person
+to hit.
+
 ## Installation
 
 ```bash
