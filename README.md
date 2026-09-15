@@ -1,6 +1,6 @@
-<p align="center">
-  <img src="getopendatafvglogo.png" alt="getopendatafvg" width="700">
-</p>
+<div align="center">
+  <img src="getopendatafvglogo.png" alt="getopendatafvg" width="700" style="margin-bottom: -30px;">
+</div>
 
 # getopendatafvg
 
