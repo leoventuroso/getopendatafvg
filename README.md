@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="getopendatafvglogo.png" alt="getopendatafvg" width="420">
+  <img src="getopendatafvglogo.png" alt="getopendatafvg" width="700">
 </p>
 
 # getopendatafvg
