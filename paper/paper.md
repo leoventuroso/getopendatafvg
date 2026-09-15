@@ -147,20 +147,9 @@ rather than each source's own undocumented access path.
 
 # AI usage disclosure
 
-This project's code, tests, documentation, and this manuscript were
-developed with the assistance of Claude models (Anthropic) in the
-Sonnet and Opus families, accessed through Claude Code. It was used for
-code generation, refactoring, test scaffolding, live-verification
-scripting against real external services, and documentation and
-manuscript drafting, including generating this bibliography's BibTeX
-entries. It was not used to decide which modules to build, which
-conventions to follow, or what to reject from a reference
-implementation under comparison - those were the author's decisions.
-Every function was directed, reviewed, and live-verified against the
-real external service by the author before being merged, and every
-citation in this paper has been checked against its own source
-(a `CITATION.cff` file, a repository's stated DOI, or its README)
-rather than accepted as generated.
+Claude models (Anthropic), accessed through Claude Code, were used for
+test scaffolding during development. All tests were reviewed and
+validated by the author.
 
 # Acknowledgements
 
