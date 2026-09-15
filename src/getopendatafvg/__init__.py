@@ -23,6 +23,7 @@ from .istat import (
     fetch_population_series,
 )
 from .landsat import LandsatScene, UsgsCredentials, fetch_landsat_scene
+from .open_data_fvg import fetch_open_data_fvg, within_box_clause
 from .overpass import boundary_poly_filter, element_point, fetch_overpass_elements, query_overpass
 from .pmtiles import TippecanoeNotFoundError, build_pmtiles
 from .scene_date import landsat_scene_date, sentinel2_scene_date
@@ -67,6 +68,7 @@ __all__ = [
     'fetch_income_series',
     'fetch_istat_dataflow',
     'fetch_landsat_scene',
+    'fetch_open_data_fvg',
     'fetch_overpass_elements',
     'fetch_population_series',
     'fetch_sentinel2_scene',
@@ -79,4 +81,5 @@ __all__ = [
     'region_parquet_name',
     'sentinel2_scene_date',
     'slope_class_for_value',
+    'within_box_clause',
 ]

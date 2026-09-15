@@ -192,6 +192,31 @@ elevation_m = fetch_elevation(46.0704, 12.6289)
 Backed by [Open-Elevation](https://open-elevation.com/) (SRTM data,
 free, no API key), covers anywhere in the world.
 
+## Open Data FVG portal
+
+The region's own open data portal (dati.friuliveneziagiulia.it) hosts
+about 300 datasets not on its WFS GeoServer above: municipal budgets,
+election results, demographic time series, bike paths, pharmacies, and
+more.
+
+```python
+from shapely.geometry import box
+from getopendatafvg import fetch_open_data_fvg, within_box_clause
+
+boundary = box(12.5648, 46.0704, 12.7251, 46.1911)
+rows = fetch_open_data_fvg(
+    "7eat-pecq",  # "Piste Ciclabili" - the resource id from the dataset's page
+    where=within_box_clause("the_geom", boundary),
+)
+```
+
+Every dataset has its own schema (and, if it has one at all, its own
+geometry column name and type), so rows come back as plain dicts, as
+the portal returns them - not the uniform shape `fetch_wfs_features`
+returns. `where`/`select`/`order` are raw
+[SoQL](https://dev.socrata.com/docs/queries/) clauses, e.g.
+`where="comune='UDINE'"`.
+
 ## Coverage analysis
 
 What percentage of a buffered line (a road, a trail) falls inside a
