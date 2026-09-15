@@ -221,6 +221,20 @@ API key, global coverage back to 1940. Useful for correlating other
 data (a landslide event, a fire, a satellite scene) with the weather
 around it.
 
+## Wikipedia summaries
+
+```python
+from getopendatafvg import fetch_wikipedia_summary
+
+summary = fetch_wikipedia_summary("Montereale Valcellina")
+```
+
+Plain-text page summary, free and no API key. Tries the given title
+first, then falls back to Wikipedia's own search if it doesn't exist
+or is a disambiguation page. Returns `None` if nothing matches - no
+classification (touristic, notable, ...) is done here, that's a
+decision for the caller.
+
 ## License
 
 [MIT](LICENSE)

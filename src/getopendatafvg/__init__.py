@@ -31,6 +31,7 @@ from .vectorize import ClassBreak, classify_and_vectorize
 from .viz import plot_index
 from .weather import DailyWeather, fetch_historical_weather
 from .wfs import clip_to_boundary, fetch_and_clip_wfs_features, fetch_wfs_features
+from .wikipedia import fetch_wikipedia_summary
 
 __all__ = [
     'DEFAULT_BANDS',
@@ -70,6 +71,7 @@ __all__ = [
     'fetch_population_series',
     'fetch_sentinel2_scene',
     'fetch_wfs_features',
+    'fetch_wikipedia_summary',
     'landsat_scene_date',
     'line_coverage_pct',
     'plot_index',
