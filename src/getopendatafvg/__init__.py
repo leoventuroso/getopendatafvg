@@ -9,6 +9,7 @@ here will keep growing.
 """
 
 from ._errors import NoCleanSceneFoundError
+from .coverage import build_coverage_union, line_coverage_pct
 from .indices import IndexRaster, compute_lst, compute_nbr, compute_ndvi
 from .istat import (
     fetch_bank_branches,
@@ -36,6 +37,7 @@ __all__ = [
     'Sentinel2Scene',
     'UsgsCredentials',
     'boundary_poly_filter',
+    'build_coverage_union',
     'classify_and_vectorize',
     'clip_to_boundary',
     'compute_lst',
@@ -53,6 +55,7 @@ __all__ = [
     'fetch_sentinel2_scene',
     'fetch_wfs_features',
     'landsat_scene_date',
+    'line_coverage_pct',
     'plot_index',
     'query_overpass',
     'sentinel2_scene_date',

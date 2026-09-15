@@ -62,10 +62,16 @@ it counts as done. What's implemented so far:
   boundary via the Overpass API, trying multiple public mirrors in order.
   Filters by the boundary geometry directly (Overpass QL's `poly:`
   filter), not a pre-known OSM relation id, so it works for any area.
+- `line_coverage_pct` / `build_coverage_union`: what percentage of a
+  buffered line falls inside a polygon coverage layer. Originally "how
+  much of this road/trail is shaded by tree canopy", generalized to any
+  buffer-and-overlap question (flood-risk exposure, protected-area
+  overlap, ...) - the caller decides what `coverage` means by choosing
+  what polygons go into it.
 
-That's every piece of the original roadmap ported, plus ISTAT and
-Overpass. From here, growth is demand-driven rather than following a
-fixed list.
+That's every piece of the original roadmap ported, plus ISTAT, Overpass
+and the shade-corridor coverage calculation. From here, growth is
+demand-driven rather than following a fixed list.
 
 ## Installation
 
