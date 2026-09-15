@@ -1,107 +1,192 @@
 # getopendatafvg
 
-A Python toolkit for extracting and visualizing open geographic,
-socio-economic and environmental data for Friuli Venezia Giulia: a comune,
-a custom boundary, or a bounding box. It grew out of the data pipeline
-behind [Mappa Civica](https://github.com/BeneComune/mappa-civica), a civic
-mapping platform for the comune of Montereale Valcellina, and is being
-pulled out into a standalone, reusable library one piece at a time.
-
-This repository used to host an earlier Vite/React prototype of Mappa
-Civica itself. That history is still here (see the commit log before this
-README), but the code has moved on to
-[the Next.js rewrite](https://github.com/BeneComune/mappa-civica); this
-repository is now dedicated to the extraction and visualization library
-instead.
-
-## Status
-
-Early and incremental. The pipeline it comes from already does quite a lot
-in production (searching and downloading the most recent, cloud-free
-Sentinel-2 and Landsat scenes over a boundary with an automatic fallback
-when the newest pass is too cloudy, querying government WFS services and
-clipping the results, computing vegetation and land-surface-temperature
-indices), but each of those is being ported here separately, generalized
-away from anything specific to one deployment, and given real tests before
-it counts as done. What's implemented so far:
-
-- `sentinel2_scene_date` / `landsat_scene_date`: parse the acquisition date
-  out of a Sentinel-2 or Landsat product's official filename.
-- `fetch_sentinel2_scene`: search the Copernicus Data Space Ecosystem for
-  the most recent Sentinel-2 L2A scene covering a boundary, walking
-  backward in time until one passes a cloud-cover threshold, and download
-  the requested bands.
-- `fetch_landsat_scene`: the same idea for Landsat Collection 2 Level-2,
-  via the USGS M2M API.
-- `fetch_wfs_features` / `fetch_and_clip_wfs_features`: query an OGC WFS
-  service (bbox or CQL filter, whichever the service actually honours)
-  and clip each result precisely to a boundary.
-- `compute_ndvi` / `compute_nbr` / `compute_lst`: continuous-valued
-  vegetation/burn-severity/temperature index rasters from downloaded
-  bands, clipped to a boundary.
-- `classify_and_vectorize`: classify an index raster into named classes
-  (your own breakpoints, not baked in) and vectorize it to plain
-  GeoJSON - a `class` label and an area, no color. Useful on its own in
-  QGIS or any other tool, not tied to one particular renderer.
-- `plot_index` (needs the `viz` extra): a quick static matplotlib preview
-  of an index raster, for exploration in a notebook. Not a substitute for
-  a real interactive map - Mappa Civica's own web map already covers
-  that, with colors and a legend this module doesn't try to duplicate.
-- `fetch_population_series` / `fetch_demographic_balance` /
-  `fetch_demographic_indicators` / `fetch_bank_branches`: ISTAT
-  statistics via the modern SDMX REST API only - no dependency on
-  `istatapi` or the legacy `sdmx.istat.it` endpoint it wraps, which now
-  redirects every data query to its own homepage instead of serving
-  data (confirmed live, not assumed). Built-in client-side throttling
-  keeps every request under ISTAT's 5-requests-per-minute limit
-  (exceeding it risks a 1-2 *day* IP block), and a documented
-  `endPeriod` server bug (returns one year more than requested) is
-  corrected internally.
-
-- `fetch_overpass_elements` / `query_overpass`: OSM features within a
-  boundary via the Overpass API, trying multiple public mirrors in order.
-  Filters by the boundary geometry directly (Overpass QL's `poly:`
-  filter), not a pre-known OSM relation id, so it works for any area.
-- `line_coverage_pct` / `build_coverage_union`: what percentage of a
-  buffered line falls inside a polygon coverage layer. Originally "how
-  much of this road/trail is shaded by tree canopy", generalized to any
-  buffer-and-overlap question (flood-risk exposure, protected-area
-  overlap, ...) - the caller decides what `coverage` means by choosing
-  what polygons go into it.
-
-- `DemSampler` / `compute_line_slope` / `compute_line_grade`: sample a
-  DEM along a line and derive its average slope and net grade. The DEM's
-  own CRS is read from the file and used internally - a caller passes
-  lines in WGS84 and never needs to know or match whatever projected CRS
-  a particular DEM happens to use.
-
-- `fetch_cadastral_parcels`: cadastral parcel points (foglio, particella)
-  for a comune, from onData's national republish of the Agenzia delle
-  Entrate cadastral data, queried by HTTP range request via DuckDB so the
-  full per-region file is never downloaded.
-- `build_pmtiles` (needs the separate `tippecanoe` binary on PATH):
-  convert a GeoJSON file to PMTiles vector tiles. A missing tippecanoe
-  raises `TippecanoeNotFoundError` instead of failing deep inside a
-  subprocess call with no clear cause.
-
-That's every piece of the original roadmap ported, plus ISTAT, Overpass,
-the shade-corridor coverage calculation, DEM slope, and cadastral data.
-From here, growth is demand-driven rather than following a fixed list.
+Python toolkit to extract open geographic, socio-economic and
+environmental data for an area in Friuli Venezia Giulia (or, for most of
+these sources, anywhere in Italy): satellite imagery and the vegetation/
+burn-severity/temperature indices computed from it, government hazard and
+infrastructure data via WFS, OpenStreetMap features, ISTAT statistics,
+cadastral parcels, and terrain slope. Every function takes a boundary
+(comune, custom polygon, bounding box) and returns data clipped to it.
 
 ## Installation
-
-Not yet published to PyPI. For now:
 
 ```bash
 pip install git+https://github.com/leoventuroso/getopendatafvg.git
 ```
 
-## Development
+Add `[viz]` for the optional matplotlib-based preview function:
 
 ```bash
-pip install -e ".[dev]"
-pytest
-ruff check .
+pip install "getopendatafvg[viz] @ git+https://github.com/leoventuroso/getopendatafvg.git"
+```
+
+## Satellite imagery: Sentinel-2 and Landsat
+
+Search for the most recent, sufficiently cloud-free scene over a
+boundary - walking backward in time automatically until one passes the
+threshold - and download only the bands you need.
+
+```python
+from pathlib import Path
+from shapely.geometry import box
+from getopendatafvg import fetch_sentinel2_scene, CdseCredentials
+
+boundary = box(12.5648, 46.0704, 12.7251, 46.1911)
+
+credentials = CdseCredentials(
+    username="you@example.com", password="...",
+    s3_access_key="...", s3_secret_key="...",  # from CDSE's S3 Keys Manager
+)
+scene = fetch_sentinel2_scene(boundary, credentials, out_dir=Path("data/raw"))
+print(scene.scene_date, scene.cloud_cover_pct, scene.safe_dir)
+```
+
+Credentials: a free [Copernicus Data Space Ecosystem](https://dataspace.copernicus.eu/)
+account (`username`/`password`), plus S3 keys generated separately from
+its dashboard's S3 Keys Manager.
+
+```python
+from getopendatafvg import fetch_landsat_scene, UsgsCredentials
+
+credentials = UsgsCredentials(username="your-ers-username", token="...")
+scene = fetch_landsat_scene(boundary, credentials, out_dir=Path("data/raw"))
+```
+
+Credentials: a free [USGS EROS](https://ers.cr.usgs.gov/register) account
+with M2M access approved, and an application token from your USGS profile.
+
+Both respect the source's rate limits and never overwrite existing output
+if no scene qualifies within the lookback window.
+
+## Vegetation, burn severity and temperature indices
+
+Compute a continuous-valued raster from downloaded bands, then optionally
+classify it into named classes and vectorize to GeoJSON - no color or
+palette baked in, so the output is plain data usable in QGIS or any
+renderer of your choice.
+
+```python
+from getopendatafvg import compute_ndvi, ClassBreak, classify_and_vectorize
+
+raster = compute_ndvi(red_band_path, nir_band_path, boundary)
+
+breaks = [
+    ClassBreak(-1.0, 0.15, "bare"),
+    ClassBreak(0.15, 0.5, "moderate"),
+    ClassBreak(0.5, 1.0, "dense"),
+]
+features = classify_and_vectorize(raster, breaks, min_area_m2=2500)
+```
+
+`compute_nbr` (burn severity / vegetation stress) and `compute_lst` (land
+surface temperature, from a Landsat thermal band) work the same way.
+
+A quick static preview, for exploration in a notebook (needs the `viz` extra):
+
+```python
+from getopendatafvg import plot_index
+
+fig = plot_index(raster, title="NDVI")
+fig.savefig("ndvi.png")
+```
+
+## Government data via WFS
+
+Query any OGC WFS service (bbox or CQL filter, whichever it honours) and
+clip results precisely to your boundary:
+
+```python
+from getopendatafvg import fetch_and_clip_wfs_features
+
+results = fetch_and_clip_wfs_features(
+    "https://serviziogc.regione.fvg.it/geoserver/ZONE_RISC/wfs",
+    "ZONE_RISC:V_INCENDI_CT",
+    boundary,
+    cql_filter="COMUNE='Montereale Valcellina'",
+)
+for properties, geometry in results:
+    print(properties["ANNO_FNIB"], properties["LOCALITA"])
+```
+
+Works the same way against national services, e.g. ISPRA's landslide
+hazard WFS - no comune-specific setup needed, it's the same function.
+
+## OpenStreetMap data
+
+```python
+from getopendatafvg import fetch_overpass_elements, element_point
+
+elements = fetch_overpass_elements(['node["natural"="peak"]'], boundary)
+for el in elements:
+    print(el["tags"].get("name"), element_point(el))
+```
+
+Any Overpass QL selector works: trails, bike infrastructure, defibrillators,
+water points, hospitals - filtered by your boundary geometry directly, not
+a pre-known OSM relation id, so it works for any area. Tries multiple
+public Overpass mirrors automatically if one is down.
+
+## ISTAT statistics
+
+```python
+from getopendatafvg import fetch_population_series, fetch_demographic_balance, fetch_bank_branches
+
+fetch_population_series("093042")        # yearly population, 2019 onward
+fetch_demographic_balance("093042")      # households, density
+fetch_bank_branches("093042")            # comune ISTAT code
+```
+
+No extra setup - ISTAT's API needs no authentication. Requests are
+throttled automatically to stay under its rate limit.
+
+## Cadastral parcels
+
+```python
+from getopendatafvg import fetch_cadastral_parcels
+
+parcels = fetch_cadastral_parcels("F596", "Friuli-Venezia Giulia")  # comune's codice catastale
+```
+
+One point per parcel (foglio, particella) - land parcels only, no owner
+names or valuations. Covers all of Italy, not just FVG.
+
+To publish the result as vector tiles (needs the separate `tippecanoe`
+binary on PATH):
+
+```python
+from getopendatafvg import build_pmtiles
+
+build_pmtiles(Path("parcels.geojson"), Path("parcels.pmtiles"), "catasto")
+```
+
+## Terrain slope
+
+```python
+from shapely.geometry import LineString
+from getopendatafvg import DemSampler, compute_line_slope, compute_line_grade
+
+trail = LineString([(12.60, 46.10), (12.61, 46.11)])
+with DemSampler.open("dem.tif") as dem:
+    distances, elevations = dem.sample_line(trail)
+
+slope_pct = compute_line_slope(distances, elevations)   # average, unsigned
+grade_pct = compute_line_grade(distances, elevations)   # net, start-to-end, signed
+```
+
+Give it a DEM in whatever projected CRS it's in - it's read from the file
+and used internally, so lines can stay in WGS84.
+
+## Coverage analysis
+
+What percentage of a buffered line (a road, a trail) falls inside a
+polygon layer - originally built for tree-canopy shade, works for any
+buffer-and-overlap question:
+
+```python
+from getopendatafvg import build_coverage_union, line_coverage_pct
+
+coverage = build_coverage_union(dense_vegetation_polygons)
+shade_pct = line_coverage_pct(road_geometry, buffer_m=15, coverage=coverage)
 ```
 
 ## License
