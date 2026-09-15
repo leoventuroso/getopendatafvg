@@ -14,17 +14,41 @@ source), commit, check it off.
 - [ ] Expand `CATALOG` beyond the initial 43 entries. Candidates already
       identified but not yet added (all confirmed to exist in the WFS
       GetCapabilities dump or the Socrata portal listing, not yet
-      individually re-verified live):
-  - WFS: `IRDAT:AWC_CAPACITA_ACQUA_DISP` (capacita d'acqua disponibile
-    del suolo), `GEST_FOR:TIPOLOGIE_FORESTALI`/`PIANI_GEST_FORESTALE`,
-    `PPR:v_beni_culturali`, `PPR:v_centuriazioni`,
-    `PPR:v_zone_interesse_archeologico`, `USO_SUOLO:VIGNETI_CTRN_ED1`,
-    `USO_SUOLO:FRUTTETI_CTRN_ED1`, `CER:ATER_FVG` (edilizia popolare),
-    `SITI_PROT:MAB_UNESCO_FVG`, `RETI_TRASP:ASSI_STRADALI_CAT_STR_REG`
-  - Socrata: municipal budget datasets ("Rendiconto Entrate/Spese" -
-    one per comune, ~130 datasets, same schema - worth a documented
-    pattern rather than individual catalog entries), "Borse di studio
-    universitarie FVG", "Bonus psicologo studenti FVG"
+      individually re-verified live - do that before adding, the way
+      every existing entry was verified):
+  - Rischio naturale: `ZONE_VINC:CLASSI_SISM_DM1982` (classificazione
+    sismica, versione precedente a OPCM3274, gia' in catalogo),
+    `IRDAT:CATFRANE_CORONAMENTO`/`CATFRANE_FESSURE`/`CATFRANE_FRANE_FOTO`/
+    `CATFRANE_ELEM_RISCHIO` (dettaglio del catasto frane oltre ai soli
+    perimetri gia' in catalogo)
+  - Monitoraggio ambientale: `MONIT_AMB:RETE_MONSOTT_CHIMICO`/
+    `RETE_MONSUP_ECOLOGICO` (qualita' acque sotterranee/superficiali),
+    `SITI_PROT:ARIA_BUR`/`ARIA_PRGC` (zonizzazione qualita' aria)
+  - Natura: `SITI_PROT:MAB_UNESCO_FVG`, `PPR:v_alberi_monumentali_e_notevoli`,
+    `PPR:v_siti_unesco`, `PPR:v_beni_culturali`, `PPR:v_centuriazioni`,
+    `PPR:v_zone_interesse_archeologico`
+  - Uso del suolo/agricoltura: `USO_SUOLO:VIGNETI_CTRN_ED1`,
+    `USO_SUOLO:FRUTTETI_CTRN_ED1`, `ERSA:SUOLO_CAP_USO_PRINC`/
+    `SUOLO_CAP_USO_SEC`/`RISCHIO_COMPATT_SUOLO`,
+    `GEST_FOR:TIPOLOGIE_FORESTALI`/`PIANI_GEST_FORESTALE`,
+    `IRDAT:AWC_CAPACITA_ACQUA_DISP` (capacita' d'acqua disponibile del
+    suolo)
+  - Rifiuti: `RIFIUTI:GESTORI_RSU`
+  - Servizi pubblici: `PUB_UTIL:ImpiantiSportiviFVG`, `CER:PARROCCHIE_FVG`,
+    `CER:ATER_FVG` (edilizia popolare)
+  - Energia: `CER:BIOENERGIE_FVG`, `CER:GRANDI_DIGHE_FVG`
+  - Amministrativo: `UNIT_AMM:REGIONE_FVG` (confine regionale)
+  - Trasporti: `RETI_TRASP:ASSI_STRADALI_CAT_STR_REG`
+  - Geologia/turismo: `CAT_SPELEO:AREE_CARSICHE`
+  - Socrata: "Elezioni comunali 2025 - Voti Liste" (accanto a Voti
+    Sindaco e Affluenza, gia' in catalogo), le altre serie storiche
+    demografiche del Comune di Udine oltre a movimento demografico e
+    popolazione per classi d'eta' (popolazione straniera, famiglie
+    anagrafiche, matrimoni, ecc. - stesso portale, non ancora
+    individuate una per una), municipal budget datasets ("Rendiconto
+    Entrate/Spese" - uno per comune, ~130 dataset, stesso schema -
+    merita un pattern documentato piuttosto che voci individuali),
+    "Borse di studio universitarie FVG", "Bonus psicologo studenti FVG"
 
 ## ISTAT
 
