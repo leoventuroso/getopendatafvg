@@ -31,11 +31,12 @@ it counts as done. What's implemented so far:
   the most recent Sentinel-2 L2A scene covering a boundary, walking
   backward in time until one passes a cloud-cover threshold, and download
   the requested bands.
+- `fetch_landsat_scene`: the same idea for Landsat Collection 2 Level-2,
+  via the USGS M2M API.
 
-Planned next, roughly in order: the same fetch for Landsat, a generic
-helper for querying an OGC WFS service and clipping the result to a
-boundary, NDVI/NBR/LST computation from a downloaded scene, and a
-visualization layer on top of all of it.
+Planned next, roughly in order: a generic helper for querying an OGC WFS
+service and clipping the result to a boundary, NDVI/NBR/LST computation
+from a downloaded scene, and a visualization layer on top of all of it.
 
 ## Installation
 

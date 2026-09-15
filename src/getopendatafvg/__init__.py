@@ -8,22 +8,20 @@ and generalized one at a time rather than all at once, so the surface area
 here will keep growing.
 """
 
+from ._errors import NoCleanSceneFoundError
+from .landsat import LandsatScene, UsgsCredentials, fetch_landsat_scene
 from .scene_date import landsat_scene_date, sentinel2_scene_date
-from .sentinel2 import (
-    DEFAULT_BANDS,
-    Band,
-    CdseCredentials,
-    NoCleanSceneFoundError,
-    Sentinel2Scene,
-    fetch_sentinel2_scene,
-)
+from .sentinel2 import DEFAULT_BANDS, Band, CdseCredentials, Sentinel2Scene, fetch_sentinel2_scene
 
 __all__ = [
     'DEFAULT_BANDS',
     'Band',
     'CdseCredentials',
+    'LandsatScene',
     'NoCleanSceneFoundError',
     'Sentinel2Scene',
+    'UsgsCredentials',
+    'fetch_landsat_scene',
     'fetch_sentinel2_scene',
     'landsat_scene_date',
     'sentinel2_scene_date',

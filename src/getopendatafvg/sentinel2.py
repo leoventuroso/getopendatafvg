@@ -18,6 +18,7 @@ import boto3
 import requests
 from shapely.geometry.base import BaseGeometry
 
+from ._errors import NoCleanSceneFoundError
 from .scene_date import sentinel2_scene_date
 
 IDENTITY_TOKEN_URL = (
@@ -71,11 +72,6 @@ class Sentinel2Scene:
     product_name: str
     scene_date: str
     cloud_cover_pct: float
-
-
-class NoCleanSceneFoundError(RuntimeError):
-    """No scene under the cloud-cover threshold was found within the
-    lookback window."""
 
 
 def select_scene(
