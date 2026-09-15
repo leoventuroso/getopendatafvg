@@ -21,6 +21,7 @@ classifiers = [
 ]
 dependencies = [
   "boto3",
+  "duckdb",
   "numpy",
   "rasterio",
   "requests",

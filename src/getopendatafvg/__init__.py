@@ -9,6 +9,7 @@ here will keep growing.
 """
 
 from ._errors import NoCleanSceneFoundError
+from .catasto import fetch_cadastral_parcels, region_parquet_name
 from .coverage import build_coverage_union, line_coverage_pct
 from .dem import DemSampler, compute_line_grade, compute_line_slope, slope_class_for_value
 from .indices import IndexRaster, compute_lst, compute_nbr, compute_ndvi
@@ -21,6 +22,7 @@ from .istat import (
 )
 from .landsat import LandsatScene, UsgsCredentials, fetch_landsat_scene
 from .overpass import boundary_poly_filter, element_point, fetch_overpass_elements, query_overpass
+from .pmtiles import TippecanoeNotFoundError, build_pmtiles
 from .scene_date import landsat_scene_date, sentinel2_scene_date
 from .sentinel2 import DEFAULT_BANDS, Band, CdseCredentials, Sentinel2Scene, fetch_sentinel2_scene
 from .vectorize import ClassBreak, classify_and_vectorize
@@ -37,9 +39,11 @@ __all__ = [
     'LandsatScene',
     'NoCleanSceneFoundError',
     'Sentinel2Scene',
+    'TippecanoeNotFoundError',
     'UsgsCredentials',
     'boundary_poly_filter',
     'build_coverage_union',
+    'build_pmtiles',
     'classify_and_vectorize',
     'clip_to_boundary',
     'compute_line_grade',
@@ -50,6 +54,7 @@ __all__ = [
     'element_point',
     'fetch_and_clip_wfs_features',
     'fetch_bank_branches',
+    'fetch_cadastral_parcels',
     'fetch_demographic_balance',
     'fetch_demographic_indicators',
     'fetch_istat_dataflow',
@@ -62,6 +67,7 @@ __all__ = [
     'line_coverage_pct',
     'plot_index',
     'query_overpass',
+    'region_parquet_name',
     'sentinel2_scene_date',
     'slope_class_for_value',
 ]

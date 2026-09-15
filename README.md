@@ -75,9 +75,18 @@ it counts as done. What's implemented so far:
   lines in WGS84 and never needs to know or match whatever projected CRS
   a particular DEM happens to use.
 
+- `fetch_cadastral_parcels`: cadastral parcel points (foglio, particella)
+  for a comune, from onData's national republish of the Agenzia delle
+  Entrate cadastral data, queried by HTTP range request via DuckDB so the
+  full per-region file is never downloaded.
+- `build_pmtiles` (needs the separate `tippecanoe` binary on PATH):
+  convert a GeoJSON file to PMTiles vector tiles. A missing tippecanoe
+  raises `TippecanoeNotFoundError` instead of failing deep inside a
+  subprocess call with no clear cause.
+
 That's every piece of the original roadmap ported, plus ISTAT, Overpass,
-the shade-corridor coverage calculation and DEM slope. From here, growth
-is demand-driven rather than following a fixed list.
+the shade-corridor coverage calculation, DEM slope, and cadastral data.
+From here, growth is demand-driven rather than following a fixed list.
 
 ## Installation
 
