@@ -18,6 +18,7 @@ from .istat import (
     fetch_bank_branches,
     fetch_demographic_balance,
     fetch_demographic_indicators,
+    fetch_income_series,
     fetch_istat_dataflow,
     fetch_population_series,
 )
@@ -62,6 +63,7 @@ __all__ = [
     'fetch_demographic_indicators',
     'fetch_elevation',
     'fetch_historical_weather',
+    'fetch_income_series',
     'fetch_istat_dataflow',
     'fetch_landsat_scene',
     'fetch_overpass_elements',

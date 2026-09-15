@@ -129,6 +129,50 @@ def fetch_bank_branches(comune_code: str) -> int | None:
     return _as_int(by_year[max(by_year)])
 
 
+def fetch_income_series(comune_code: str, since_year: int = 2014) -> list[dict[str, float | int | None]]:
+    """Yearly aggregate taxable income (IRPEF) for a comune, from dataflow
+    30_1008 (MEF income-tax return data, republished by ISTAT), sorted
+    oldest to newest.
+
+    The source publishes the total taxable income and the number of tax
+    filers as separate observations (DATA_TYPE `TAXABINCR`/`TAXABINCF`),
+    not a pre-computed average - `average_taxable_income_eur` is derived
+    here by dividing the two. A year with a redacted total (ISTAT
+    suppresses values from very small comuni for privacy) comes back
+    with `None` fields rather than a wrong or missing entry.
+    """
+    rows = fetch_istat_dataflow('30_1008', f'A.{comune_code}..', start_period=str(since_year))
+
+    by_year: dict[int, dict[str, float]] = {}
+    for row in rows:
+        if row.get('AMOUNT_CLASS') != 'TOTAL':
+            continue
+        value = row.get('OBS_VALUE')
+        if value in (None, ''):
+            continue
+        year = int(row['TIME_PERIOD'])
+        data_type = row.get('DATA_TYPE')
+        if data_type == 'TAXABINCR':
+            by_year.setdefault(year, {})['total_taxable_income_eur'] = float(value)
+        elif data_type == 'TAXABINCF':
+            by_year.setdefault(year, {})['taxpayer_count'] = int(float(value))
+
+    series = []
+    for year, values in sorted(by_year.items()):
+        total = values.get('total_taxable_income_eur')
+        count = values.get('taxpayer_count')
+        average = round(total / count, 2) if total is not None and count else None
+        series.append(
+            {
+                'year': year,
+                'total_taxable_income_eur': total,
+                'taxpayer_count': count,
+                'average_taxable_income_eur': average,
+            }
+        )
+    return series
+
+
 def _throttle() -> None:
     """Block just long enough to keep this process under ISTAT's
     5-requests-per-minute limit. Exceeding it risks a 1-2 day IP block,

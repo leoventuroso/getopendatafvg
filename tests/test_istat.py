@@ -4,6 +4,7 @@ from getopendatafvg import (
     fetch_bank_branches,
     fetch_demographic_balance,
     fetch_demographic_indicators,
+    fetch_income_series,
     fetch_istat_dataflow,
     fetch_population_series,
 )
@@ -104,6 +105,43 @@ def test_fetch_bank_branches_returns_none_when_no_rows():
     istat_module._request_times.clear()
     with patch('getopendatafvg.istat.requests.get', return_value=make_response('TIME_PERIOD,OBS_VALUE,DATA_TYPE\n')):
         assert fetch_bank_branches('093042') is None
+
+
+def test_fetch_income_series_computes_the_average_from_total_and_filer_count():
+    istat_module._request_times.clear()
+    csv_text = (
+        'TIME_PERIOD,OBS_VALUE,DATA_TYPE,AMOUNT_CLASS\n'
+        '2023,38168024,TAXABINCR,TOTAL\n'
+        '2023,1712,TAXABINCF,TOTAL\n'
+        '2023,999,TAXABINCR,E0-10000\n'  # bracket row, not TOTAL - excluded
+    )
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_income_series('093042', since_year=2023)
+
+    assert series == [
+        {
+            'year': 2023,
+            'total_taxable_income_eur': 38168024.0,
+            'taxpayer_count': 1712,
+            'average_taxable_income_eur': round(38168024 / 1712, 2),
+        }
+    ]
+
+
+def test_fetch_income_series_leaves_the_average_none_when_a_value_is_redacted():
+    istat_module._request_times.clear()
+    csv_text = 'TIME_PERIOD,OBS_VALUE,DATA_TYPE,AMOUNT_CLASS\n2023,,TAXABINCR,TOTAL\n2023,50,TAXABINCF,TOTAL\n'
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_income_series('093042', since_year=2023)
+
+    assert series == [
+        {
+            'year': 2023,
+            'total_taxable_income_eur': None,
+            'taxpayer_count': 50,
+            'average_taxable_income_eur': None,
+        }
+    ]
 
 
 def test_throttle_does_not_sleep_under_the_limit(monkeypatch):

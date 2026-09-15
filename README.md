@@ -133,11 +133,12 @@ public Overpass mirrors automatically if one is down.
 ## ISTAT statistics
 
 ```python
-from getopendatafvg import fetch_population_series, fetch_demographic_balance, fetch_bank_branches
+from getopendatafvg import fetch_population_series, fetch_demographic_balance, fetch_bank_branches, fetch_income_series
 
 fetch_population_series("093042")        # yearly population, 2019 onward
 fetch_demographic_balance("093042")      # households, density
 fetch_bank_branches("093042")            # comune ISTAT code
+fetch_income_series("093042")            # yearly aggregate + average taxable income (IRPEF)
 ```
 
 No extra setup - ISTAT's API needs no authentication. Requests are
