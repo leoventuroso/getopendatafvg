@@ -58,8 +58,14 @@ it counts as done. What's implemented so far:
   `endPeriod` server bug (returns one year more than requested) is
   corrected internally.
 
-That's every piece of the original roadmap ported, plus ISTAT. From here,
-growth is demand-driven rather than following a fixed list.
+- `fetch_overpass_elements` / `query_overpass`: OSM features within a
+  boundary via the Overpass API, trying multiple public mirrors in order.
+  Filters by the boundary geometry directly (Overpass QL's `poly:`
+  filter), not a pre-known OSM relation id, so it works for any area.
+
+That's every piece of the original roadmap ported, plus ISTAT and
+Overpass. From here, growth is demand-driven rather than following a
+fixed list.
 
 ## Installation
 

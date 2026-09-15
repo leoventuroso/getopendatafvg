@@ -18,6 +18,7 @@ from .istat import (
     fetch_population_series,
 )
 from .landsat import LandsatScene, UsgsCredentials, fetch_landsat_scene
+from .overpass import boundary_poly_filter, element_point, fetch_overpass_elements, query_overpass
 from .scene_date import landsat_scene_date, sentinel2_scene_date
 from .sentinel2 import DEFAULT_BANDS, Band, CdseCredentials, Sentinel2Scene, fetch_sentinel2_scene
 from .vectorize import ClassBreak, classify_and_vectorize
@@ -34,21 +35,25 @@ __all__ = [
     'NoCleanSceneFoundError',
     'Sentinel2Scene',
     'UsgsCredentials',
+    'boundary_poly_filter',
     'classify_and_vectorize',
     'clip_to_boundary',
     'compute_lst',
     'compute_nbr',
     'compute_ndvi',
+    'element_point',
     'fetch_and_clip_wfs_features',
     'fetch_bank_branches',
     'fetch_demographic_balance',
     'fetch_demographic_indicators',
     'fetch_istat_dataflow',
     'fetch_landsat_scene',
+    'fetch_overpass_elements',
     'fetch_population_series',
     'fetch_sentinel2_scene',
     'fetch_wfs_features',
     'landsat_scene_date',
     'plot_index',
+    'query_overpass',
     'sentinel2_scene_date',
 ]
