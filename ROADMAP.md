@@ -107,12 +107,19 @@ Fixable, not yet done:
       ever spare time for it)
 - [x] `paper.md` + `paper.bib` drafted (`paper/`) - author: Leonardo
       Venturoso, affiliation: Fraunhofer Italia, all 8 required sections
-      present, 775 body words (in range), every citation key checked
-      against paper.bib. Still needs a real pass before actual
-      submission: re-read once more code/README has moved since
-      2026-09-15, and the "Research impact statement" section rewritten
-      if real evidence exists by then instead of the current "credible
-      near-term significance" framing.
+      present, 1219 body words (in range), every citation key checked
+      against paper.bib. Benchmarked against a real accepted JOSS paper
+      (aloth/RogueGPT) on 2026-09-15 and revised for comparable depth:
+      concrete numbers (51 exports, 18 modules, 100+ tests, 43-entry
+      catalog), a State of the field naming and citing specific
+      alternative tools (sentinelsat, landsatxplore, OWSLib - two of
+      which turned out to be archived/unmaintained against the current
+      APIs, verified live rather than assumed), module names in Software
+      design. Still needs a real pass before actual submission: re-read
+      once more code/README has moved since 2026-09-15, and the
+      "Research impact statement" rewritten if real evidence exists by
+      then instead of the current "credible near-term significance"
+      framing.
 
 Needs time, not code:
 - [ ] 6-month continuous public development history. Repo created
