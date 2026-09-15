@@ -81,6 +81,50 @@ source), commit, check it off.
 - [ ] Same question for seismic classification
       (`ZONE_VINC:CLASSI_SISM_OPCM3274`, already in the catalog).
 
+## JOSS readiness
+
+Read straight from joss.readthedocs.io (submitting, review_criteria,
+paper, policies) on 2026-09-15 - not assumed from memory. What's done,
+what's fixable by editing the repo, and what genuinely just needs time
+or a decision only the maintainer can make.
+
+Done:
+- [x] OSI-approved license (MIT), a real LICENSE file
+- [x] Public repo, cloneable/browsable without registration
+- [x] Automated test suite + CI (`ci.yml`, runs on every push/PR)
+- [x] Statement of need in the README
+- [x] Installation instructions, example usage per data source
+- [x] CONTRIBUTING.md: how to contribute, report issues, get support
+- [x] AI-usage disclosure (in CONTRIBUTING.md) - tools, what for, human
+      review/verification asserted
+
+Fixable, not yet done:
+- [x] Tagged release - v0.1.0, 2026-09-15
+      (github.com/leoventuroso/getopendatafvg/releases/tag/v0.1.0)
+- [ ] Formal API documentation beyond docstrings + README examples
+      (JOSS accepts the latter for many accepted papers - not urgent,
+      but a Sphinx/mkdocs site would strengthen this checkbox if there's
+      ever spare time for it)
+- [ ] `paper.md` + `paper.bib` themselves - not started. Needs decisions
+      only the maintainer can make: title, author name(s), affiliation,
+      ORCID (or explicitly none). Can't be filled with placeholders.
+      When drafting: "state of the field" section can reuse this
+      project's own research comparing against `istatapi` and
+      `ondata/guida-api-istat` for the ISTAT module specifically.
+
+Needs time, not code:
+- [ ] 6-month continuous public development history. Repo created
+      2026-06-01 - eligible from about 2026-12-01 at the earliest, and
+      only if development stays genuinely continuous until then (see
+      "Process" below).
+- [ ] Evidence of research impact (citations, documented adoption by
+      other groups, or use in a published workflow) - can't be
+      fabricated, has to accrue for real. Worth watching: if mappa-civica
+      (the project this library was extracted from) migrates its own
+      pipeline to depend on getopendatafvg instead of its original
+      inline scripts, that's a legitimate real-world adoption signal
+      worth citing.
+
 ## Process
 
 - Small, genuine, working commits - not batched dumps, not padding for
