@@ -27,6 +27,7 @@ from .scene_date import landsat_scene_date, sentinel2_scene_date
 from .sentinel2 import DEFAULT_BANDS, Band, CdseCredentials, Sentinel2Scene, fetch_sentinel2_scene
 from .vectorize import ClassBreak, classify_and_vectorize
 from .viz import plot_index
+from .weather import DailyWeather, fetch_historical_weather
 from .wfs import clip_to_boundary, fetch_and_clip_wfs_features, fetch_wfs_features
 
 __all__ = [
@@ -34,6 +35,7 @@ __all__ = [
     'Band',
     'CdseCredentials',
     'ClassBreak',
+    'DailyWeather',
     'DemSampler',
     'IndexRaster',
     'LandsatScene',
@@ -57,6 +59,7 @@ __all__ = [
     'fetch_cadastral_parcels',
     'fetch_demographic_balance',
     'fetch_demographic_indicators',
+    'fetch_historical_weather',
     'fetch_istat_dataflow',
     'fetch_landsat_scene',
     'fetch_overpass_elements',

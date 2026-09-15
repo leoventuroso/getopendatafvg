@@ -193,6 +193,22 @@ coverage = build_coverage_union(dense_vegetation_polygons)
 shade_pct = line_coverage_pct(road_geometry, buffer_m=15, coverage=coverage)
 ```
 
+## Historical weather
+
+```python
+from getopendatafvg import fetch_historical_weather
+
+weather = fetch_historical_weather(46.1055, 12.6289, "2024-01-01", "2024-01-31")
+for date, temp, rain in zip(weather.dates, weather.temperature_mean_c, weather.precipitation_mm):
+    print(date, temp, rain)
+```
+
+Daily mean temperature and total precipitation for a point, from
+[Open-Meteo](https://open-meteo.com/)'s historical archive - free, no
+API key, global coverage back to 1940. Useful for correlating other
+data (a landslide event, a fire, a satellite scene) with the weather
+around it.
+
 ## License
 
 [MIT](LICENSE)
