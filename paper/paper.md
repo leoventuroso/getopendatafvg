@@ -94,13 +94,21 @@ development rather than only against a mock.
 # Research impact statement
 
 getopendatafvg was first released in September 2026 and has not yet
-been cited in published work. Its data-extraction logic was originally
-developed inline within Mappa Civica, an open-source civic platform for
-the comune of Montereale Valcellina, and is being extracted into this
-standalone library specifically so it can be adopted back into that
-platform's own pipeline and reused by other municipalities without
-duplicating the underlying extraction code - a concrete, near-term
-adoption path rather than a hypothetical one.
+been cited in published work or adopted by other research groups; it is
+reported at this early stage rather than left unaddressed, as
+recommended for genuinely new software. Its near-term significance
+rests on two checkable facts rather than a projection. First, its ISTAT
+module corrects two documented defects in the modern SDMX endpoint - a
+silent off-by-one in the `endPeriod` parameter and an unenforced
+5-requests-per-minute limit whose violation risks a 1-2 day IP block -
+that existing Italian open-data tooling does not fully account for on
+its own [@istatapi2020; @guidaapiistat2020]. Second, the library
+consolidates access to institutional hazard, environmental, and
+demographic datasets - regional landslide and wildfire catalogs,
+Copernicus and USGS satellite archives, national cadastral records -
+that already underpin ongoing civic and environmental risk-monitoring
+work in the region, behind a single tested and documented interface
+rather than each source's own undocumented access path.
 
 # AI usage disclosure
 

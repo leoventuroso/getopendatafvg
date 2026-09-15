@@ -121,11 +121,12 @@ Needs time, not code:
       "Process" below).
 - [ ] Evidence of research impact (citations, documented adoption by
       other groups, or use in a published workflow) - can't be
-      fabricated, has to accrue for real. Worth watching: if mappa-civica
-      (the project this library was extracted from) migrates its own
-      pipeline to depend on getopendatafvg instead of its original
-      inline scripts, that's a legitimate real-world adoption signal
-      worth citing.
+      fabricated, has to accrue for real. JOSS accepts "credible
+      near-term significance" as well as realized impact - the current
+      `paper.md` draft leans on that: the ISTAT module fixing two
+      documented endpoint defects, and consolidating access to real
+      institutional hazard/environmental/demographic data sources. No
+      specific external-adoption plan is being pursued right now.
 
 ## Process
 
