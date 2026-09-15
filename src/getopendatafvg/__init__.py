@@ -10,6 +10,7 @@ here will keep growing.
 
 from ._errors import NoCleanSceneFoundError
 from .coverage import build_coverage_union, line_coverage_pct
+from .dem import DemSampler, compute_line_grade, compute_line_slope, slope_class_for_value
 from .indices import IndexRaster, compute_lst, compute_nbr, compute_ndvi
 from .istat import (
     fetch_bank_branches,
@@ -31,6 +32,7 @@ __all__ = [
     'Band',
     'CdseCredentials',
     'ClassBreak',
+    'DemSampler',
     'IndexRaster',
     'LandsatScene',
     'NoCleanSceneFoundError',
@@ -40,6 +42,8 @@ __all__ = [
     'build_coverage_union',
     'classify_and_vectorize',
     'clip_to_boundary',
+    'compute_line_grade',
+    'compute_line_slope',
     'compute_lst',
     'compute_nbr',
     'compute_ndvi',
@@ -59,4 +63,5 @@ __all__ = [
     'plot_index',
     'query_overpass',
     'sentinel2_scene_date',
+    'slope_class_for_value',
 ]

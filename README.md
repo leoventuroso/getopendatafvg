@@ -69,9 +69,15 @@ it counts as done. What's implemented so far:
   overlap, ...) - the caller decides what `coverage` means by choosing
   what polygons go into it.
 
-That's every piece of the original roadmap ported, plus ISTAT, Overpass
-and the shade-corridor coverage calculation. From here, growth is
-demand-driven rather than following a fixed list.
+- `DemSampler` / `compute_line_slope` / `compute_line_grade`: sample a
+  DEM along a line and derive its average slope and net grade. The DEM's
+  own CRS is read from the file and used internally - a caller passes
+  lines in WGS84 and never needs to know or match whatever projected CRS
+  a particular DEM happens to use.
+
+That's every piece of the original roadmap ported, plus ISTAT, Overpass,
+the shade-corridor coverage calculation and DEM slope. From here, growth
+is demand-driven rather than following a fixed list.
 
 ## Installation
 
