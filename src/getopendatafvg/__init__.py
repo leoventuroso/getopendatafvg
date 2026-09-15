@@ -12,6 +12,7 @@ from ._errors import NoCleanSceneFoundError
 from .catasto import fetch_cadastral_parcels, region_parquet_name
 from .coverage import build_coverage_union, line_coverage_pct
 from .dem import DemSampler, compute_line_grade, compute_line_slope, slope_class_for_value
+from .elevation import fetch_elevation
 from .indices import IndexRaster, compute_lst, compute_nbr, compute_ndvi
 from .istat import (
     fetch_bank_branches,
@@ -59,6 +60,7 @@ __all__ = [
     'fetch_cadastral_parcels',
     'fetch_demographic_balance',
     'fetch_demographic_indicators',
+    'fetch_elevation',
     'fetch_historical_weather',
     'fetch_istat_dataflow',
     'fetch_landsat_scene',

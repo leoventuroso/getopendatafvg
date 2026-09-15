@@ -180,6 +180,17 @@ grade_pct = compute_line_grade(distances, elevations)   # net, start-to-end, sig
 Give it a DEM in whatever projected CRS it's in - it's read from the file
 and used internally, so lines can stay in WGS84.
 
+For a single point, downloading a whole DEM is overkill:
+
+```python
+from getopendatafvg import fetch_elevation
+
+elevation_m = fetch_elevation(46.0704, 12.6289)
+```
+
+Backed by [Open-Elevation](https://open-elevation.com/) (SRTM data,
+free, no API key), covers anywhere in the world.
+
 ## Coverage analysis
 
 What percentage of a buffered line (a road, a trail) falls inside a
