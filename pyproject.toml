@@ -32,7 +32,8 @@ Homepage = "https://github.com/leoventuroso/getopendatafvg"
 Issues = "https://github.com/leoventuroso/getopendatafvg/issues"
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff"]
+viz = ["matplotlib"]
+dev = ["pytest", "ruff", "getopendatafvg[viz]"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/getopendatafvg"]

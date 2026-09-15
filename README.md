@@ -38,12 +38,18 @@ it counts as done. What's implemented so far:
   and clip each result precisely to a boundary.
 - `compute_ndvi` / `compute_nbr` / `compute_lst`: continuous-valued
   vegetation/burn-severity/temperature index rasters from downloaded
-  bands, clipped to a boundary. Deliberately stop at the raw numbers -
-  classification into named classes, colors, and vectorization to
-  polygons are visualization choices left to the caller.
+  bands, clipped to a boundary.
+- `classify_and_vectorize`: classify an index raster into named classes
+  (your own breakpoints, not baked in) and vectorize it to plain
+  GeoJSON - a `class` label and an area, no color. Useful on its own in
+  QGIS or any other tool, not tied to one particular renderer.
+- `plot_index` (needs the `viz` extra): a quick static matplotlib preview
+  of an index raster, for exploration in a notebook. Not a substitute for
+  a real interactive map - Mappa Civica's own web map already covers
+  that, with colors and a legend this module doesn't try to duplicate.
 
-Planned next: a visualization layer (classification, palettes,
-vectorization to polygons) on top of the indices above.
+That's every piece of the original roadmap ported. From here, growth is
+demand-driven rather than following a fixed list.
 
 ## Installation
 
