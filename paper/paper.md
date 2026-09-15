@@ -168,5 +168,6 @@ getopendatafvg's data-extraction logic originates in the pipeline built
 for Mappa Civica, a civic platform for the comune of Montereale
 Valcellina. We thank the open-source communities behind shapely,
 rasterio, and DuckDB, whose libraries this project builds on directly.
+This work received no external funding or grant support.
 
 # References
