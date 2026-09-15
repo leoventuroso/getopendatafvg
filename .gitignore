@@ -1,26 +1,12 @@
-# Frontend
-frontend/node_modules/
-frontend/dist/
-frontend/tsconfig.tsbuildinfo
-
-# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
 .venv/
-
-# Data artifacts - pmtiles and duckdb are committed as pre-built artifacts,
-# EXCEPT the basemap: it's ~450MB (full OpenMapTiles-schema vector basemap,
-# planetiler output), far past GitHub's 100MB file limit. Regenerate with
-# `make basemap` (see pipeline/README.md) - CI must build it at deploy time.
-frontend/src/data/*.tif
-frontend/src/data/*.TIF
-frontend/src/data/*.SAFE/
-frontend/public/data/basemap_dark.pmtiles
-pipeline/data/
-pipeline/tools/
-/data/
-
-# OS / Editor
-.DS_Store
-.idea/
-.vscode/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.env
