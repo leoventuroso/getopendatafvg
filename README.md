@@ -33,10 +33,12 @@ it counts as done. What's implemented so far:
   the requested bands.
 - `fetch_landsat_scene`: the same idea for Landsat Collection 2 Level-2,
   via the USGS M2M API.
+- `fetch_wfs_features` / `fetch_and_clip_wfs_features`: query an OGC WFS
+  service (bbox or CQL filter, whichever the service actually honours)
+  and clip each result precisely to a boundary.
 
-Planned next, roughly in order: a generic helper for querying an OGC WFS
-service and clipping the result to a boundary, NDVI/NBR/LST computation
-from a downloaded scene, and a visualization layer on top of all of it.
+Planned next, roughly in order: NDVI/NBR/LST computation from a
+downloaded scene, and a visualization layer on top of all of it.
 
 ## Installation
 
