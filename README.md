@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="getopendatafvglogo.png" alt="getopendatafvg" width="420">
+</p>
+
 # getopendatafvg
 
 Python toolkit to extract open geographic, socio-economic and
