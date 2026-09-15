@@ -9,6 +9,7 @@ here will keep growing.
 """
 
 from ._errors import NoCleanSceneFoundError
+from .catalog import CATALOG, KnownDataset, list_known_datasets, search_known_datasets
 from .catasto import fetch_cadastral_parcels, region_parquet_name
 from .coverage import build_coverage_union, line_coverage_pct
 from .dem import DemSampler, compute_line_grade, compute_line_slope, slope_class_for_value
@@ -35,6 +36,7 @@ from .wfs import clip_to_boundary, fetch_and_clip_wfs_features, fetch_wfs_featur
 from .wikipedia import fetch_wikipedia_summary
 
 __all__ = [
+    'CATALOG',
     'DEFAULT_BANDS',
     'Band',
     'CdseCredentials',
@@ -42,6 +44,7 @@ __all__ = [
     'DailyWeather',
     'DemSampler',
     'IndexRaster',
+    'KnownDataset',
     'LandsatScene',
     'NoCleanSceneFoundError',
     'Sentinel2Scene',
@@ -76,9 +79,11 @@ __all__ = [
     'fetch_wikipedia_summary',
     'landsat_scene_date',
     'line_coverage_pct',
+    'list_known_datasets',
     'plot_index',
     'query_overpass',
     'region_parquet_name',
+    'search_known_datasets',
     'sentinel2_scene_date',
     'slope_class_for_value',
     'within_box_clause',

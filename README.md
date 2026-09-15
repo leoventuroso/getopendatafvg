@@ -94,6 +94,29 @@ fig = plot_index(raster, title="NDVI")
 fig.savefig("ndvi.png")
 ```
 
+## Finding a dataset
+
+Both the WFS GeoServer below and the Open Data FVG portal further down
+need you to already know a layer's type_name or a dataset's resource
+id. A small curated catalog of the ones worth knowing about ships with
+the library, so you don't have to rediscover them yourself:
+
+```python
+from getopendatafvg import list_known_datasets, search_known_datasets
+
+list_known_datasets(category="rischio naturale")
+search_known_datasets("incendi")
+```
+
+Each result is a `KnownDataset(name, source, identifier, category,
+description)` - `source` and `identifier` are exactly what
+`fetch_wfs_features`/`fetch_and_clip_wfs_features` (with
+`catalog.WFS_BASE_URL`) or `fetch_open_data_fvg` need. It's a curated
+subset, not the full underlying catalogs (about 1150 WFS layers, about
+300 portal datasets) - most of what's left out is either a near-duplicate
+of a listed entry, split across many per-tile/per-comune files, or a
+technical code not usable without its own legend.
+
 ## Government data via WFS
 
 Query any OGC WFS service (bbox or CQL filter, whichever it honours) and
