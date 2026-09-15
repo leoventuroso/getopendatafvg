@@ -27,12 +27,15 @@ it counts as done. What's implemented so far:
 
 - `sentinel2_scene_date` / `landsat_scene_date`: parse the acquisition date
   out of a Sentinel-2 or Landsat product's official filename.
+- `fetch_sentinel2_scene`: search the Copernicus Data Space Ecosystem for
+  the most recent Sentinel-2 L2A scene covering a boundary, walking
+  backward in time until one passes a cloud-cover threshold, and download
+  the requested bands.
 
-Planned next, roughly in order: automated Sentinel-2 search and download
-with a cloud-cover fallback, the same for Landsat, a generic helper for
-querying an OGC WFS service and clipping the result to a boundary,
-NDVI/NBR/LST computation from a downloaded scene, and a visualization
-layer on top of all of it.
+Planned next, roughly in order: the same fetch for Landsat, a generic
+helper for querying an OGC WFS service and clipping the result to a
+boundary, NDVI/NBR/LST computation from a downloaded scene, and a
+visualization layer on top of all of it.
 
 ## Installation
 

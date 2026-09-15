@@ -9,5 +9,22 @@ here will keep growing.
 """
 
 from .scene_date import landsat_scene_date, sentinel2_scene_date
+from .sentinel2 import (
+    DEFAULT_BANDS,
+    Band,
+    CdseCredentials,
+    NoCleanSceneFoundError,
+    Sentinel2Scene,
+    fetch_sentinel2_scene,
+)
 
-__all__ = ["landsat_scene_date", "sentinel2_scene_date"]
+__all__ = [
+    'DEFAULT_BANDS',
+    'Band',
+    'CdseCredentials',
+    'NoCleanSceneFoundError',
+    'Sentinel2Scene',
+    'fetch_sentinel2_scene',
+    'landsat_scene_date',
+    'sentinel2_scene_date',
+]
