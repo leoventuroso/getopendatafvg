@@ -38,6 +38,12 @@ on shapely [@shapely2021] and rasterio [@rasterio] internally so
 callers work with ordinary Python geometry objects rather than a
 source-specific format.
 
+As of this writing, the library exposes 51 public functions and classes
+across 18 modules (about 2,200 lines of source), backed by a test suite
+of over 100 cases and a curated, live-verified catalog of 43 named
+Friuli Venezia Giulia datasets spanning natural hazard, hydrology,
+protected areas, land use, energy, and administrative boundary data.
+
 # Statement of need
 
 Extracting open data for Friuli Venezia Giulia means a different API,
@@ -59,37 +65,66 @@ person to hit.
 # State of the field
 
 No single library currently covers this combination of Friuli Venezia
-Giulia-specific and national Italian data sources. For ISTAT
-specifically, two existing tools were evaluated directly rather than
-assumed adequate: istatapi [@istatapi2020] wraps the SDMX API but not
-the endpoint-specific bugs and rate limit documented independently by
-guida-api-istat [@guidaapiistat2020], which is itself documentation
-rather than a library. getopendatafvg's ISTAT module implements the
-corrections both describe against ISTAT's modern SDMX endpoint directly
-rather than depending on either - specifically, a silent off-by-one in
-ISTAT's `endPeriod` query parameter and a 5-requests-per-minute limit
-whose violation risks a 1-2 day IP block, both confirmed against live
-requests rather than assumed from either source. For the region's own
-WFS GeoServer and
-Socrata open data portal, no prior Python wrapper of any kind was
-found; getopendatafvg adds a curated, live-verified catalog of known
-datasets across both, on top of generic fetch functions usable for any
-layer or dataset in either source.
+Giulia-specific and national Italian data sources, and several of the
+established single-purpose tools it would otherwise have depended on no
+longer work against these sources' current APIs. For Sentinel-2,
+sentinelsat [@sentinelsat2015] is the standard Python client for
+Copernicus satellite data, but its repository is now archived and its
+own documentation states it does not support the Copernicus Data Space
+Ecosystem (CDSE) that replaced the SciHub service it was built for. For
+Landsat, landsatxplore [@landsatxplore2018] plays the equivalent role
+for USGS EarthExplorer, but its README states it is "no longer
+maintained." getopendatafvg's `sentinel2.py` and `landsat.py` modules
+were built and tested directly against the current CDSE and USGS M2M
+APIs specifically because neither predecessor works against them
+anymore.
+
+For OGC WFS services generally, OWSLib [@owslib2012] is the actively
+maintained standard Python client, but it is a low-level, protocol-
+faithful library: it does not clip results to an arbitrary boundary and
+has no notion of a dataset catalog across services or regions.
+getopendatafvg's `wfs.py` adds a boundary-in/clipped-data-out
+convenience layer on the same protocol, and `catalog.py` adds a
+curated, live-verified index of named Friuli Venezia Giulia datasets
+across both the region's WFS GeoServer (about 1,150 layers across 52
+workspaces) and its separate Socrata open data portal (about 300
+datasets) - discovery that would otherwise mean querying each source's
+own `GetCapabilities`/listing API and reading through it by hand.
+
+For ISTAT specifically, two existing tools were evaluated directly
+rather than assumed adequate: istatapi [@istatapi2020] wraps the SDMX
+API but not the endpoint-specific bugs and rate limit documented
+independently by guida-api-istat [@guidaapiistat2020], which is itself
+documentation rather than a library. getopendatafvg's `istat.py`
+implements the corrections both describe against ISTAT's modern SDMX
+endpoint directly rather than depending on either - specifically, a
+silent off-by-one in ISTAT's `endPeriod` query parameter and a
+5-requests-per-minute limit whose violation risks a 1-2 day IP block,
+both confirmed against live requests rather than assumed from either
+source.
 
 # Software design
 
 Every function follows the same convention: a boundary or point in
 WGS84 in, data clipped to it out - callers never have to know or match
-a source's native coordinate reference system. Raw data extraction and
-numeric computation (an NDVI raster, a slope percentage, a WFS feature
-list) are kept separate from any classification, color, or other
-presentation choice, which is left for the caller to decide; this
-mirrors the library's own origin, extracted piece by piece from a civic
-mapping platform's data pipeline where that separation had not
-originally been made and had to be untangled. Every network-facing
-function is covered by unit tests with the HTTP layer mocked, and was
-additionally live-verified against the real external service during
-development rather than only against a mock.
+a source's native coordinate reference system, or a satellite scene's
+own UTM zone in the case of `indices.py` and `dem.py`, which reproject
+internally instead of requiring pre-reprojected input. Raw data
+extraction and numeric computation (an NDVI raster in `indices.py`, a
+slope percentage in `dem.py`, a WFS feature list in `wfs.py`) are kept
+separate from any classification, color, or other presentation choice,
+which `vectorize.py`'s `classify_and_vectorize` takes as an explicit,
+caller-supplied argument rather than deciding internally; this mirrors
+the library's own origin, extracted piece by piece from a civic mapping
+platform's data pipeline where that separation had not originally been
+made and had to be untangled. Two modules are deliberately generic
+rather than Friuli Venezia Giulia-specific: `wfs.py` and
+`open_data_fvg.py` work against any WFS service or Socrata portal
+respectively, with `catalog.py` layered on top as the
+region-specific, curated part. Every network-facing function is
+covered by unit tests with the HTTP layer mocked, and was additionally
+live-verified against the real external service during development
+rather than only against a mock.
 
 # Research impact statement
 
@@ -112,18 +147,26 @@ rather than each source's own undocumented access path.
 
 # AI usage disclosure
 
-Parts of this project's code, tests, and documentation were developed
-with the assistance of Claude (Anthropic), including Claude Code, used
-for code generation, refactoring, test scaffolding, and documentation
-drafting. Every function was directed, reviewed, and live-verified
-against the real external service by the author before being merged;
-which modules to build, what conventions to follow, and what to reject
-were the author's decisions, not delegated to the AI.
+This project's code, tests, documentation, and this manuscript were
+developed with the assistance of Claude models (Anthropic) in the
+Sonnet and Opus families, accessed through Claude Code. It was used for
+code generation, refactoring, test scaffolding, live-verification
+scripting against real external services, and documentation and
+manuscript drafting, including generating this bibliography's BibTeX
+entries. It was not used to decide which modules to build, which
+conventions to follow, or what to reject from a reference
+implementation under comparison - those were the author's decisions.
+Every function was directed, reviewed, and live-verified against the
+real external service by the author before being merged, and every
+citation in this paper has been checked against its own source
+(a `CITATION.cff` file, a repository's stated DOI, or its README)
+rather than accepted as generated.
 
 # Acknowledgements
 
 getopendatafvg's data-extraction logic originates in the pipeline built
 for Mappa Civica, a civic platform for the comune of Montereale
-Valcellina.
+Valcellina. We thank the open-source communities behind shapely,
+rasterio, and DuckDB, whose libraries this project builds on directly.
 
 # References
