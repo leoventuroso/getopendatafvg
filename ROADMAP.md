@@ -105,12 +105,14 @@ Fixable, not yet done:
       (JOSS accepts the latter for many accepted papers - not urgent,
       but a Sphinx/mkdocs site would strengthen this checkbox if there's
       ever spare time for it)
-- [ ] `paper.md` + `paper.bib` themselves - not started. Needs decisions
-      only the maintainer can make: title, author name(s), affiliation,
-      ORCID (or explicitly none). Can't be filled with placeholders.
-      When drafting: "state of the field" section can reuse this
-      project's own research comparing against `istatapi` and
-      `ondata/guida-api-istat` for the ISTAT module specifically.
+- [x] `paper.md` + `paper.bib` drafted (`paper/`) - author: Leonardo
+      Venturoso, affiliation: Fraunhofer Italia, all 8 required sections
+      present, 775 body words (in range), every citation key checked
+      against paper.bib. Still needs a real pass before actual
+      submission: re-read once more code/README has moved since
+      2026-09-15, and the "Research impact statement" section rewritten
+      if real evidence exists by then instead of the current "credible
+      near-term significance" framing.
 
 Needs time, not code:
 - [ ] 6-month continuous public development history. Repo created
