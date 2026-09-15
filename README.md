@@ -36,9 +36,14 @@ it counts as done. What's implemented so far:
 - `fetch_wfs_features` / `fetch_and_clip_wfs_features`: query an OGC WFS
   service (bbox or CQL filter, whichever the service actually honours)
   and clip each result precisely to a boundary.
+- `compute_ndvi` / `compute_nbr` / `compute_lst`: continuous-valued
+  vegetation/burn-severity/temperature index rasters from downloaded
+  bands, clipped to a boundary. Deliberately stop at the raw numbers -
+  classification into named classes, colors, and vectorization to
+  polygons are visualization choices left to the caller.
 
-Planned next, roughly in order: NDVI/NBR/LST computation from a
-downloaded scene, and a visualization layer on top of all of it.
+Planned next: a visualization layer (classification, palettes,
+vectorization to polygons) on top of the indices above.
 
 ## Installation
 
