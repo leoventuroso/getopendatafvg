@@ -47,9 +47,19 @@ it counts as done. What's implemented so far:
   of an index raster, for exploration in a notebook. Not a substitute for
   a real interactive map - Mappa Civica's own web map already covers
   that, with colors and a legend this module doesn't try to duplicate.
+- `fetch_population_series` / `fetch_demographic_balance` /
+  `fetch_demographic_indicators` / `fetch_bank_branches`: ISTAT
+  statistics via the modern SDMX REST API only - no dependency on
+  `istatapi` or the legacy `sdmx.istat.it` endpoint it wraps, which now
+  redirects every data query to its own homepage instead of serving
+  data (confirmed live, not assumed). Built-in client-side throttling
+  keeps every request under ISTAT's 5-requests-per-minute limit
+  (exceeding it risks a 1-2 *day* IP block), and a documented
+  `endPeriod` server bug (returns one year more than requested) is
+  corrected internally.
 
-That's every piece of the original roadmap ported. From here, growth is
-demand-driven rather than following a fixed list.
+That's every piece of the original roadmap ported, plus ISTAT. From here,
+growth is demand-driven rather than following a fixed list.
 
 ## Installation
 

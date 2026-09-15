@@ -10,6 +10,13 @@ here will keep growing.
 
 from ._errors import NoCleanSceneFoundError
 from .indices import IndexRaster, compute_lst, compute_nbr, compute_ndvi
+from .istat import (
+    fetch_bank_branches,
+    fetch_demographic_balance,
+    fetch_demographic_indicators,
+    fetch_istat_dataflow,
+    fetch_population_series,
+)
 from .landsat import LandsatScene, UsgsCredentials, fetch_landsat_scene
 from .scene_date import landsat_scene_date, sentinel2_scene_date
 from .sentinel2 import DEFAULT_BANDS, Band, CdseCredentials, Sentinel2Scene, fetch_sentinel2_scene
@@ -33,7 +40,12 @@ __all__ = [
     'compute_nbr',
     'compute_ndvi',
     'fetch_and_clip_wfs_features',
+    'fetch_bank_branches',
+    'fetch_demographic_balance',
+    'fetch_demographic_indicators',
+    'fetch_istat_dataflow',
     'fetch_landsat_scene',
+    'fetch_population_series',
     'fetch_sentinel2_scene',
     'fetch_wfs_features',
     'landsat_scene_date',
