@@ -99,14 +99,14 @@ CATALOG: tuple[KnownDataset, ...] = (
     KnownDataset(
         "Corsi d'acqua",
         'wfs',
-        'IDROGRAF:CORSI_ACQUA',
+        'IRDAT:CORSI_ACQUA',
         'acqua',
         'Reticolo idrografico regionale.',
     ),
     KnownDataset(
         'Stazioni idrometriche',
         'wfs',
-        'IDROGRAF:STAZIONI_IDROMETRICHE',
+        'MONIT_AMB:STAZIONI_IDROMETRICHE',
         'acqua',
         "Stazioni di misura del livello dei corsi d'acqua.",
     ),
@@ -179,9 +179,9 @@ CATALOG: tuple[KnownDataset, ...] = (
     KnownDataset(
         'Corine Land Cover 2012',
         'wfs',
-        'USO_SUOLO:CORINELANDCOVER_FVG2012',
+        'IRDAT:CORINELANDCOVER_FVG2012',
         'uso del suolo',
-        'Copertura del suolo, edizione 2012 (anche 1990/2000 disponibili con lo stesso schema).',
+        'Copertura del suolo, edizione 2012 (1990/2000 in USO_SUOLO, stesso schema).',
     ),
     KnownDataset(
         'Carta dei suoli (Pordenone)',
@@ -268,14 +268,14 @@ CATALOG: tuple[KnownDataset, ...] = (
     KnownDataset(
         'Confini comunali',
         'wfs',
-        'UNIT_AMM:COMUNI_FVG',
+        'UNITA_AMM:COMUNI_FVG',
         'amministrativo',
         'Confini amministrativi dei comuni.',
     ),
     KnownDataset(
         'Confini provinciali',
         'wfs',
-        'UNIT_AMM:PROVINCE_FVG',
+        'UNITA_AMM:PROVINCE_FVG',
         'amministrativo',
         'Confini amministrativi delle province.',
     ),

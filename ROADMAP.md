@@ -19,8 +19,11 @@ source), commit, check it off.
 - [ ] Expand `CATALOG` beyond the initial 43 entries. Candidates already
       identified but not yet added (all confirmed to exist in the WFS
       GetCapabilities dump or the Socrata portal listing, not yet
-      individually re-verified live - do that before adding, the way
-      every existing entry was verified):
+      individually re-verified live - do that before adding, and run
+      `GETOPENDATAFVG_LIVE=1 pytest tests/test_catalog_live.py`
+      afterwards). Note the workspace prefixes below are taken from the
+      same survey that got five of the original entries wrong, so treat
+      them as unverified until the live check passes:
   - Rischio naturale: `ZONE_VINC:CLASSI_SISM_DM1982` (classificazione
     sismica, versione precedente a OPCM3274, gia' in catalogo),
     `IRDAT:CATFRANE_CORONAMENTO`/`CATFRANE_FESSURE`/`CATFRANE_FRANE_FOTO`/
@@ -42,7 +45,8 @@ source), commit, check it off.
   - Servizi pubblici: `PUB_UTIL:ImpiantiSportiviFVG`, `CER:PARROCCHIE_FVG`,
     `CER:ATER_FVG` (edilizia popolare)
   - Energia: `CER:BIOENERGIE_FVG`, `CER:GRANDI_DIGHE_FVG`
-  - Amministrativo: `UNIT_AMM:REGIONE_FVG` (confine regionale)
+  - Amministrativo: `UNIT_AMM:REGIONE_FVG` (confine regionale - also
+    exists unversioned as `UNITA_AMM:REGIONE_FVG`, check which)
   - Trasporti: `RETI_TRASP:ASSI_STRADALI_CAT_STR_REG`
   - Geologia/turismo: `CAT_SPELEO:AREE_CARSICHE`
   - Socrata: "Elezioni comunali 2025 - Voti Liste" (accanto a Voti
