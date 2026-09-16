@@ -9,7 +9,13 @@ here will keep growing.
 """
 
 from ._errors import NoCleanSceneFoundError
-from .catalog import CATALOG, KnownDataset, list_known_datasets, search_known_datasets
+from .catalog import (
+    CATALOG,
+    KnownDataset,
+    fetch_known_dataset,
+    list_known_datasets,
+    search_known_datasets,
+)
 from .catasto import fetch_cadastral_parcels, region_parquet_name
 from .coverage import build_coverage_union, line_coverage_pct
 from .dem import DemSampler, compute_line_grade, compute_line_slope, slope_class_for_value
@@ -70,6 +76,7 @@ __all__ = [
     'fetch_historical_weather',
     'fetch_income_series',
     'fetch_istat_dataflow',
+    'fetch_known_dataset',
     'fetch_landsat_scene',
     'fetch_open_data_fvg',
     'fetch_overpass_elements',

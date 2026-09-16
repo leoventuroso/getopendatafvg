@@ -1,5 +1,15 @@
-from getopendatafvg import CATALOG, list_known_datasets, search_known_datasets
-from getopendatafvg.catalog import KnownDataset
+from unittest.mock import patch
+
+import pytest
+from shapely.geometry import box
+
+from getopendatafvg import (
+    CATALOG,
+    fetch_known_dataset,
+    list_known_datasets,
+    search_known_datasets,
+)
+from getopendatafvg.catalog import WFS_BASE_URL, KnownDataset
 
 
 def test_catalog_entries_are_well_formed():
@@ -55,3 +65,69 @@ def test_search_known_datasets_matches_the_description():
 
 def test_search_known_datasets_returns_empty_for_no_match():
     assert search_known_datasets('nonexistent xyz query') == []
+
+
+def wfs_entry() -> KnownDataset:
+    return KnownDataset('Incendi', 'wfs', 'ZONE_RISC:V_INCENDI_CT', 'rischio naturale', 'test')
+
+
+def socrata_entry() -> KnownDataset:
+    return KnownDataset('Piste ciclabili', 'open_data_fvg', '7eat-pecq', 'trasporti', 'test')
+
+
+def test_fetch_known_dataset_routes_a_wfs_entry_without_boundary_to_fetch_wfs_features():
+    with patch('getopendatafvg.catalog.fetch_wfs_features', return_value=[]) as fetch:
+        fetch_known_dataset(wfs_entry())
+
+    assert fetch.call_args.args == (WFS_BASE_URL, 'ZONE_RISC:V_INCENDI_CT')
+
+
+def test_fetch_known_dataset_routes_a_wfs_entry_with_boundary_to_the_clipping_variant():
+    boundary = box(12.5648, 46.0704, 12.7251, 46.1911)
+    with patch('getopendatafvg.catalog.fetch_and_clip_wfs_features', return_value=[]) as fetch:
+        fetch_known_dataset(wfs_entry(), boundary=boundary)
+
+    assert fetch.call_args.args == (WFS_BASE_URL, 'ZONE_RISC:V_INCENDI_CT', boundary)
+
+
+def test_fetch_known_dataset_routes_an_open_data_fvg_entry_to_fetch_open_data_fvg():
+    with patch('getopendatafvg.catalog.fetch_open_data_fvg', return_value=[]) as fetch:
+        fetch_known_dataset(socrata_entry())
+
+    assert fetch.call_args.args == ('7eat-pecq',)
+
+
+def test_fetch_known_dataset_passes_extra_kwargs_through_to_the_client():
+    with patch('getopendatafvg.catalog.fetch_open_data_fvg', return_value=[]) as fetch:
+        fetch_known_dataset(socrata_entry(), limit=5, where="anno='2025'")
+
+    assert fetch.call_args.kwargs == {'limit': 5, 'where': "anno='2025'"}
+
+
+def test_fetch_known_dataset_returns_whatever_the_underlying_client_returned():
+    rows = [{'id': 1}, {'id': 2}]
+    with patch('getopendatafvg.catalog.fetch_open_data_fvg', return_value=rows):
+        assert fetch_known_dataset(socrata_entry()) == rows
+
+
+def test_fetch_known_dataset_rejects_a_boundary_on_an_open_data_fvg_entry():
+    with pytest.raises(ValueError, match='within_box_clause'):
+        fetch_known_dataset(socrata_entry(), boundary=box(0, 0, 1, 1))
+
+
+def test_fetch_known_dataset_rejects_an_unknown_source():
+    entry = KnownDataset('Bogus', 'ftp', 'x', 'test', 'test')
+    with pytest.raises(ValueError, match='unknown source'):
+        fetch_known_dataset(entry)
+
+
+def test_every_catalog_entry_is_dispatchable():
+    # The dispatcher only knows two sources; test_catalog_entries_are_well_formed
+    # asserts the same pair, so this fails loudly if a third source is ever
+    # added to the catalog without teaching fetch_known_dataset about it.
+    for entry in CATALOG:
+        with (
+            patch('getopendatafvg.catalog.fetch_wfs_features', return_value=[]),
+            patch('getopendatafvg.catalog.fetch_open_data_fvg', return_value=[]),
+        ):
+            assert fetch_known_dataset(entry) == []

@@ -7,10 +7,15 @@ source), commit, check it off.
 
 ## Catalog
 
-- [ ] `fetch_known_dataset(entry, boundary=None, **kwargs)` - dispatch a
+- [x] `fetch_known_dataset(entry, boundary=None, **kwargs)` - dispatch a
       `KnownDataset` to `fetch_wfs_features`/`fetch_and_clip_wfs_features`
       or `fetch_open_data_fvg` automatically, instead of the caller
-      branching on `entry.source` themselves.
+      branching on `entry.source` themselves. Done 2026-09-16, 8 tests,
+      live-verified against both sources.
+- [ ] Record each Socrata entry's geometry column name in `KnownDataset`,
+      so `fetch_known_dataset` can boundary-filter portal datasets too
+      instead of raising. Needs the column name checked live per entry -
+      they differ per dataset, and not every dataset has one.
 - [ ] Expand `CATALOG` beyond the initial 43 entries. Candidates already
       identified but not yet added (all confirmed to exist in the WFS
       GetCapabilities dump or the Socrata portal listing, not yet

@@ -127,9 +127,25 @@ search_known_datasets("incendi")
 ```
 
 Each result is a `KnownDataset(name, source, identifier, category,
-description)` - `source` and `identifier` are exactly what
-`fetch_wfs_features`/`fetch_and_clip_wfs_features` (with
-`catalog.WFS_BASE_URL`) or `fetch_open_data_fvg` need. It's a curated
+description)`. `fetch_known_dataset` takes one and calls the right
+client for you, so you don't have to branch on `source` yourself:
+
+```python
+from getopendatafvg import fetch_known_dataset, search_known_datasets
+
+entry = search_known_datasets("incendi")[0]
+fires = fetch_known_dataset(entry, boundary=boundary)
+```
+
+A `boundary` routes WFS entries through `fetch_and_clip_wfs_features`,
+so the return shape is the one that client already documents:
+`(properties, clipped_geometry)` pairs for a clipped WFS fetch, GeoJSON
+feature dicts for an unclipped one, plain row dicts for a portal
+dataset. Portal datasets can't be boundary-filtered automatically - each
+one names its geometry column differently - so pass a
+`within_box_clause` as `where=` instead.
+
+The catalog is a curated
 subset, not the full underlying catalogs (about 1150 WFS layers, about
 300 portal datasets) - most of what's left out is either a near-duplicate
 of a listed entry, split across many per-tile/per-comune files, or a

@@ -17,6 +17,12 @@ before being added, not copied from a layer/dataset listing alone.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
+
+from shapely.geometry.base import BaseGeometry
+
+from .open_data_fvg import fetch_open_data_fvg
+from .wfs import fetch_and_clip_wfs_features, fetch_wfs_features
 
 WFS_BASE_URL = 'https://serviziogc.regione.fvg.it/geoserver/ows'
 OPEN_DATA_FVG_BASE_URL = 'https://www.dati.friuliveneziagiulia.it'
@@ -374,3 +380,45 @@ def search_known_datasets(query: str) -> list[KnownDataset]:
     """
     q = query.lower()
     return [d for d in CATALOG if q in d.name.lower() or q in d.category.lower() or q in d.description.lower()]
+
+
+def fetch_known_dataset(
+    entry: KnownDataset,
+    boundary: BaseGeometry | None = None,
+    **kwargs: Any,
+) -> list[Any]:
+    """Fetch a catalog entry without branching on `entry.source` yourself:
+    picks the right client and passes `entry.identifier` (plus, for WFS
+    entries, `WFS_BASE_URL`) in the form that client expects. Extra
+    keyword arguments go straight through to it.
+
+    The return shape is the underlying function's, because the two
+    sources genuinely don't return the same thing (see open_data_fvg.py):
+
+    - `'wfs'` with a `boundary` -> `fetch_and_clip_wfs_features`, i.e.
+      `(properties, clipped_geometry)` pairs
+    - `'wfs'` without one -> `fetch_wfs_features`, i.e. GeoJSON feature
+      dicts, unclipped
+    - `'open_data_fvg'` -> `fetch_open_data_fvg`, i.e. one plain dict per
+      row
+
+    A `boundary` with an `'open_data_fvg'` entry raises: SODA needs the
+    dataset's geometry column by name in a `within_box(...)` clause, that
+    column's name differs per dataset, and the catalog doesn't record it
+    - build the clause with `within_box_clause` and pass it as `where=`.
+    """
+    if entry.source == 'wfs':
+        if boundary is not None:
+            return fetch_and_clip_wfs_features(WFS_BASE_URL, entry.identifier, boundary, **kwargs)
+        return fetch_wfs_features(WFS_BASE_URL, entry.identifier, **kwargs)
+
+    if entry.source == 'open_data_fvg':
+        if boundary is not None:
+            raise ValueError(
+                f'{entry.name!r} is an open_data_fvg dataset, which cannot be filtered by '
+                'boundary automatically: build a within_box_clause(geometry_column, boundary) '
+                'for this dataset and pass it as where='
+            )
+        return fetch_open_data_fvg(entry.identifier, **kwargs)
+
+    raise ValueError(f'unknown source {entry.source!r} on catalog entry {entry.name!r}')
