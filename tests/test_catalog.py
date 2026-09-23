@@ -21,6 +21,10 @@ def test_catalog_entries_are_well_formed():
         assert entry.name
         assert entry.category
         assert entry.description
+        if entry.source == 'wfs':
+            # The WFS client reads geometry off the layer itself, so a
+            # geometry_column here would be recorded but never used.
+            assert entry.geometry_column is None
 
 
 def test_catalog_has_no_duplicate_identifiers_within_a_source():
@@ -72,7 +76,18 @@ def wfs_entry() -> KnownDataset:
 
 
 def socrata_entry() -> KnownDataset:
-    return KnownDataset('Piste ciclabili', 'open_data_fvg', '7eat-pecq', 'trasporti', 'test')
+    return KnownDataset('Indici prezzi', 'open_data_fvg', 'fz2e-423g', 'economia', 'test')
+
+
+def socrata_entry_with_geometry() -> KnownDataset:
+    return KnownDataset(
+        'Piste ciclabili',
+        'open_data_fvg',
+        '7eat-pecq',
+        'trasporti',
+        'test',
+        geometry_column='the_geom',
+    )
 
 
 def test_fetch_known_dataset_routes_a_wfs_entry_without_boundary_to_fetch_wfs_features():
@@ -94,7 +109,7 @@ def test_fetch_known_dataset_routes_an_open_data_fvg_entry_to_fetch_open_data_fv
     with patch('getopendatafvg.catalog.fetch_open_data_fvg', return_value=[]) as fetch:
         fetch_known_dataset(socrata_entry())
 
-    assert fetch.call_args.args == ('7eat-pecq',)
+    assert fetch.call_args.args == ('fz2e-423g',)
 
 
 def test_fetch_known_dataset_passes_extra_kwargs_through_to_the_client():
@@ -110,9 +125,38 @@ def test_fetch_known_dataset_returns_whatever_the_underlying_client_returned():
         assert fetch_known_dataset(socrata_entry()) == rows
 
 
-def test_fetch_known_dataset_rejects_a_boundary_on_an_open_data_fvg_entry():
-    with pytest.raises(ValueError, match='within_box_clause'):
+def test_fetch_known_dataset_rejects_a_boundary_on_a_socrata_entry_without_a_geometry_column():
+    with pytest.raises(ValueError, match='no geometry column recorded'):
         fetch_known_dataset(socrata_entry(), boundary=box(0, 0, 1, 1))
+
+
+def test_fetch_known_dataset_boundary_filters_a_socrata_entry_that_has_a_geometry_column():
+    boundary = box(13.18, 46.02, 13.30, 46.12)
+    with patch('getopendatafvg.catalog.fetch_open_data_fvg', return_value=[]) as fetch:
+        fetch_known_dataset(socrata_entry_with_geometry(), boundary=boundary)
+
+    # within_box takes the corners as north, west, south, east.
+    assert fetch.call_args.args == ('7eat-pecq',)
+    assert fetch.call_args.kwargs == {'where': 'within_box(the_geom, 46.12, 13.18, 46.02, 13.3)'}
+
+
+def test_fetch_known_dataset_ands_a_caller_where_with_the_generated_boundary_clause():
+    with patch('getopendatafvg.catalog.fetch_open_data_fvg', return_value=[]) as fetch:
+        fetch_known_dataset(
+            socrata_entry_with_geometry(),
+            boundary=box(13.18, 46.02, 13.30, 46.12),
+            where="tipo='ciclabile'",
+        )
+
+    where = fetch.call_args.kwargs['where']
+    assert where == "(tipo='ciclabile') AND within_box(the_geom, 46.12, 13.18, 46.02, 13.3)"
+
+
+def test_fetch_known_dataset_leaves_a_socrata_entry_unfiltered_without_a_boundary():
+    with patch('getopendatafvg.catalog.fetch_open_data_fvg', return_value=[]) as fetch:
+        fetch_known_dataset(socrata_entry_with_geometry())
+
+    assert 'where' not in fetch.call_args.kwargs
 
 
 def test_fetch_known_dataset_rejects_an_unknown_source():

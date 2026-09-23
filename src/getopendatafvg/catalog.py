@@ -21,7 +21,7 @@ from typing import Any
 
 from shapely.geometry.base import BaseGeometry
 
-from .open_data_fvg import fetch_open_data_fvg
+from .open_data_fvg import fetch_open_data_fvg, within_box_clause
 from .wfs import fetch_and_clip_wfs_features, fetch_wfs_features
 
 WFS_BASE_URL = 'https://serviziogc.regione.fvg.it/geoserver/ows'
@@ -35,6 +35,13 @@ class KnownDataset:
     `WFS_BASE_URL`) for `fetch_wfs_features`/`fetch_and_clip_wfs_features`
     when `source` is `'wfs'`, or a resource id for `fetch_open_data_fvg`
     when `source` is `'open_data_fvg'`.
+
+    `geometry_column` is the name of the dataset's geometry column, for
+    `'open_data_fvg'` entries that have one - it differs per dataset, and
+    most of the portal's datasets are plain tables with none at all, so it
+    stays `None` unless checked live against the dataset's schema. WFS
+    entries leave it `None`: the WFS client gets its geometry from the
+    layer itself.
     """
 
     name: str
@@ -42,6 +49,7 @@ class KnownDataset:
     identifier: str
     category: str
     description: str
+    geometry_column: str | None = None
 
 
 CATALOG: tuple[KnownDataset, ...] = (
@@ -315,6 +323,7 @@ CATALOG: tuple[KnownDataset, ...] = (
         '7eat-pecq',
         'trasporti',
         'Ciclovie di interesse locale (integra lo strato regionale del PPR).',
+        geometry_column='the_geom',
     ),
     KnownDataset(
         'Parafarmacie',
@@ -400,12 +409,22 @@ def fetch_known_dataset(
     - `'wfs'` without one -> `fetch_wfs_features`, i.e. GeoJSON feature
       dicts, unclipped
     - `'open_data_fvg'` -> `fetch_open_data_fvg`, i.e. one plain dict per
-      row
+      row, boundary-filtered with a `within_box(...)` SoQL clause when the
+      entry records a `geometry_column`
 
-    A `boundary` with an `'open_data_fvg'` entry raises: SODA needs the
-    dataset's geometry column by name in a `within_box(...)` clause, that
-    column's name differs per dataset, and the catalog doesn't record it
-    - build the clause with `within_box_clause` and pass it as `where=`.
+    Unlike the WFS branch, an `'open_data_fvg'` `boundary` is a bounding-box
+    filter only, never an exact cut - `within_box` is what SODA offers, so
+    rows are a superset of what really intersects `boundary`. Clip
+    client-side afterward if you need the exact shape.
+
+    A `boundary` on an entry whose `geometry_column` is `None` raises:
+    most of the portal is plain tables, and some datasets that do carry
+    coordinates keep them in a form SODA cannot filter on (Parafarmacie,
+    for one, stores `latitudine`/`longitudine` as text with a comma
+    decimal separator). Filter those client-side.
+
+    A caller-supplied `where=` is preserved: it is ANDed with the
+    generated clause rather than replaced.
     """
     if entry.source == 'wfs':
         if boundary is not None:
@@ -414,11 +433,15 @@ def fetch_known_dataset(
 
     if entry.source == 'open_data_fvg':
         if boundary is not None:
-            raise ValueError(
-                f'{entry.name!r} is an open_data_fvg dataset, which cannot be filtered by '
-                'boundary automatically: build a within_box_clause(geometry_column, boundary) '
-                'for this dataset and pass it as where='
-            )
+            if entry.geometry_column is None:
+                raise ValueError(
+                    f'{entry.name!r} has no geometry column recorded, so it cannot be '
+                    'filtered by boundary server-side: fetch it unfiltered and filter '
+                    'the rows yourself'
+                )
+            clause = within_box_clause(entry.geometry_column, boundary)
+            caller_where = kwargs.pop('where', None)
+            kwargs['where'] = f'({caller_where}) AND {clause}' if caller_where else clause
         return fetch_open_data_fvg(entry.identifier, **kwargs)
 
     raise ValueError(f'unknown source {entry.source!r} on catalog entry {entry.name!r}')

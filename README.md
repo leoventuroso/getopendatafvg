@@ -141,9 +141,12 @@ A `boundary` routes WFS entries through `fetch_and_clip_wfs_features`,
 so the return shape is the one that client already documents:
 `(properties, clipped_geometry)` pairs for a clipped WFS fetch, GeoJSON
 feature dicts for an unclipped one, plain row dicts for a portal
-dataset. Portal datasets can't be boundary-filtered automatically - each
-one names its geometry column differently - so pass a
-`within_box_clause` as `where=` instead.
+dataset. A portal entry is boundary-filtered too when the catalog
+records its geometry column, which is a bounding-box filter server-side
+(SODA's `within_box`), not an exact cut - clip client-side if you need
+the exact shape. Most portal datasets are plain tables with no geometry
+column at all, and a boundary on one of those raises; fetch it
+unfiltered and filter the rows yourself.
 
 The catalog is a curated
 subset, not the full underlying catalogs (about 1150 WFS layers, about

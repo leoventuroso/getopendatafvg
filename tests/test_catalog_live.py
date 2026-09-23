@@ -18,8 +18,9 @@ import time
 
 import pytest
 import requests
+from shapely.geometry import box
 
-from getopendatafvg import CATALOG
+from getopendatafvg import CATALOG, fetch_known_dataset, list_known_datasets
 from getopendatafvg.catalog import OPEN_DATA_FVG_BASE_URL, WFS_BASE_URL
 
 live_only = pytest.mark.skipif(
@@ -74,3 +75,26 @@ def test_every_catalog_entry_resolves_against_its_live_source():
         time.sleep(0.4)  # both services are public infrastructure; don't hammer them
 
     assert not broken, 'catalog entries that no longer resolve:\n' + '\n'.join(broken)
+
+
+@live_only
+def test_recorded_geometry_columns_are_really_filterable():
+    """A geometry_column that doesn't exist, or isn't a geo type, doesn't
+    fail loudly - SODA answers a within_box on it with an error the
+    catalog never sees until someone passes a boundary. So ask it: every
+    entry that records one must accept the clause and return a strict,
+    non-empty subset for a box we know has features in it.
+    """
+    entries = [d for d in list_known_datasets(source='open_data_fvg') if d.geometry_column]
+    assert entries, 'no portal entry records a geometry column; this test would pass vacuously'
+
+    udine = box(13.18, 46.02, 13.30, 46.12)
+    for entry in entries:
+        total = len(fetch_known_dataset(entry, limit=50000))
+        inside = len(fetch_known_dataset(entry, boundary=udine, limit=50000))
+        assert inside, f'{entry.name}: within_box({entry.geometry_column}) matched nothing'
+        assert inside < total, (
+            f'{entry.name}: within_box({entry.geometry_column}) returned all {total} rows, '
+            'so it is not actually filtering'
+        )
+        time.sleep(0.4)

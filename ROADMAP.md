@@ -12,10 +12,18 @@ source), commit, check it off.
       or `fetch_open_data_fvg` automatically, instead of the caller
       branching on `entry.source` themselves. Done 2026-09-16, 8 tests,
       live-verified against both sources.
-- [ ] Record each Socrata entry's geometry column name in `KnownDataset`,
+- [x] Record each Socrata entry's geometry column name in `KnownDataset`,
       so `fetch_known_dataset` can boundary-filter portal datasets too
-      instead of raising. Needs the column name checked live per entry -
-      they differ per dataset, and not every dataset has one.
+      instead of raising. Done 2026-09-23, 5 tests plus a live one.
+      Checked all 7 portal entries against their schemas: only Piste
+      ciclabili has a geometry column (`the_geom`, MultiLineString;
+      within_box narrows 486 rows to 75 around Udine). Parafarmacie looks
+      like it should have one but stores `latitudine`/`longitudine` as
+      *text* with a comma decimal separator, so SODA can't filter on it
+      at all - it stays unfilterable, and a boundary on it still raises.
+      The other five are plain tables. Re-check when portal entries are
+      added: the live test only covers entries that record a column, so
+      a new geometry dataset added without one fails silently.
 - [ ] Expand `CATALOG` beyond the initial 43 entries. Candidates already
       identified but not yet added (all confirmed to exist in the WFS
       GetCapabilities dump or the Socrata portal listing, not yet
