@@ -325,6 +325,34 @@ or is a disambiguation page. Returns `None` if nothing matches - no
 classification (touristic, notable, ...) is done here, that's a
 decision for the caller.
 
+## Development
+
+```bash
+pip install -e ".[dev]"
+ruff check .
+pytest --cov
+```
+
+`pytest` alone runs the offline suite: every module is covered, and the
+HTTP clients are tested against mocked responses, so no test in it
+touches the network. `--cov` adds coverage, which is configured in
+`pyproject.toml` and fails below 95% - a ratchet against regressions,
+not a target to chase. CI runs exactly these two commands on Python
+3.11, 3.12 and 3.13 for every push and pull request.
+
+The catalog additionally has a live suite, skipped by default because it
+makes real requests to two government services:
+
+```bash
+GETOPENDATAFVG_LIVE=1 pytest tests/test_catalog_live.py
+```
+
+It checks that every catalog entry still resolves upstream, and that the
+geometry column recorded for a portal entry really is filterable. Run it
+before adding entries. It also runs weekly in CI (`.github/workflows/live.yml`),
+which is what catches a layer being renamed or retired by the region -
+something no offline test can see.
+
 ## License
 
 [MIT](LICENSE)

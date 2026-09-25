@@ -5,7 +5,14 @@ import pytest
 from shapely.geometry import box
 
 from getopendatafvg import NoCleanSceneFoundError, UsgsCredentials, fetch_landsat_scene
-from getopendatafvg.landsat import DOWNLOAD_LABEL, find_band_download, select_scene
+from getopendatafvg.landsat import (
+    DOWNLOAD_LABEL,
+    DOWNLOAD_POLL_TIMEOUT_SECONDS,
+    _m2m_post,
+    _request_download_url,
+    find_band_download,
+    select_scene,
+)
 
 
 def make_scene(display_id: str, cloud_cover: float) -> dict:
@@ -123,3 +130,81 @@ def test_fetch_landsat_scene_pairs_the_secondary_downloads_own_entity_id(tmp_pat
     assert result.cloud_cover_pct == 13.2
     assert len(result.tif_paths) == 1
     assert result.tif_paths[0].exists()
+
+
+def m2m_response(data=None, error_code=None, error_message=None) -> MagicMock:
+    resp = MagicMock()
+    resp.json.return_value = {'data': data, 'errorCode': error_code, 'errorMessage': error_message}
+    resp.raise_for_status.return_value = None
+    return resp
+
+
+def test_m2m_post_sends_the_api_key_as_an_auth_token_header():
+    with patch('getopendatafvg.landsat.requests.post', return_value=m2m_response(data=[])) as post:
+        _m2m_post('scene-search', 'key-123', {'x': 1})
+
+    assert post.call_args.kwargs['headers'] == {'X-Auth-Token': 'key-123'}
+    assert post.call_args.kwargs['json'] == {'x': 1}
+    assert post.call_args.args[0].endswith('/scene-search')
+
+
+def test_m2m_post_omits_the_header_entirely_when_there_is_no_key_yet():
+    # login-token is the one call made before a key exists; sending
+    # X-Auth-Token: None there would be a header with a null value.
+    with patch('getopendatafvg.landsat.requests.post', return_value=m2m_response(data=[])) as post:
+        _m2m_post('login-token', None, {})
+
+    assert post.call_args.kwargs['headers'] == {}
+
+
+def test_m2m_post_raises_on_an_error_code_even_though_the_http_status_was_200():
+    # M2M reports application errors in a 200 body, so raise_for_status
+    # alone would let them through as a successful, empty result.
+    with patch('getopendatafvg.landsat.requests.post',
+               return_value=m2m_response(error_code='AUTH_INVALID', error_message='bad token')), \
+         pytest.raises(RuntimeError, match='AUTH_INVALID'):
+        _m2m_post('login-token', None, {})
+
+
+def test_request_download_url_returns_an_immediately_available_download():
+    with patch('getopendatafvg.landsat._m2m_post',
+               return_value={'availableDownloads': [{'url': 'https://example/a.tar'}]}) as post:
+        url = _request_download_url('key', 'ENT1', 'PROD1')
+
+    assert url == 'https://example/a.tar'
+    assert post.call_count == 1  # no polling needed, so no download-retrieve
+
+
+def test_request_download_url_polls_until_a_preparing_download_becomes_ready():
+    responses = [
+        {'availableDownloads': [], 'preparingDownloads': [{'downloadId': 42}]},
+        {'available': [{'downloadId': 99, 'url': 'https://example/other.tar'}]},
+        {'available': [{'downloadId': 42, 'url': 'https://example/mine.tar'}]},
+    ]
+    with patch('getopendatafvg.landsat._m2m_post', side_effect=responses), \
+         patch('getopendatafvg.landsat.time.sleep') as sleep, \
+         patch('getopendatafvg.landsat.time.monotonic', side_effect=[0, 1, 2]):
+        url = _request_download_url('key', 'ENT1', 'PROD1')
+
+    # It must wait for its own downloadId, not take the first url offered.
+    assert url == 'https://example/mine.tar'
+    assert sleep.call_count == 2
+
+
+def test_request_download_url_gives_up_once_the_deadline_passes():
+    responses = [
+        {'availableDownloads': [], 'preparingDownloads': [{'downloadId': 42}]},
+        {'available': []},
+    ]
+    with patch('getopendatafvg.landsat._m2m_post', side_effect=responses), \
+         patch('getopendatafvg.landsat.time.sleep'), \
+         patch('getopendatafvg.landsat.time.monotonic',
+               side_effect=[0, 1, DOWNLOAD_POLL_TIMEOUT_SECONDS + 1]), \
+         pytest.raises(TimeoutError, match='ENT1'):
+        _request_download_url('key', 'ENT1', 'PROD1')
+
+
+def test_request_download_url_raises_when_there_is_nothing_to_wait_for():
+    with patch('getopendatafvg.landsat._m2m_post', return_value={}), \
+         pytest.raises(RuntimeError, match='no available or preparing downloads'):
+        _request_download_url('key', 'ENT1', 'PROD1')

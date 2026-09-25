@@ -7,12 +7,18 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Every version the package claims to support in requires-python.
+        python-version: ['3.11', '3.12', '3.13']
+
     steps:
       - uses: actions/checkout@v5
 
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python-version }}
 
       - name: Install
         run: pip install -e ".[dev]"
@@ -21,4 +27,6 @@ jobs:
         run: ruff check .
 
       - name: Test
-        run: pytest
+        # Coverage settings, including the fail_under ratchet, live in
+        # pyproject.toml so a local `pytest --cov` enforces the same bar.
+        run: pytest --cov
