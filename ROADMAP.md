@@ -84,22 +84,36 @@ source), commit, check it off.
         narrowed to `only=dataset` returns zero for them, which reads as
         "does not exist". Noted in open_data_fvg.py's docstring too.
 
-- [ ] Decide how to expose the municipal budget datasets. They are real
-      and numerous - 114 `Rendiconto Entrate`, 113 `Rendiconto Spese` and
-      132 `Bilancio - Comune ...`, 359 assets in all, one or more per
-      comune and per period, all sharing a schema per family. Individual
-      catalog entries are the wrong shape for this: they would quadruple
-      the catalog with near-identical rows and still go stale as comuni
-      publish new years.
+- [x] Decide how to expose the municipal budget datasets. Done
+      2026-09-29: a search helper, not 359 entries. `search_open_data_fvg`
+      in open_data_fvg.py queries the portal's own `/api/catalog/v1` and
+      returns `PortalAsset` rows, and CATALOG carries one example entry
+      per family (`ekfv-fyxt`, `uvzu-xq2j`, `ddna-ayyy`) so the shape of
+      the data is discoverable without listing every comune. Catalog is
+      87 entries; individual entries would have made it 443 and still
+      gone stale each time a comune published a new year.
 
-      The alternative is a documented pattern - most likely a search
-      helper over `/api/catalog/v1` scoped to the portal, so a caller can
-      ask for "Rendiconto Entrate" for a given comune and get the
-      resource id back, with the catalog keeping one example entry per
-      family. That is a design decision, not a data-gathering one, so it
-      needs a call before any code: which of the two, and if the helper,
-      whether portal search belongs in open_data_fvg.py or in catalog.py
-      next to search_known_datasets.
+      It lives in open_data_fvg.py rather than next to
+      search_known_datasets, because it is a portal client call, and
+      splitting the portal client across two modules would have cost
+      more than co-locating the two searches would have gained.
+
+      The helper never passes `only=`, and there is a unit test asserting
+      that specifically: narrowing to `only=dataset` hides 551 of the
+      portal's ~850 assets and is what made these budget assets look
+      nonexistent in the first place. A live test also checks the search
+      still returns filter-type hits, so the weekly job catches the
+      discovery API changing shape.
+
+      While verifying, a full live sweep failed once and passed on every
+      repeat (174 consecutive requests clean). The cause was not a
+      retired layer but the sweep aborting on a single dropped
+      connection, which left every later entry unchecked. `resolve` now
+      retries once and `_ask` reports a network error instead of raising,
+      so a blip is distinguished from a wrong identifier. Both behaviours
+      have mocked tests that run in normal CI, since the thing deciding
+      whether the weekly job cries wolf should not itself be checked only
+      by hand.
 
 ## ISTAT
 
@@ -161,7 +175,7 @@ Fixable, not yet done:
       present, 1219 body words (in range), every citation key checked
       against paper.bib. Benchmarked against a real accepted JOSS paper
       (aloth/RogueGPT) on 2026-09-15 and revised for comparable depth:
-      concrete numbers (51 exports, 18 modules, 100+ tests, 75-entry
+      concrete numbers (54 exports, 18 modules, 120+ tests, 87-entry
       catalog), a State of the field naming and citing specific
       alternative tools (sentinelsat, landsatxplore, OWSLib - two of
       which turned out to be archived/unmaintained against the current

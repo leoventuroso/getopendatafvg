@@ -656,6 +656,29 @@ CATALOG: tuple[KnownDataset, ...] = (
         'popolazione',
         'Indici di vecchiaia, dipendenza, ricambio ed eta media per anno, dal 1983.',
     ),
+    # bilanci comunali: una voce d'esempio per famiglia. Le altre (359
+    # asset, uno per comune e periodo) si trovano con search_open_data_fvg.
+    KnownDataset(
+        'Rendiconto Entrate - Udine 2024',
+        'open_data_fvg',
+        'ekfv-fyxt',
+        'economia',
+        "Esempio della famiglia 'Rendiconto Entrate' (114 asset): per gli altri comuni usa search_open_data_fvg.",
+    ),
+    KnownDataset(
+        'Rendiconto Spese - Udine 2024',
+        'open_data_fvg',
+        'uvzu-xq2j',
+        'economia',
+        "Esempio della famiglia 'Rendiconto Spese' (113 asset): per gli altri comuni usa search_open_data_fvg.",
+    ),
+    KnownDataset(
+        'Bilancio - Udine 2010/2015 - Entrate',
+        'open_data_fvg',
+        'ddna-ayyy',
+        'economia',
+        "Esempio della famiglia 'Bilancio - Comune ...' (132 asset), serie storica 2010/2015.",
+    ),
 )
 
 

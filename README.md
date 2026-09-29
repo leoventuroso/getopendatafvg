@@ -155,7 +155,7 @@ of a listed entry, split across many per-tile/per-comune files, or a
 technical code not usable without its own legend.
 
 Every entry is checked against its live source by
-`tests/test_catalog_live.py`, which is skipped by default (it makes 84
+`tests/test_catalog_live.py`, which is skipped by default (it makes 87
 real requests to two government services) and runs with
 `GETOPENDATAFVG_LIVE=1 pytest tests/test_catalog_live.py`.
 
@@ -281,6 +281,27 @@ the portal returns them - not the uniform shape `fetch_wfs_features`
 returns. `where`/`select`/`order` are raw
 [SoQL](https://dev.socrata.com/docs/queries/) clauses, e.g.
 `where="comune='UDINE'"`.
+
+### Finding what the catalog doesn't list
+
+Some families on the portal are too numerous to list entry by entry -
+the per-comune budgets above all: 114 `Rendiconto Entrate`, 113
+`Rendiconto Spese` and 132 `Bilancio - Comune ...`, one per comune and
+period, all sharing a schema within a family. The catalog carries one
+example of each; `search_open_data_fvg` finds the rest:
+
+```python
+from getopendatafvg import fetch_open_data_fvg, search_open_data_fvg
+
+hits = search_open_data_fvg("Rendiconto Entrate Tolmezzo")
+rows = fetch_open_data_fvg(hits[0].resource_id)
+```
+
+It searches every asset type on purpose. Of roughly 850 published
+assets only 266 are Socrata type `dataset`; 551 are type `filter`, a
+saved view over another dataset, fetched by resource id exactly like
+one. Several catalog entries are filters, so a search narrowed to
+datasets alone would report them missing.
 
 ## Coverage analysis
 

@@ -18,12 +18,27 @@ exactly as the portal's own API returns it.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 import requests
 from shapely.geometry.base import BaseGeometry
 
 BASE_URL = 'https://www.dati.friuliveneziagiulia.it'
+DOMAIN = 'www.dati.friuliveneziagiulia.it'
+
+
+@dataclass(frozen=True)
+class PortalAsset:
+    """One search hit from the portal's catalog. `resource_id` is what
+    `fetch_open_data_fvg` takes. `asset_type` is Socrata's own type -
+    usually `'dataset'` or `'filter'`, both fetched identically.
+    """
+
+    resource_id: str
+    name: str
+    asset_type: str
+    description: str
 
 
 def fetch_open_data_fvg(
@@ -68,3 +83,40 @@ def within_box_clause(geometry_column: str, boundary: BaseGeometry) -> str:
     """
     minx, miny, maxx, maxy = boundary.bounds
     return f'within_box({geometry_column}, {maxy}, {minx}, {miny}, {maxx})'
+
+
+def search_open_data_fvg(query: str, limit: int = 20, timeout: int = 60) -> list[PortalAsset]:
+    """Full-text search over the portal's own catalog, for the families of
+    dataset too numerous to enumerate by hand - the per-comune budgets
+    above all, where there is one asset per comune per period (114
+    `Rendiconto Entrate`, 113 `Rendiconto Spese`, 132 `Bilancio - Comune
+    ...` at the time of writing) all sharing a schema within a family.
+    `getopendatafvg.CATALOG` lists one example of each; this finds the
+    rest:
+
+        search_open_data_fvg('Rendiconto Entrate Tolmezzo')
+
+    Every asset type is searched, deliberately. Socrata's discovery API
+    takes an `only=` filter, and narrowing it to `only=dataset` hides
+    most of this portal: of about 850 published assets only 266 are type
+    `dataset`, while 551 are type `filter` - a saved view over another
+    dataset, fetched by resource id exactly like one. Several catalog
+    entries are filters, so that filter would make them look missing.
+    """
+    resp = requests.get(
+        f'{BASE_URL}/api/catalog/v1',
+        params={'domains': DOMAIN, 'search_context': DOMAIN, 'q': query, 'limit': str(limit)},
+        timeout=timeout,
+        headers={'User-Agent': 'getopendatafvg/0.1'},
+    )
+    resp.raise_for_status()
+    return [
+        PortalAsset(
+            resource_id=r['id'],
+            name=r.get('name', ''),
+            asset_type=r.get('type', ''),
+            description=r.get('description') or '',
+        )
+        for r in (hit.get('resource', {}) for hit in resp.json().get('results', []))
+        if r.get('id')
+    ]
