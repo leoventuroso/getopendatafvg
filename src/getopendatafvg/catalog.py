@@ -103,6 +103,41 @@ CATALOG: tuple[KnownDataset, ...] = (
         'rischio naturale',
         'Catasto regionale frane: perimetri, piu dettagliato del solo IFFI/ISPRA.',
     ),
+    KnownDataset(
+        'Classificazione sismica (DM 1982)',
+        'wfs',
+        'ZONE_VINC:CLASSI_SISM_DM1982',
+        'rischio naturale',
+        'Zonizzazione sismica su base comunale, 219 comuni. Versione precedente a OPCM 3274, utile per confronti storici.',
+    ),
+    KnownDataset(
+        'Frane (coronamenti)',
+        'wfs',
+        'IRDAT:CATFRANE_CORONAMENTO',
+        'rischio naturale',
+        'Zona sommitale da cui ha inizio il movimento franoso. Dettaglio del catasto frane oltre ai perimetri.',
+    ),
+    KnownDataset(
+        'Frane (fessure)',
+        'wfs',
+        'IRDAT:CATFRANE_FESSURE',
+        'rischio naturale',
+        'Fessure di trazione, trasversali, radiali e longitudinali: servono a definire l attivita dei fenomeni di scivolamento.',
+    ),
+    KnownDataset(
+        'Frane (punti di ripresa fotografica)',
+        'wfs',
+        'IRDAT:CATFRANE_FRANE_FOTO',
+        'rischio naturale',
+        'Punti di visuale delle foto del catasto frane, con collegamento ipertestuale allo scatto.',
+    ),
+    KnownDataset(
+        'Frane (elementi a rischio)',
+        'wfs',
+        'IRDAT:CATFRANE_ELEM_RISCHIO',
+        'rischio naturale',
+        'Elementi vulnerabili perimetrati nelle aree pericolose: edifici, viabilita, aree di potenziale espansione urbanistica.',
+    ),
     # acqua
     KnownDataset(
         "Corsi d'acqua",
@@ -147,6 +182,20 @@ CATALOG: tuple[KnownDataset, ...] = (
         'monitoraggio ambientale',
         'Stazioni di misura della neve.',
     ),
+    KnownDataset(
+        'Rete monitoraggio acque sotterranee (stato chimico)',
+        'wfs',
+        'MONIT_AMB:RETE_MONSOTT_CHIMICO',
+        'monitoraggio ambientale',
+        'Punti della rete di monitoraggio dello stato chimico delle acque sotterranee.',
+    ),
+    KnownDataset(
+        'Rete monitoraggio acque superficiali (stato ecologico)',
+        'wfs',
+        'MONIT_AMB:RETE_MONSUP_ECOLOGICO',
+        'monitoraggio ambientale',
+        'Punti della rete di monitoraggio dello stato ecologico dei corpi idrici superficiali.',
+    ),
     # natura
     KnownDataset(
         'Siti di Importanza Comunitaria (SIC)',
@@ -183,6 +232,63 @@ CATALOG: tuple[KnownDataset, ...] = (
         'natura',
         'Biotopi naturali tutelati.',
     ),
+    KnownDataset(
+        'ARIA - Aree di Rilevante Interesse Ambientale',
+        'wfs',
+        'SITI_PROT:ARIA_BUR',
+        'natura',
+        'Perimetri istitutivi delle 15 ARIA, con gli estremi di DGR e DPGR. Non ha nulla a che vedere con la qualita dell aria.',
+    ),
+    KnownDataset(
+        'ARIA - recepimento nei PRGC',
+        'wfs',
+        'SITI_PROT:ARIA_PRGC',
+        'natura',
+        'Le stesse ARIA come recepite nei piani regolatori comunali: una riga per comune, quindi piu righe per area.',
+    ),
+    KnownDataset(
+        'Riserve della biosfera MAB UNESCO',
+        'wfs',
+        'SITI_PROT:MAB_UNESCO_FVG',
+        'natura',
+        'Territori del programma Man and the Biosphere UNESCO.',
+    ),
+    KnownDataset(
+        'Alberi monumentali e notevoli',
+        'wfs',
+        'PPR:v_alberi_monumentali_e_notevoli',
+        'natura',
+        'Alberi tutelati dalla LR 24/2016.',
+    ),
+    # paesaggio e beni culturali
+    KnownDataset(
+        'Siti UNESCO',
+        'wfs',
+        'PPR:v_siti_unesco',
+        'paesaggio e beni culturali',
+        'Perimetrazioni certificate dei siti UNESCO, core zone e buffer zone.',
+    ),
+    KnownDataset(
+        'Beni culturali',
+        'wfs',
+        'PPR:v_beni_culturali',
+        'paesaggio e beni culturali',
+        'Beni culturali puntuali censiti dal PPR, con denominazione e tipologia (chiese, cappelle, ville, ...).',
+    ),
+    KnownDataset(
+        'Centuriazioni',
+        'wfs',
+        'PPR:v_centuriazioni',
+        'paesaggio e beni culturali',
+        'Tracce della centuriazione romana, fra gli "ulteriori contesti" del PPR.',
+    ),
+    KnownDataset(
+        'Zone di interesse archeologico',
+        'wfs',
+        'PPR:v_zone_interesse_archeologico',
+        'paesaggio e beni culturali',
+        'Ambiti vincolati ai sensi dell art. 142 c.1 lett. m del DLgs 42/2004.',
+    ),
     # uso del suolo
     KnownDataset(
         'Corine Land Cover 2012',
@@ -198,6 +304,62 @@ CATALOG: tuple[KnownDataset, ...] = (
         'uso del suolo',
         'Carta pedologica, provincia di Pordenone (ERSA FVG).',
     ),
+    KnownDataset(
+        'Vigneti (CTRN)',
+        'wfs',
+        'USO_SUOLO:VIGNETI_CTRN_ED1',
+        'uso del suolo',
+        'Aree classificate come vigneto, estratte dalla CTRN 1:5000 regionale.',
+    ),
+    KnownDataset(
+        'Frutteti (CTRN)',
+        'wfs',
+        'USO_SUOLO:FRUTTETI_CTRN_ED1',
+        'uso del suolo',
+        'Aree a frutteto o altra coltivazione arborea, estratte dalla CTRN 1:5000.',
+    ),
+    KnownDataset(
+        'Capacita d uso dei suoli (principale)',
+        'wfs',
+        'ERSA:SUOLO_CAP_USO_PRINC',
+        'uso del suolo',
+        'Capacita d uso secondo il metodo USDA in 8 classi, valutata sul suolo naturale senza interventi antropici.',
+    ),
+    KnownDataset(
+        'Capacita d uso dei suoli (secondario)',
+        'wfs',
+        'ERSA:SUOLO_CAP_USO_SEC',
+        'uso del suolo',
+        'Come la voce precedente, ma per il suolo secondario per frequenza.',
+    ),
+    KnownDataset(
+        'Rischio di compattamento dei suoli',
+        'wfs',
+        'ERSA:RISCHIO_COMPATT_SUOLO',
+        'uso del suolo',
+        'Rischio di compattamento dei suoli della pianura friulana, 4 classi.',
+    ),
+    KnownDataset(
+        'Tipologie forestali',
+        'wfs',
+        'IRDAT:TIPOLOGIE_FORESTALI',
+        'uso del suolo',
+        'Tipi di bosco su oltre 255 mila ettari. Pubblicato identico anche come UTIL_TER:TIPOLOGIE_FORESTALI.',
+    ),
+    KnownDataset(
+        'Piani di gestione forestale',
+        'wfs',
+        'GEST_FOR:PIANI_GEST_FORESTALE',
+        'uso del suolo',
+        'Particelle dei piani di gestione, con superficie boscata, piante per ettaro, diametro medio e provvigione.',
+    ),
+    KnownDataset(
+        'Capacita d acqua disponibile del suolo (AWC)',
+        'wfs',
+        'IRDAT:AWC_CAPACITA_ACQUA_DISP',
+        'uso del suolo',
+        'Acqua estraibile dalle radici, fra capacita di campo e punto di appassimento, in classi.',
+    ),
     # rifiuti
     KnownDataset(
         'Centri di raccolta rifiuti',
@@ -212,6 +374,13 @@ CATALOG: tuple[KnownDataset, ...] = (
         'RIFIUTI:DISCARICHE_2025',
         'rifiuti',
         'Discariche attive e cessate.',
+    ),
+    KnownDataset(
+        'Gestori raccolta rifiuti urbani',
+        'wfs',
+        'RIFIUTI:GESTORI_RSU',
+        'rifiuti',
+        'Ambiti di affidamento: per ciascuno dei 215 comuni la societa che raccoglie, la scadenza e l atto. Poligoni comunali, non sedi dei gestori.',
     ),
     # servizi pubblici
     KnownDataset(
@@ -235,6 +404,27 @@ CATALOG: tuple[KnownDataset, ...] = (
         'servizi pubblici',
         'ISEE medio per comune.',
     ),
+    KnownDataset(
+        'Impianti sportivi',
+        'wfs',
+        'PUB_UTIL:ImpiantiSportiviFVG',
+        'servizi pubblici',
+        'Impianti sportivi pubblici e privati, localizzati e descritti.',
+    ),
+    KnownDataset(
+        'Parrocchie ed edifici di culto',
+        'wfs',
+        'CER:PARROCCHIE_FVG',
+        'servizi pubblici',
+        'Chiese ed edifici della Santa Sede.',
+    ),
+    KnownDataset(
+        'Alloggi ATER',
+        'wfs',
+        'CER:ATER_FVG',
+        'servizi pubblici',
+        'Localizzazione degli alloggi di edilizia residenziale pubblica.',
+    ),
     # energia
     KnownDataset(
         'Impianti fotovoltaici',
@@ -249,6 +439,20 @@ CATALOG: tuple[KnownDataset, ...] = (
         'CER:IDROELETTRICO_FVG',
         'energia',
         'Impianti idroelettrici censiti.',
+    ),
+    KnownDataset(
+        'Bioenergie per comune',
+        'wfs',
+        'CER:BIOENERGIE_FVG',
+        'energia',
+        'Potenza installata e numero di centrali a biomasse aggregati per comune: poligoni comunali, non posizioni degli impianti. Solo 70 comuni su 215 hanno un impianto.',
+    ),
+    KnownDataset(
+        'Grandi dighe',
+        'wfs',
+        'CER:GRANDI_DIGHE_FVG',
+        'energia',
+        'Grandi dighe esistenti in regione.',
     ),
     # trasporti
     KnownDataset(
@@ -272,6 +476,13 @@ CATALOG: tuple[KnownDataset, ...] = (
         'trasporti',
         'Sentieri catalogati dal Club Alpino Italiano.',
     ),
+    KnownDataset(
+        'Assi stradali (catasto strade regionale)',
+        'wfs',
+        'RETI_TRASP:ASSI_STRADALI_CAT_STR_REG',
+        'trasporti',
+        'Assi stradali del catasto strade regionale.',
+    ),
     # amministrativo
     KnownDataset(
         'Confini comunali',
@@ -294,6 +505,13 @@ CATALOG: tuple[KnownDataset, ...] = (
         'amministrativo',
         'Sezioni di censimento ISTAT 2021, per dati sub-comunali.',
     ),
+    KnownDataset(
+        'Confine regionale',
+        'wfs',
+        'UNITA_AMM:REGIONE_FVG',
+        'amministrativo',
+        'Limite amministrativo della regione, una sola feature. Utile come boundary per le altre fetch.',
+    ),
     # geologia e turismo
     KnownDataset(
         'Geositi',
@@ -315,6 +533,13 @@ CATALOG: tuple[KnownDataset, ...] = (
         'CAT_SPELEO:GROTTEFVG',
         'geologia e turismo',
         'Grotte censite in regione.',
+    ),
+    KnownDataset(
+        'Aree carsiche',
+        'wfs',
+        'CAT_SPELEO:AREE_CARSICHE',
+        'geologia e turismo',
+        'Perimetrazione delle aree carsiche regionali.',
     ),
     # portale open data (Socrata) - non presenti sul GeoServer
     KnownDataset(

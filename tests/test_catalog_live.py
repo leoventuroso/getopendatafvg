@@ -1,5 +1,5 @@
 """Opt-in check that every catalog entry still resolves against its live
-source. Off by default - it makes 43 real requests and depends on two
+source. Off by default - it makes 75 real requests and depends on two
 government services being up, neither of which belongs in CI on every
 push. Run it before adding entries, and periodically to catch a layer
 that got renamed or retired upstream:

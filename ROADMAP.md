@@ -24,73 +24,35 @@ source), commit, check it off.
       The other five are plain tables. Re-check when portal entries are
       added: the live test only covers entries that record a column, so
       a new geometry dataset added without one fails silently.
-- [ ] Expand `CATALOG` beyond the initial 43 entries. The 32 WFS
-      candidates below were live-verified 2026-09-24 (GetCapabilities
-      cross-check, then a `resultType=hits` GetFeature each): all 32
-      resolve, none is empty, and none duplicates an existing entry -
-      they would take the catalog from 43 to 75. Counts are the feature
-      counts returned that day; they are what the entries' descriptions
-      should be written against. What is left is writing the entries
-      themselves, then `GETOPENDATAFVG_LIVE=1 pytest
-      tests/test_catalog_live.py`.
+- [x] Expand `CATALOG` beyond the initial 43 entries. Done 2026-09-29:
+      the 32 WFS candidates live-verified on 2026-09-24 are now written
+      as entries, taking the catalog from 43 to 75. All 75 pass
+      `GETOPENDATAFVG_LIVE=1 pytest tests/test_catalog_live.py`.
+      Descriptions were written against each layer's upstream abstract,
+      and against sample features for the three whose abstract is empty
+      (`SITI_PROT:ARIA_BUR`, `PPR:v_beni_culturali`,
+      `GEST_FOR:PIANI_GEST_FORESTALE`).
 
-      The worry that these prefixes came from the same survey that got
-      five original entries wrong turned out to be mostly unfounded -
-      exactly one was wrong (see the forestry note below).
+      One thing the candidate list had wrong, caught only by reading the
+      data: `SITI_PROT:ARIA_BUR`/`ARIA_PRGC` were filed under
+      "zonizzazione qualita' aria". They are nothing to do with air
+      quality - ARIA is *Aree di Rilevante Interesse Ambientale*, which
+      is why they sit in the SITI_PROT workspace. Filed under `natura`,
+      and the entry for ARIA_BUR says so explicitly so the next reader
+      does not repeat the guess. ARIA_BUR is the 15 founding perimeters
+      (DGR/DPGR); ARIA_PRGC is the same areas as taken up into comune
+      master plans, one row per comune, hence 27 rows for 15 areas.
 
-  - Rischio naturale: `ZONE_VINC:CLASSI_SISM_DM1982` (219; classificazione
-    sismica, versione precedente a OPCM3274, gia' in catalogo),
-    `IRDAT:CATFRANE_CORONAMENTO` (166)/`CATFRANE_FESSURE` (45)/
-    `CATFRANE_FRANE_FOTO` (2214)/`CATFRANE_ELEM_RISCHIO` (1564)
-    (dettaglio del catasto frane oltre ai soli perimetri gia' in catalogo)
-  - Monitoraggio ambientale: `MONIT_AMB:RETE_MONSOTT_CHIMICO` (167)/
-    `RETE_MONSUP_ECOLOGICO` (398) (qualita' acque sotterranee/superficiali),
-    `SITI_PROT:ARIA_BUR` (15)/`ARIA_PRGC` (27) (zonizzazione qualita' aria)
-  - Natura: `SITI_PROT:MAB_UNESCO_FVG` (11),
-    `PPR:v_alberi_monumentali_e_notevoli` (620), `PPR:v_siti_unesco` (14),
-    `PPR:v_beni_culturali` (3279), `PPR:v_centuriazioni` (463),
-    `PPR:v_zone_interesse_archeologico` (1534)
-  - Uso del suolo/agricoltura: `USO_SUOLO:VIGNETI_CTRN_ED1` (38275),
-    `USO_SUOLO:FRUTTETI_CTRN_ED1` (7661), `ERSA:SUOLO_CAP_USO_PRINC` (32)/
-    `SUOLO_CAP_USO_SEC` (32)/`RISCHIO_COMPATT_SUOLO` (4),
-    `IRDAT:TIPOLOGIE_FORESTALI` (19388)/`GEST_FOR:PIANI_GEST_FORESTALE`
-    (5225), `IRDAT:AWC_CAPACITA_ACQUA_DISP` (6) (capacita' d'acqua
-    disponibile del suolo)
-  - Rifiuti: `RIFIUTI:GESTORI_RSU` (215)
-  - Servizi pubblici: `PUB_UTIL:ImpiantiSportiviFVG` (1546),
-    `CER:PARROCCHIE_FVG` (622), `CER:ATER_FVG` (5336) (edilizia popolare)
-  - Energia: `CER:BIOENERGIE_FVG` (215), `CER:GRANDI_DIGHE_FVG` (12)
-  - Amministrativo: `UNITA_AMM:REGIONE_FVG` (1) (confine regionale)
-  - Trasporti: `RETI_TRASP:ASSI_STRADALI_CAT_STR_REG` (407)
-  - Geologia/turismo: `CAT_SPELEO:AREE_CARSICHE` (87)
+      New category `paesaggio e beni culturali` for the four cultural
+      PPR layers (siti UNESCO, beni culturali, centuriazioni, zone di
+      interesse archeologico), which fit neither `natura` nor
+      `geologia e turismo`.
 
-      Forestry prefix, the one candidate that was wrong:
-      `GEST_FOR:TIPOLOGIE_FORESTALI` does not exist. The layer is served
-      from two workspaces at once, `IRDAT:` and `UTIL_TER:`, with
-      identical schemas and an identical 19388 features. Took `IRDAT:`,
-      which the catalog already uses three times; `UTIL_TER:` it has
-      never used. `GEST_FOR:PIANI_GEST_FORESTALE` is unaffected and real.
-
-      Regional boundary, same situation: `UNIT_AMM:REGIONE_FVG` and
-      `UNITA_AMM:REGIONE_FVG` both resolve, same 6 fields, 1 feature
-      each. Took `UNITA_AMM:`, which is where COMUNI_FVG and PROVINCE_FVG
-      already live after 834b039, and whose abstract says "limiti
-      aggiornati" against the other's plain "limiti".
-
-      Two entries need their description written carefully, because the
-      layer name promises something the data is not - both are the 215
-      comune polygons, not the features the name suggests:
-
-      - `RIFIUTI:GESTORI_RSU` is not a register of waste companies. It is
-        which of 8 operators collects in each comune (A&T 2000 78, Net
-        56, Isontina Ambiente 28, Ambiente Servizi 26, Gea 24, three
-        singletons), plus the contract expiry and the act awarding it.
-        Describe it as affidamento areas.
-      - `CER:BIOENERGIE_FVG` is not plant locations. It is installed
-        bioenergy capacity aggregated per comune: only 70 of the 215 have
-        any plant at all, the other 145 are zero rows; 129 plants and
-        134.8 MW in total, mostly biogas. Anyone expecting points will
-        find comune polygons.
+      The two misleading layers found on 2026-09-24 got descriptions
+      that contradict their own names on purpose: `RIFIUTI:GESTORI_RSU`
+      says "poligoni comunali, non sedi dei gestori", and
+      `CER:BIOENERGIE_FVG` says the same about plant locations and notes
+      that only 70 of 215 comuni have one.
 
   - [ ] Socrata candidates, NOT verified on 2026-09-24 - that pass covered
         the WFS layers only. Verify these the same way before adding:
@@ -166,7 +128,7 @@ Fixable, not yet done:
       present, 1219 body words (in range), every citation key checked
       against paper.bib. Benchmarked against a real accepted JOSS paper
       (aloth/RogueGPT) on 2026-09-15 and revised for comparable depth:
-      concrete numbers (51 exports, 18 modules, 100+ tests, 43-entry
+      concrete numbers (51 exports, 18 modules, 100+ tests, 75-entry
       catalog), a State of the field naming and citing specific
       alternative tools (sentinelsat, landsatxplore, OWSLib - two of
       which turned out to be archived/unmaintained against the current
