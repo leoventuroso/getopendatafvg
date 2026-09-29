@@ -1,8 +1,14 @@
 """Fetch datasets from the Friuli Venezia Giulia regional open data portal
-(dati.friuliveneziagiulia.it, Socrata/SODA API) - roughly 300 datasets not
-on the region's WFS GeoServer (see wfs.py): municipal budgets, election
-results, demographic time series, bike paths, pharmacies, and more. Free,
-no API key needed for public datasets.
+(dati.friuliveneziagiulia.it, Socrata/SODA API) - about 850 published
+assets not on the region's WFS GeoServer (see wfs.py): municipal budgets,
+election results, demographic time series, bike paths, pharmacies, and
+more. Free, no API key needed for public datasets.
+
+Only 266 of those assets are of Socrata type `dataset`; most of the rest
+(551) are of type `filter`, a saved view over another dataset. Both are
+fetched the same way, by resource id through `/resource/<id>.json`, and
+several catalog entries are filters - so do not filter a portal search
+down to `only=dataset` or you will miss them.
 
 Each dataset has its own schema and, if it has a geometry column at all,
 its own name and type for it - unlike wfs.py's consistent GeoJSON

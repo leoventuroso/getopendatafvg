@@ -54,19 +54,52 @@ source), commit, check it off.
       `CER:BIOENERGIE_FVG` says the same about plant locations and notes
       that only 70 of 215 comuni have one.
 
-  - [ ] Socrata candidates, NOT verified on 2026-09-24 - that pass covered
-        the WFS layers only. Verify these the same way before adding:
-        "Elezioni comunali 2025 - Voti Liste" (accanto a Voti Sindaco e
-        Affluenza, gia' in catalogo), le altre serie storiche demografiche
-        del Comune di Udine oltre a movimento demografico e popolazione
-        per classi d'eta' (popolazione straniera, famiglie anagrafiche,
-        matrimoni, ecc. - stesso portale, non ancora individuate una per
-        una), municipal budget datasets ("Rendiconto Entrate/Spese" - uno
-        per comune, ~130 dataset, stesso schema - merita un pattern
-        documentato piuttosto che voci individuali), "Borse di studio
-        universitarie FVG", "Bonus psicologo studenti FVG". Check each for
-        a geometry column while you are there and record it, per the
-        entry above this one.
+  - [x] Socrata candidates. Verified and added 2026-09-29, taking the
+        catalog from 75 to 84. All 84 pass the live suite. None of the
+        nine has a geometry column, so none gained one - they are all
+        plain time series or tallies.
+
+        Added: "Elezioni comunali 2025 - Voti Liste" (`fxix-6uwx`, which
+        completes the trio), "Borse di studio universitarie FVG"
+        (`9hfe-iy3n`) and "Bonus psicologo studenti FVG" (`ich8-2ddc`)
+        under a new `istruzione` category, plus six Comune di Udine
+        series under `popolazione`: movimento naturale, movimento
+        migratorio, matrimoni, famiglie anagrafiche, popolazione
+        straniera per cittadinanza, indicatori della struttura
+        demografica.
+
+        Deliberately left out: popolazione anziana, incidenza residenti
+        anziani, indicatori della dinamica naturale/migratoria, and
+        popolazione straniera by genere and by classi d'eta'. Each is a
+        slice or a derived indicator of a series now in the catalog, and
+        the catalog's own rule is to skip near-duplicates. 34 assets
+        carry the "Comune di Udine" name; 8 are now listed.
+
+        Trap worth remembering: the portal's discovery API
+        (`/api/catalog/v1`) defaults to every asset type, and passing
+        `only=dataset` hides most of it. Of 854 published assets only 266
+        are type `dataset` - 551 are type `filter`, a saved view, fetched
+        by resource id exactly like a dataset. Several catalog entries,
+        including ones added long before this pass, are filters. A search
+        narrowed to `only=dataset` returns zero for them, which reads as
+        "does not exist". Noted in open_data_fvg.py's docstring too.
+
+- [ ] Decide how to expose the municipal budget datasets. They are real
+      and numerous - 114 `Rendiconto Entrate`, 113 `Rendiconto Spese` and
+      132 `Bilancio - Comune ...`, 359 assets in all, one or more per
+      comune and per period, all sharing a schema per family. Individual
+      catalog entries are the wrong shape for this: they would quadruple
+      the catalog with near-identical rows and still go stale as comuni
+      publish new years.
+
+      The alternative is a documented pattern - most likely a search
+      helper over `/api/catalog/v1` scoped to the portal, so a caller can
+      ask for "Rendiconto Entrate" for a given comune and get the
+      resource id back, with the catalog keeping one example entry per
+      family. That is a design decision, not a data-gathering one, so it
+      needs a call before any code: which of the two, and if the helper,
+      whether portal search belongs in open_data_fvg.py or in catalog.py
+      next to search_known_datasets.
 
 ## ISTAT
 

@@ -1,7 +1,7 @@
 """A curated, hand-picked catalog of datasets worth knowing exist across
 this library's two generic data sources: the region's WFS GeoServer
 (wfs.py - about 1150 layers across 52 workspaces) and its Socrata open
-data portal (open_data_fvg.py - about 300 datasets). Both are usable
+data portal (open_data_fvg.py - about 850 published assets). Both are usable
 without this catalog, but only if you already know the exact WFS
 type_name or Socrata resource id - which in practice means having
 already done the same GetCapabilities/portal-search discovery this
@@ -591,6 +591,70 @@ CATALOG: tuple[KnownDataset, ...] = (
         'f4b7-xu9x',
         'popolazione',
         "Popolazione residente per classi d'eta, dal 1983.",
+    ),
+    KnownDataset(
+        'Elezioni comunali 2025 - Voti Liste',
+        'open_data_fvg',
+        'fxix-6uwx',
+        'amministrativo',
+        'Voti per lista, con schede bianche, nulle e contestate. Completa Voti Sindaco e Affluenza.',
+    ),
+    KnownDataset(
+        'Borse di studio universitarie FVG',
+        'open_data_fvg',
+        '9hfe-iy3n',
+        'istruzione',
+        'Domande e beneficiari per anno accademico, dal 2016/17.',
+    ),
+    KnownDataset(
+        'Bonus psicologo studenti FVG',
+        'open_data_fvg',
+        'ich8-2ddc',
+        'istruzione',
+        'Domande pervenute, accolte, bonus emessi e interventi conclusi, per anno.',
+    ),
+    # serie storiche del Comune di Udine (solo Udine, non regionali)
+    KnownDataset(
+        'Movimento naturale - Udine',
+        'open_data_fvg',
+        'mjd4-9dv9',
+        'popolazione',
+        'Nati vivi, decessi e saldo naturale per anno, dal 1983.',
+    ),
+    KnownDataset(
+        'Movimento migratorio - Udine',
+        'open_data_fvg',
+        '7dpm-xa78',
+        'popolazione',
+        'Iscritti e cancellati per anno dal 1983, distinti fra altri comuni, estero e altri motivi.',
+    ),
+    KnownDataset(
+        'Matrimoni celebrati - Udine',
+        'open_data_fvg',
+        'by5h-wnv3',
+        'popolazione',
+        'Matrimoni religiosi e civili e tasso di nuzialita per anno, dal 1983.',
+    ),
+    KnownDataset(
+        'Famiglie anagrafiche - Udine',
+        'open_data_fvg',
+        'c63m-b2a6',
+        'popolazione',
+        'Famiglie per numero di componenti, da 1 a 5 o piu, per anno dal 2003.',
+    ),
+    KnownDataset(
+        'Popolazione straniera per cittadinanza - Udine',
+        'open_data_fvg',
+        'nqd7-ynmx',
+        'popolazione',
+        'Residenti stranieri per stato estero, area e continente, per anno dal 2004.',
+    ),
+    KnownDataset(
+        'Indicatori della struttura demografica - Udine',
+        'open_data_fvg',
+        'upe3-bvvc',
+        'popolazione',
+        'Indici di vecchiaia, dipendenza, ricambio ed eta media per anno, dal 1983.',
     ),
 )
 

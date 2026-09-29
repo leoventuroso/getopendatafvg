@@ -155,7 +155,7 @@ of a listed entry, split across many per-tile/per-comune files, or a
 technical code not usable without its own legend.
 
 Every entry is checked against its live source by
-`tests/test_catalog_live.py`, which is skipped by default (it makes 75
+`tests/test_catalog_live.py`, which is skipped by default (it makes 84
 real requests to two government services) and runs with
 `GETOPENDATAFVG_LIVE=1 pytest tests/test_catalog_live.py`.
 
