@@ -38,9 +38,9 @@ on shapely [@shapely2021] and rasterio [@rasterio] internally so
 callers work with ordinary Python geometry objects rather than a
 source-specific format.
 
-As of this writing, the library exposes 59 public functions and classes
-across 18 modules (about 2,300 lines of source), backed by a test suite
-of over 140 cases and a curated, live-verified catalog of 87 named
+As of this writing, the library exposes 61 public functions and classes
+across 19 modules (about 3,000 lines of source), backed by a test suite
+of over 150 cases and a curated, live-verified catalog of 87 named
 Friuli Venezia Giulia datasets spanning natural hazard, hydrology,
 protected areas, land use, energy, and administrative boundary data.
 

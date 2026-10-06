@@ -273,6 +273,28 @@ from getopendatafvg import build_pmtiles
 build_pmtiles(Path("parcels.geojson"), Path("parcels.pmtiles"), "catasto")
 ```
 
+## Avalanche sites
+
+```python
+from getopendatafvg import fetch_avalanche_sites
+
+sites = fetch_avalanche_sites(boundary=boundary)
+```
+
+The region splits its Catasto Valanghe into two WFS layers by survey
+method - ground-surveyed and photo-interpreted - and neither layer hints
+that the other exists, so asking for "avalanche sites here" from either
+one alone quietly misses roughly half. This merges both (about 7,100
+sites region-wide: 3,873 surveyed, 3,255 photo-interpreted) and tags each
+with where it came from, so `photo_interpreted=False` narrows to the
+ground-surveyed ones if you need that.
+
+Each site carries its release and runout elevations, aspect, site type
+and comune. No hazard rating: the region publishes perimeters and site
+attributes, not a danger class, so inventing one here would be our
+number rather than theirs. The raw layers remain reachable through the
+catalog.
+
 ## Terrain slope
 
 ```python

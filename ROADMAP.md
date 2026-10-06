@@ -184,13 +184,45 @@ source), commit, check it off.
 
 ## Natural hazard modules
 
-- [ ] Decide whether avalanche risk (`ZONE_RISC:CV_VALANGHE_RILEVATE`/
-      `CV_VALANGHE_FOTOINT`, already in the catalog) deserves a
-      dedicated module with its own classification logic, the way fire
-      and landslide do in mappa-civica's pipeline - or whether raw WFS
-      access via the catalog is enough.
-- [ ] Same question for seismic classification
-      (`ZONE_VINC:CLASSI_SISM_OPCM3274`, already in the catalog).
+- [x] Avalanche risk: decided 2026-10-06. A thin merging helper, not a
+      hazard module. `avalanche.py` /
+      `fetch_avalanche_sites(boundary=None, photo_interpreted=None)`,
+      9 unit tests, 100% covered, verified live.
+
+      The real problem turned out not to be classification but the
+      two-layer split. `CV_VALANGHE_RILEVATE` (3875 features,
+      ground-surveyed) and `CV_VALANGHE_FOTOINT` (3255,
+      photo-interpreted) are divided by survey method, not by area, and
+      neither layer hints the other exists - so anyone asking "avalanche
+      sites here" through one catalog entry silently misses about half
+      the catasto. Merged, flagged by provenance, 7128 sites.
+
+      They do *not* overlap: checked live, the two share not one
+      `ID_SITO`, and `DA_FOTOINTERPRETAZIONE` is 0 throughout one and 1
+      throughout the other. The planning assumption that they needed
+      deduplicating against each other was wrong.
+
+      Two sites (`ID_SITO` 1060 and 3668) are stored as two polygon rows
+      each in the surveyed layer - same attributes, different OBJECTID,
+      i.e. one site with a multi-part footprint. Rows are grouped by
+      `ID_SITO` and `geometries` is a tuple, because keeping one row
+      would have silently shrunk those sites.
+
+      Also worth knowing: `fetch_wfs_features` defaults to `count=1000`,
+      which would have truncated both layers to a quarter with no error.
+      The module sets its own higher count and a test asserts it.
+
+      No danger rating is derived. The region publishes perimeters and
+      site attributes, not a hazard class, so a rating would be ours
+      rather than sourced.
+
+- [x] Seismic classification: decided 2026-10-06, and the decision is
+      that no module is warranted. `ZONE_VINC:CLASSI_SISM_OPCM3274`
+      already carries `ZONA` per comune - verified live, 219 comuni split
+      59/87/51/22 across zones 1-4. The classification is legislative,
+      not computed, so a module would wrap a lookup over data
+      `fetch_known_dataset` already returns. The catalog entry is the
+      right level of support for it.
 
 ## JOSS readiness
 
@@ -221,7 +253,7 @@ Fixable, not yet done:
       present, 1219 body words (in range), every citation key checked
       against paper.bib. Benchmarked against a real accepted JOSS paper
       (aloth/RogueGPT) on 2026-09-15 and revised for comparable depth:
-      concrete numbers (59 exports, 18 modules, 140+ tests, 87-entry
+      concrete numbers (61 exports, 19 modules, 150+ tests, 87-entry
       catalog), a State of the field naming and citing specific
       alternative tools (sentinelsat, landsatxplore, OWSLib - two of
       which turned out to be archived/unmaintained against the current

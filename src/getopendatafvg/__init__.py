@@ -9,6 +9,7 @@ here will keep growing.
 """
 
 from ._errors import NoCleanSceneFoundError
+from .avalanche import AvalancheSite, fetch_avalanche_sites
 from .catalog import (
     CATALOG,
     KnownDataset,
@@ -55,6 +56,7 @@ __all__ = [
     'CATALOG',
     'DEFAULT_BANDS',
     'FVG_NUTS_AREAS',
+    'AvalancheSite',
     'Band',
     'CdseCredentials',
     'ClassBreak',
@@ -80,6 +82,7 @@ __all__ = [
     'compute_ndvi',
     'element_point',
     'fetch_and_clip_wfs_features',
+    'fetch_avalanche_sites',
     'fetch_bank_branches',
     'fetch_cadastral_parcels',
     'fetch_consumer_price_index',
