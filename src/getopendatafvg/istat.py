@@ -223,6 +223,160 @@ def fetch_employment_rate(
     return sorted(series, key=lambda r: r['year'])
 
 
+def fetch_tourism_capacity(
+    area_code: str,
+    since_year: int = 2019,
+) -> list[dict[str, int | None]]:
+    """Yearly accommodation capacity - establishments, bed places and
+    rooms - for a comune, province or region, from dataflow 122_54,
+    sorted oldest to newest.
+
+    This half of 122_54 *is* published per comune (225 FVG comuni carry
+    data), unlike `fetch_tourism_flows` below. Totals are taken across
+    all accommodation types and the combined NACE aggregate `551_553`, so
+    hotels and non-hotel accommodation are counted together rather than
+    one star rating at a time - see `TOURISM_TOTAL_KEYS` for every
+    dimension that has to be pinned to its total, and why.
+
+    A year ISTAT suppressed comes back with `None` for that field rather
+    than a zero.
+    """
+    rows = _tourism_rows(area_code, since_year)
+    wanted = {'NUM_EST': 'establishments', 'BEDS': 'beds', 'BED_RMS': 'rooms'}
+    by_year: dict[int, dict[str, int | None]] = {}
+    for row in rows:
+        field = wanted.get(row.get('DATA_TYPE', ''))
+        if field is None or row.get('COUNTRY_RES_GUESTS') != 'NAP':
+            continue
+        by_year.setdefault(int(row['TIME_PERIOD']), {})[field] = _as_int(row.get('OBS_VALUE'))
+    return [
+        {'year': year, **{f: values.get(f) for f in wanted.values()}}
+        for year, values in sorted(by_year.items())
+    ]
+
+
+def fetch_tourism_flows(
+    area_code: str,
+    since_year: int = 2019,
+) -> list[dict[str, float | int | None]]:
+    """Yearly tourist arrivals and overnight stays for a province or
+    region, from dataflow 122_54, sorted oldest to newest.
+
+    Province is the floor here. 122_54 carries comune-level rows, but
+    only for the capacity indicators - at comune level the arrivals and
+    nights indicators (`AR`, `NI`) are simply absent, so a comune code
+    returns an empty series rather than an error. Use
+    `fetch_tourism_capacity` for comune granularity, and
+    `FVG_NUTS_AREAS` for the region and its four provinces.
+
+    Guests of every residence are counted together
+    (`COUNTRY_RES_GUESTS='WORLD'`; the dataflow also breaks the same
+    figures down by about 80 countries of origin, which this does not
+    expose), and every other breakdown is pinned to its total via
+    `TOURISM_TOTAL_KEYS`. `average_stay_nights` is derived from nights over arrivals -
+    ISTAT does define a `PM` indicator for it, but it was not published
+    for any area checked here, so deriving it is more reliable than
+    depending on it.
+    """
+    rows = _tourism_rows(area_code, since_year)
+    by_year: dict[int, dict[str, int | None]] = {}
+    for row in rows:
+        data_type = row.get('DATA_TYPE')
+        if data_type not in ('AR', 'NI') or row.get('COUNTRY_RES_GUESTS') != 'WORLD':
+            continue
+        field = 'arrivals' if data_type == 'AR' else 'nights'
+        by_year.setdefault(int(row['TIME_PERIOD']), {})[field] = _as_int(row.get('OBS_VALUE'))
+
+    series: list[dict[str, float | int | None]] = []
+    for year, values in sorted(by_year.items()):
+        arrivals, nights = values.get('arrivals'), values.get('nights')
+        average = round(nights / arrivals, 2) if arrivals and nights is not None else None
+        series.append(
+            {
+                'year': year,
+                'arrivals': arrivals,
+                'nights': nights,
+                'average_stay_nights': average,
+            }
+        )
+    return series
+
+
+# 122_54 slices the same figure along several dimensions at once, and
+# every one of them has to be pinned to its total or the series silently
+# becomes a subtotal. For Friuli Venezia Giulia in 2023 the LOCALITY_TYPE
+# dimension alone returns 11 rows for one year: ALL is 2,910,023 arrivals
+# while TOUR_THRM (thermal localities) is 21,334, and taking the wrong one
+# produces a plausible-looking number two orders of magnitude out.
+TOURISM_TOTAL_KEYS = {
+    'TYPE_ACCOMMODATION': 'ALL',
+    'ECON_ACTIVITY_NACE_2007': '551_553',
+    'LOCALITY_TYPE': 'ALL',
+    'URBANIZ_DEGREE': 'ALL',
+    'COASTAL_AREA': 'ALL',
+    'SIZE_BY_NUMBER_ROOMS': 'TOT',
+}
+
+
+def _tourism_rows(area_code: str, since_year: int) -> list[dict[str, str]]:
+    """The shared 122_54 query, narrowed to the fully aggregated rows. Its
+    key takes 11 positions, and the two public functions above differ only
+    in which indicators they keep.
+    """
+    rows = fetch_istat_dataflow(
+        '122_54', f'A.{area_code}' + '.' * 9, start_period=str(since_year)
+    )
+    return [
+        row
+        for row in rows
+        if all(row.get(dim) == total for dim, total in TOURISM_TOTAL_KEYS.items())
+    ]
+
+
+def fetch_consumer_price_index(
+    area_code: str,
+    since_year: int = 2019,
+    coicop: str = '00',
+) -> list[dict[str, str | float | None]]:
+    """Monthly consumer price index (NIC, base 2015=100) for a province or
+    region, from dataflow 167_744, oldest month first.
+
+    Province is the floor: not one of the 132 `REF_AREA` values carrying
+    data is a comune, so the comune-level index this was originally
+    wanted for does not exist at ISTAT in any form. The Open Data FVG
+    portal does publish one for Comune di Udine alone (resource
+    `fz2e-423g`, in `CATALOG`) - that is the comune's own publication,
+    not ISTAT's, which is why it exists where this does not.
+
+    Like 150_915 this dataflow uses pre-2013 NUTS codes, so FVG is `ITD4`
+    and its provinces `ITD41`-`ITD44`; use `FVG_NUTS_AREAS`.
+
+    `coicop` selects the spending category - `'00'` is the all-items
+    headline index, and the dataflow also carries the COICOP divisions
+    (`'01'` food, `'011'` food excluding drinks, ...). Each entry carries
+    the index level and the year-on-year change ISTAT publishes for the
+    same month, which is the inflation rate for that area.
+    """
+    rows = fetch_istat_dataflow(
+        '167_744', f'M.{area_code}...', start_period=f'{since_year}-01'
+    )
+    by_period: dict[str, dict[str, float | None]] = {}
+    for row in rows:
+        if row.get('E_COICOP_REV_ISTAT') != coicop or row.get('DATA_TYPE') != '39':
+            continue
+        # MEASURE 4 is the index itself, 7 the year-on-year percentage
+        # change; 6 is month-on-month and is not exposed here.
+        field = {'4': 'index', '7': 'yoy_change_pct'}.get(row.get('MEASURE', ''))
+        if field is None:
+            continue
+        by_period.setdefault(row['TIME_PERIOD'], {})[field] = _as_float(row.get('OBS_VALUE'))
+    return [
+        {'period': period, 'index': values.get('index'),
+         'yoy_change_pct': values.get('yoy_change_pct')}
+        for period, values in sorted(by_period.items())
+    ]
+
+
 def _throttle() -> None:
     """Block just long enough to keep this process under ISTAT's
     5-requests-per-minute limit. Exceeding it risks a 1-2 day IP block,

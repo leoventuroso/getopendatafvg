@@ -3,15 +3,18 @@ from unittest.mock import MagicMock, patch
 from getopendatafvg import (
     FVG_NUTS_AREAS,
     fetch_bank_branches,
+    fetch_consumer_price_index,
     fetch_demographic_balance,
     fetch_demographic_indicators,
     fetch_employment_rate,
     fetch_income_series,
     fetch_istat_dataflow,
     fetch_population_series,
+    fetch_tourism_capacity,
+    fetch_tourism_flows,
 )
 from getopendatafvg import istat as istat_module
-from getopendatafvg.istat import _correct_end_period, _throttle
+from getopendatafvg.istat import TOURISM_TOTAL_KEYS, _correct_end_period, _throttle
 
 
 def make_response(csv_text: str) -> MagicMock:
@@ -252,3 +255,187 @@ def test_fvg_nuts_areas_use_the_pre_2013_vintage_this_dataflow_needs():
     assert FVG_NUTS_AREAS['fvg'] == 'ITD4'
     assert set(FVG_NUTS_AREAS) == {'fvg', 'pordenone', 'udine', 'gorizia', 'trieste'}
     assert all(code.startswith('ITD4') for code in FVG_NUTS_AREAS.values())
+
+
+TOURISM_DIMS = (
+    'DATA_TYPE,REF_AREA,TYPE_ACCOMMODATION,ECON_ACTIVITY_NACE_2007,COUNTRY_RES_GUESTS,'
+    'LOCALITY_TYPE,URBANIZ_DEGREE,COASTAL_AREA,SIZE_BY_NUMBER_ROOMS,TIME_PERIOD,OBS_VALUE\n'
+)
+
+
+def tourism_row(data_type, value, country='WORLD', locality='ALL', year='2023',
+                accommodation='ALL', nace='551_553', size='TOT'):
+    return (f'{data_type},ITD4,{accommodation},{nace},{country},{locality},ALL,ALL,'
+            f'{size},{year},{value}\n')
+
+
+def tourism_csv(*rows: str) -> str:
+    return TOURISM_DIMS + ''.join(rows)
+
+
+def test_fetch_tourism_flows_builds_an_eleven_position_key():
+    istat_module._request_times.clear()
+    with patch('getopendatafvg.istat.requests.get',
+               return_value=make_response(tourism_csv())) as get:
+        fetch_tourism_flows('ITD4')
+
+    key = get.call_args.args[0].rsplit('/', 1)[1]
+    assert key == 'A.ITD4' + '.' * 9
+    assert len(key.split('.')) == 11
+
+
+def test_fetch_tourism_flows_takes_the_all_localities_total_not_a_subtotal():
+    # The real failure this guards: for ITD4 in 2023 the LOCALITY_TYPE
+    # dimension returns 11 rows for one year. ALL is 2,910,023 arrivals,
+    # TOUR_THRM is 21,334, and letting the last row win produced a
+    # plausible-looking number 100x out.
+    istat_module._request_times.clear()
+    csv_text = tourism_csv(
+        tourism_row('AR', '2910023', locality='ALL'),
+        tourism_row('AR', '1280414', locality='TOUR_SEASD'),
+        tourism_row('AR', '233734', locality='TOUR_MOUNT'),
+        tourism_row('AR', '21334', locality='TOUR_THRM'),
+        tourism_row('NI', '9946875', locality='ALL'),
+        tourism_row('NI', '60767', locality='TOUR_THRM'),
+    )
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_tourism_flows('ITD4')
+
+    assert series == [{'year': 2023, 'arrivals': 2910023, 'nights': 9946875,
+                       'average_stay_nights': round(9946875 / 2910023, 2)}]
+
+
+def test_fetch_tourism_flows_ignores_a_single_country_of_residence():
+    istat_module._request_times.clear()
+    csv_text = tourism_csv(
+        tourism_row('AR', '2910023', country='WORLD'),
+        tourism_row('AR', '1500000', country='IT'),
+        tourism_row('AR', '1410023', country='WRL_X_ITA'),
+    )
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_tourism_flows('ITD4')
+
+    assert series[0]['arrivals'] == 2910023
+
+
+def test_fetch_tourism_flows_returns_empty_for_a_comune_rather_than_failing():
+    # 122_54 has comune rows, but only capacity ones: AR and NI are absent
+    # at comune level, so this is the documented empty result, not an error.
+    istat_module._request_times.clear()
+    csv_text = tourism_csv(tourism_row('BEDS', '193', country='NAP'))
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        assert fetch_tourism_flows('093042') == []
+
+
+def test_fetch_tourism_capacity_collects_the_three_indicators_per_year():
+    istat_module._request_times.clear()
+    csv_text = tourism_csv(
+        tourism_row('NUM_EST', '15', country='NAP', year='2023'),
+        tourism_row('BEDS', '193', country='NAP', year='2023'),
+        tourism_row('BED_RMS', '60', country='NAP', year='2023'),
+        tourism_row('BTH_RMS', '58', country='NAP', year='2023'),  # non esposto
+        tourism_row('NUM_EST', '16', country='NAP', year='2024'),
+    )
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_tourism_capacity('093042')
+
+    assert series == [
+        {'year': 2023, 'establishments': 15, 'beds': 193, 'rooms': 60},
+        {'year': 2024, 'establishments': 16, 'beds': None, 'rooms': None},
+    ]
+
+
+def test_fetch_tourism_capacity_skips_a_star_rating_subtotal():
+    istat_module._request_times.clear()
+    csv_text = tourism_csv(
+        tourism_row('BEDS', '193', country='NAP', accommodation='ALL'),
+        tourism_row('BEDS', '40', country='NAP', accommodation='2_STARSHOTELS'),
+    )
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_tourism_capacity('093042')
+
+    assert series == [{'year': 2023, 'establishments': None, 'beds': 193, 'rooms': None}]
+
+
+def test_tourism_total_keys_pin_every_breakdown_dimension():
+    # If a dimension is dropped from here, its subtotals start leaking
+    # into the series silently.
+    assert TOURISM_TOTAL_KEYS == {
+        'TYPE_ACCOMMODATION': 'ALL',
+        'ECON_ACTIVITY_NACE_2007': '551_553',
+        'LOCALITY_TYPE': 'ALL',
+        'URBANIZ_DEGREE': 'ALL',
+        'COASTAL_AREA': 'ALL',
+        'SIZE_BY_NUMBER_ROOMS': 'TOT',
+    }
+
+
+CPI_HEADER = 'DATA_TYPE,REF_AREA,MEASURE,E_COICOP_REV_ISTAT,TIME_PERIOD,OBS_VALUE\n'
+
+
+def cpi_row(measure, value, period='2024-01', coicop='00', data_type='39'):
+    return f'{data_type},ITD42,{measure},{coicop},{period},{value}\n'
+
+
+def test_fetch_consumer_price_index_builds_a_five_position_monthly_key():
+    istat_module._request_times.clear()
+    with patch('getopendatafvg.istat.requests.get',
+               return_value=make_response(CPI_HEADER)) as get:
+        fetch_consumer_price_index('ITD42', since_year=2024)
+
+    key = get.call_args.args[0].rsplit('/', 1)[1]
+    assert key == 'M.ITD42...'
+    assert len(key.split('.')) == 5
+    # Monthly flow, so the window starts at a month, not a bare year.
+    assert get.call_args.kwargs['params']['startPeriod'] == '2024-01'
+
+
+def test_fetch_consumer_price_index_pairs_the_index_with_its_yoy_change():
+    istat_module._request_times.clear()
+    csv_text = CPI_HEADER + ''.join([
+        cpi_row('4', '120.3'),
+        cpi_row('7', '1.2'),
+        cpi_row('6', '0.3'),  # congiunturale: non esposta
+    ])
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_consumer_price_index('ITD42')
+
+    assert series == [{'period': '2024-01', 'index': 120.3, 'yoy_change_pct': 1.2}]
+
+
+def test_fetch_consumer_price_index_sorts_by_period_and_keeps_months_distinct():
+    istat_module._request_times.clear()
+    csv_text = CPI_HEADER + ''.join([
+        cpi_row('4', '120.4', period='2024-06'),
+        cpi_row('4', '120.3', period='2024-01'),
+        cpi_row('4', '120.2', period='2024-02'),
+    ])
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_consumer_price_index('ITD42')
+
+    assert [r['period'] for r in series] == ['2024-01', '2024-02', '2024-06']
+
+
+def test_fetch_consumer_price_index_ignores_other_coicop_divisions():
+    istat_module._request_times.clear()
+    csv_text = CPI_HEADER + ''.join([
+        cpi_row('4', '120.3', coicop='00'),
+        cpi_row('4', '134.9', coicop='01'),   # alimentari
+        cpi_row('4', '131.2', coicop='011'),
+    ])
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        assert fetch_consumer_price_index('ITD42') == [
+            {'period': '2024-01', 'index': 120.3, 'yoy_change_pct': None}
+        ]
+
+
+def test_fetch_consumer_price_index_can_select_a_coicop_division():
+    istat_module._request_times.clear()
+    csv_text = CPI_HEADER + ''.join([
+        cpi_row('4', '120.3', coicop='00'),
+        cpi_row('4', '134.9', coicop='01'),
+    ])
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_consumer_price_index('ITD42', coicop='01')
+
+    assert series[0]['index'] == 134.9

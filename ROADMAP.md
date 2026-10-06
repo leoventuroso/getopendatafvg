@@ -146,16 +146,41 @@ source), commit, check it off.
         saying why - hence `FVG_NUTS_AREAS`, with a test pinning it to
         the ITD4 vintage so nobody "modernises" it.
 
-- [ ] Tourism (was dataflow `122_54`, `FREQ.ITTER107.TIPO_ESERCIZIO.INDS.ADJUSTMENT`
-      via istatapi). Confirmed live the modern endpoint needs 11 key
-      dimensions, not 5 - same situation as employment, needs its own
-      investigation pass.
-- [ ] Consumer price index at comune level: the ISTAT dataflow (`167_744`
-      in eda) wasn't chased down after the above two turned out to need
-      real investigation. Note: the Open Data FVG portal already has a
-      ready-made alternative for (only) Comune di Udine - resource id
-      `fz2e-423g`, already in the catalog - which may make a generic
-      ISTAT version lower priority.
+- [x] Tourism (dataflow `122_54`). Done 2026-10-06 as
+      `fetch_tourism_capacity` and `fetch_tourism_flows`, 7 unit tests,
+      verified live. Two functions, not one, because ISTAT publishes the
+      dataflow's two halves at different granularity: capacity
+      (establishments, beds, rooms) goes down to comune - 225 FVG comuni
+      carry data - while the flow indicators `AR` and `NI` stop at
+      province. A comune code given to `fetch_tourism_flows` returns an
+      empty series rather than an error, and that is documented.
+
+      Key takes 11 positions. Same pre-2013 NUTS vintage as 150_915: no
+      `ITH*` code appears at all.
+
+      One trap cost a wrong number before a test caught it, and it is the
+      reason `TOURISM_TOTAL_KEYS` exists. 122_54 slices the same figure
+      along six dimensions simultaneously, and each has to be pinned to
+      its own total. For FVG in 2023 the `LOCALITY_TYPE` dimension alone
+      returns 11 rows for one year: `ALL` is 2,910,023 arrivals while
+      `TOUR_THRM` (thermal localities) is 21,334. Filtering only the
+      obvious dimensions let the last row win and produced 21,334 -
+      a plausible-looking figure two orders of magnitude out, sitting
+      between 2.6M in 2022 and 3.0M in 2024. There is now a regression
+      test built from those exact rows.
+
+- [x] Consumer price index at comune level: answered 2026-10-06, and the
+      answer is that it does not exist. Of the 132 `REF_AREA` values in
+      dataflow `167_744` that carry data, not one is a comune; province
+      is the floor. The portal's `fz2e-423g` is Comune di Udine's own
+      publication, not ISTAT's, which is why it exists where this cannot.
+
+      Ported at the granularity that does exist, as
+      `fetch_consumer_price_index(area_code, since_year=2019,
+      coicop='00')`, 5 unit tests, verified live (provincia di Udine,
+      NIC base 2015=100: 120.3 in 2024-01 through 123.1 in 2025-12, with
+      year-on-year change alongside). Monthly, 5-position key, same
+      pre-2013 NUTS vintage. `coicop` reaches the spending divisions.
 
 ## Natural hazard modules
 
@@ -196,7 +221,7 @@ Fixable, not yet done:
       present, 1219 body words (in range), every citation key checked
       against paper.bib. Benchmarked against a real accepted JOSS paper
       (aloth/RogueGPT) on 2026-09-15 and revised for comparable depth:
-      concrete numbers (56 exports, 18 modules, 130+ tests, 87-entry
+      concrete numbers (59 exports, 18 modules, 140+ tests, 87-entry
       catalog), a State of the field naming and citing specific
       alternative tools (sentinelsat, landsatxplore, OWSLib - two of
       which turned out to be archived/unmaintained against the current

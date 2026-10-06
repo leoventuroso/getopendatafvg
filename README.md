@@ -226,6 +226,33 @@ Giulia is `ITD4` and not the current `ITH4`; a modern code answers 404.
 `FVG_NUTS_AREAS` maps the five names that matter so you don't have to
 remember which vintage applies.
 
+Tourism splits across two functions because ISTAT publishes its two
+halves at different granularity - capacity per comune, visitor flows
+only from province up:
+
+```python
+from getopendatafvg import fetch_tourism_capacity, fetch_tourism_flows
+
+fetch_tourism_capacity("093042")                     # beds, rooms, establishments
+fetch_tourism_flows(FVG_NUTS_AREAS["fvg"])           # arrivals, nights, average stay
+```
+
+A comune code passed to `fetch_tourism_flows` returns an empty series,
+not an error: the arrivals and nights indicators simply do not exist at
+that level.
+
+Consumer prices are monthly, and also province-level only:
+
+```python
+from getopendatafvg import fetch_consumer_price_index
+
+fetch_consumer_price_index(FVG_NUTS_AREAS["udine"])  # NIC index + yoy change
+```
+
+ISTAT publishes no comune-level consumer price index at all. The Open
+Data FVG portal has one for Comune di Udine (`fz2e-423g`, in the
+catalog), but that is the comune's own publication rather than ISTAT's.
+
 ## Cadastral parcels
 
 ```python

@@ -24,12 +24,15 @@ from .indices import IndexRaster, compute_lst, compute_nbr, compute_ndvi
 from .istat import (
     FVG_NUTS_AREAS,
     fetch_bank_branches,
+    fetch_consumer_price_index,
     fetch_demographic_balance,
     fetch_demographic_indicators,
     fetch_employment_rate,
     fetch_income_series,
     fetch_istat_dataflow,
     fetch_population_series,
+    fetch_tourism_capacity,
+    fetch_tourism_flows,
 )
 from .landsat import LandsatScene, UsgsCredentials, fetch_landsat_scene
 from .open_data_fvg import (
@@ -79,6 +82,7 @@ __all__ = [
     'fetch_and_clip_wfs_features',
     'fetch_bank_branches',
     'fetch_cadastral_parcels',
+    'fetch_consumer_price_index',
     'fetch_demographic_balance',
     'fetch_demographic_indicators',
     'fetch_elevation',
@@ -92,6 +96,8 @@ __all__ = [
     'fetch_overpass_elements',
     'fetch_population_series',
     'fetch_sentinel2_scene',
+    'fetch_tourism_capacity',
+    'fetch_tourism_flows',
     'fetch_wfs_features',
     'fetch_wikipedia_summary',
     'landsat_scene_date',
