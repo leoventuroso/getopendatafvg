@@ -233,10 +233,30 @@ Fixable, not yet done:
       framing.
 
 Needs time, not code:
-- [ ] 6-month continuous public development history. Repo created
-      2026-06-01 - eligible from about 2026-12-01 at the earliest, and
-      only if development stays genuinely continuous until then (see
-      "Process" below).
+- [ ] 6-month continuous public development history. The 2026-12-01 date
+      this item used to give was measured from the wrong starting point,
+      corrected 2026-10-06 against the actual git history.
+
+      The repository does date from 2026-06-01, but not this software.
+      Until 2026-09-15 it held a different project - a frontend plus GIS
+      pipeline, rebranded "Mappa Civica" on 2026-08-24. This library
+      begins at `f301ad1`, "Repurpose this repository as the
+      getopendatafvg Python library", on 2026-09-15. Counting from repo
+      creation credits this software with three months of history
+      belonging to something else, so the defensible earliest date is
+      about 2027-03-15, not 2026-12-01.
+
+      Continuity is the weaker half of the claim anyway. Of 73 commits,
+      July has zero, June has 8 and August 5 - all three before the
+      repurpose - while 58 fall in September alone and 45 of the total
+      come after `f301ad1`. "Continuous" needs the gaps not to reappear
+      from here on; the bursty pattern noted under "Process" is the
+      thing to watch, not the calendar.
+
+      Worth confirming against JOSS's own wording before planning a
+      submission date: this reading assumes the history that counts is
+      the submitted software's, which is the conservative assumption but
+      not one taken from the guidelines verbatim.
 - [ ] Evidence of research impact (citations, documented adoption by
       other groups, or use in a published workflow) - can't be
       fabricated, has to accrue for real. JOSS accepts "credible
