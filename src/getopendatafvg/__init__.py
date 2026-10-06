@@ -22,9 +22,11 @@ from .dem import DemSampler, compute_line_grade, compute_line_slope, slope_class
 from .elevation import fetch_elevation
 from .indices import IndexRaster, compute_lst, compute_nbr, compute_ndvi
 from .istat import (
+    FVG_NUTS_AREAS,
     fetch_bank_branches,
     fetch_demographic_balance,
     fetch_demographic_indicators,
+    fetch_employment_rate,
     fetch_income_series,
     fetch_istat_dataflow,
     fetch_population_series,
@@ -49,6 +51,7 @@ from .wikipedia import fetch_wikipedia_summary
 __all__ = [
     'CATALOG',
     'DEFAULT_BANDS',
+    'FVG_NUTS_AREAS',
     'Band',
     'CdseCredentials',
     'ClassBreak',
@@ -79,6 +82,7 @@ __all__ = [
     'fetch_demographic_balance',
     'fetch_demographic_indicators',
     'fetch_elevation',
+    'fetch_employment_rate',
     'fetch_historical_weather',
     'fetch_income_series',
     'fetch_istat_dataflow',

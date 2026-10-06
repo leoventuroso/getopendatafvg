@@ -173,6 +173,56 @@ def fetch_income_series(comune_code: str, since_year: int = 2014) -> list[dict[s
     return series
 
 
+FVG_NUTS_AREAS = {
+    'fvg': 'ITD4',
+    'pordenone': 'ITD41',
+    'udine': 'ITD42',
+    'gorizia': 'ITD43',
+    'trieste': 'ITD44',
+}
+
+
+def fetch_employment_rate(
+    area_code: str,
+    since_year: int = 2019,
+    age: str = 'Y15-64',
+) -> list[dict[str, float | int]]:
+    """Yearly employment rate (%) for a NUTS region or province, from
+    dataflow 150_915, sorted oldest to newest.
+
+    Two things about this dataflow had to be established against the live
+    endpoint, and both will bite anyone who assumes otherwise:
+
+    - **There is no comune granularity.** Of the 133 `REF_AREA` values
+      that carry data, the finest is NUTS3 (province); not one is a
+      comune code. Unlike most of this module, which is per comune, this
+      function cannot be.
+    - **It uses pre-2013 NUTS codes.** Friuli Venezia Giulia is `ITD4`
+      here, not the current `ITH4`, and its provinces are `ITD41`
+      Pordenone, `ITD42` Udine, `ITD43` Gorizia, `ITD44` Trieste. A
+      modern code fails loudly - the endpoint answers 404 - but says
+      nothing about why, so `FVG_NUTS_AREAS` holds the five that matter
+      rather than leaving callers to guess the vintage.
+
+    `age` selects the age band - ISTAT publishes several (`Y15-64`,
+    `Y15-24`, `Y15-29`, ...), and `Y15-64` is the conventional headline
+    rate. The series returned is the total for both sexes, all education
+    levels and all citizenships.
+    """
+    rows = fetch_istat_dataflow('150_915', f'A.{area_code}.....', start_period=str(since_year))
+    series = [
+        {'year': int(row['TIME_PERIOD']), 'employment_rate_pct': float(row['OBS_VALUE'])}
+        for row in rows
+        if row.get('DATA_TYPE') == 'EMP_R'
+        and row.get('SEX') == '9'
+        and row.get('AGE') == age
+        and row.get('EDU_LEV_HIGHEST') == '99'
+        and row.get('CITIZENSHIP') == 'TOTAL'
+        and row.get('OBS_VALUE') not in (None, '')
+    ]
+    return sorted(series, key=lambda r: r['year'])
+
+
 def _throttle() -> None:
     """Block just long enough to keep this process under ISTAT's
     5-requests-per-minute limit. Exceeding it risks a 1-2 day IP block,

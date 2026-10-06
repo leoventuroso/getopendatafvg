@@ -1,9 +1,11 @@
 from unittest.mock import MagicMock, patch
 
 from getopendatafvg import (
+    FVG_NUTS_AREAS,
     fetch_bank_branches,
     fetch_demographic_balance,
     fetch_demographic_indicators,
+    fetch_employment_rate,
     fetch_income_series,
     fetch_istat_dataflow,
     fetch_population_series,
@@ -168,3 +170,85 @@ def test_throttle_sleeps_once_the_limit_is_reached(monkeypatch):
 
     assert len(sleeps) == 1
     assert sleeps[0] > 0
+
+
+EMPLOYMENT_HEADER = (
+    'DATA_TYPE,REF_AREA,SEX,AGE,EDU_LEV_HIGHEST,CITIZENSHIP,TIME_PERIOD,OBS_VALUE\n'
+)
+
+
+def employment_csv(*rows: str) -> str:
+    return EMPLOYMENT_HEADER + ''.join(rows)
+
+
+def test_fetch_employment_rate_builds_a_seven_position_key():
+    # 150_915 has 7 dimensions; a key with the wrong arity is a 404, not
+    # a filtered result.
+    istat_module._request_times.clear()
+    with patch('getopendatafvg.istat.requests.get',
+               return_value=make_response(employment_csv())) as get:
+        fetch_employment_rate('ITD4')
+
+    assert get.call_args.args[0].endswith('/data/150_915/A.ITD4.....')
+
+
+def test_fetch_employment_rate_keeps_only_the_headline_total_series():
+    istat_module._request_times.clear()
+    csv_text = employment_csv(
+        'EMP_R,ITD4,9,Y15-64,99,TOTAL,2023,68.7\n',
+        'EMP_R,ITD4,1,Y15-64,99,TOTAL,2023,74.0\n',       # solo maschi
+        'EMP_R,ITD4,9,Y15-24,99,TOTAL,2023,28.7\n',       # altra fascia d'eta
+        'EMP_R,ITD4,9,Y15-64,3,TOTAL,2023,80.1\n',        # un solo titolo di studio
+        'EMP_R,ITD4,9,Y15-64,99,ITL,2023,70.2\n',         # soli cittadini italiani
+        'UNEMP_R,ITD4,9,Y15-64,99,TOTAL,2023,4.5\n',      # altro indicatore
+    )
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_employment_rate('ITD4')
+
+    assert series == [{'year': 2023, 'employment_rate_pct': 68.7}]
+
+
+def test_fetch_employment_rate_sorts_oldest_to_newest():
+    istat_module._request_times.clear()
+    csv_text = employment_csv(
+        'EMP_R,ITD4,9,Y15-64,99,TOTAL,2024,69.8\n',
+        'EMP_R,ITD4,9,Y15-64,99,TOTAL,2019,66.6\n',
+        'EMP_R,ITD4,9,Y15-64,99,TOTAL,2022,68.5\n',
+    )
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_employment_rate('ITD4')
+
+    assert [r['year'] for r in series] == [2019, 2022, 2024]
+
+
+def test_fetch_employment_rate_can_select_another_age_band():
+    istat_module._request_times.clear()
+    csv_text = employment_csv(
+        'EMP_R,ITD4,9,Y15-64,99,TOTAL,2023,68.7\n',
+        'EMP_R,ITD4,9,Y15-24,99,TOTAL,2023,28.7\n',
+    )
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_employment_rate('ITD4', age='Y15-24')
+
+    assert series == [{'year': 2023, 'employment_rate_pct': 28.7}]
+
+
+def test_fetch_employment_rate_skips_a_suppressed_observation():
+    istat_module._request_times.clear()
+    csv_text = employment_csv(
+        'EMP_R,ITD4,9,Y15-64,99,TOTAL,2023,\n',
+        'EMP_R,ITD4,9,Y15-64,99,TOTAL,2024,69.8\n',
+    )
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response(csv_text)):
+        series = fetch_employment_rate('ITD4')
+
+    # A blank OBS_VALUE would be a ValueError from float(), not a 0.0.
+    assert series == [{'year': 2024, 'employment_rate_pct': 69.8}]
+
+
+def test_fvg_nuts_areas_use_the_pre_2013_vintage_this_dataflow_needs():
+    # The modern codes (ITH4, ITH41...) 404 on 150_915. If this mapping
+    # ever gets "modernised", every employment call breaks.
+    assert FVG_NUTS_AREAS['fvg'] == 'ITD4'
+    assert set(FVG_NUTS_AREAS) == {'fvg', 'pordenone', 'udine', 'gorizia', 'trieste'}
+    assert all(code.startswith('ITD4') for code in FVG_NUTS_AREAS.values())

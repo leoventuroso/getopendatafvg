@@ -209,6 +209,23 @@ fetch_income_series("093042")            # yearly aggregate + average taxable in
 No extra setup - ISTAT's API needs no authentication. Requests are
 throttled automatically to stay under its rate limit.
 
+Employment rate is the exception to the per-comune pattern, because
+ISTAT does not publish it per comune - province (NUTS3) is the finest
+grain that carries data:
+
+```python
+from getopendatafvg import FVG_NUTS_AREAS, fetch_employment_rate
+
+fetch_employment_rate(FVG_NUTS_AREAS["fvg"])        # regional series
+fetch_employment_rate(FVG_NUTS_AREAS["trieste"])    # one province
+fetch_employment_rate("ITD42", age="Y15-24")        # Udine, under-25s
+```
+
+That dataflow also still uses pre-2013 NUTS codes, so Friuli Venezia
+Giulia is `ITD4` and not the current `ITH4`; a modern code answers 404.
+`FVG_NUTS_AREAS` maps the five names that matter so you don't have to
+remember which vintage applies.
+
 ## Cadastral parcels
 
 ```python

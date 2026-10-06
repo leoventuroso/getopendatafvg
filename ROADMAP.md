@@ -117,14 +117,35 @@ source), commit, check it off.
 
 ## ISTAT
 
-- [ ] Employment rate (was dataflow `150_915` in the `eda` reference
-      repo, via the legacy `istatapi`/`sdmx.istat.it`). Confirmed live
-      that on the modern `esploradati.istat.it` endpoint this dataflow
-      now needs 7 key dimensions and returns only `REF_AREA=IT` rows in
-      a first wildcard probe - comune/province granularity may no
-      longer exist under this id, or may need a different key entirely.
-      Needs a proper investigation pass (throttled, 5 req/min) before
-      it can be ported.
+- [x] Employment rate (dataflow `150_915`). Done 2026-10-06 as
+      `fetch_employment_rate(area_code, since_year=2019, age='Y15-64')`,
+      6 unit tests, verified live (FVG 66.6% in 2019 rising to 69.4% in
+      2025; the four provinces for 2023 are Pordenone 67.0, Udine 69.5,
+      Gorizia 65.5, Trieste 71.5).
+
+      The investigation the item asked for, and the recipe for the two
+      below. Walk the structure rather than guessing the key:
+      `/dataflow/IT1/<flow>` gives the DSD ref (here `DCCV_TAXOCCU1`),
+      `/datastructure/IT1/<dsd>` gives the dimensions *in position
+      order*, and
+      `/availableconstraint/IT1,<flow>,1.0/all/all/<DIM>` gives the
+      values that actually carry data - which is the only way to answer
+      "does comune granularity exist" without a blind probe. Note its
+      XML uses the `common:` namespace prefix, not `com:`.
+
+      Two findings, both of which would silently mislead:
+
+      - **No comune granularity.** Of the 133 `REF_AREA` values with
+        data, the finest is NUTS3. The earlier "returns only
+        REF_AREA=IT" probe was reading an arity failure, not the truth:
+        the key needs 7 positions (`FREQ.REF_AREA.DATA_TYPE.SEX.AGE.
+        EDU_LEV_HIGHEST.CITIZENSHIP`), and a short key 404s.
+      - **Pre-2013 NUTS vintage.** FVG is `ITD4`, not `ITH4`; provinces
+        are `ITD41`/`ITD42`/`ITD43`/`ITD44`. No `ITH*` code appears at
+        all. A modern code answers 404, so it fails loudly but without
+        saying why - hence `FVG_NUTS_AREAS`, with a test pinning it to
+        the ITD4 vintage so nobody "modernises" it.
+
 - [ ] Tourism (was dataflow `122_54`, `FREQ.ITTER107.TIPO_ESERCIZIO.INDS.ADJUSTMENT`
       via istatapi). Confirmed live the modern endpoint needs 11 key
       dimensions, not 5 - same situation as employment, needs its own
@@ -175,7 +196,7 @@ Fixable, not yet done:
       present, 1219 body words (in range), every citation key checked
       against paper.bib. Benchmarked against a real accepted JOSS paper
       (aloth/RogueGPT) on 2026-09-15 and revised for comparable depth:
-      concrete numbers (54 exports, 18 modules, 120+ tests, 87-entry
+      concrete numbers (56 exports, 18 modules, 130+ tests, 87-entry
       catalog), a State of the field naming and citing specific
       alternative tools (sentinelsat, landsatxplore, OWSLib - two of
       which turned out to be archived/unmaintained against the current
