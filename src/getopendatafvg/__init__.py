@@ -39,6 +39,7 @@ from .landsat import LandsatScene, UsgsCredentials, fetch_landsat_scene
 from .open_data_fvg import (
     PortalAsset,
     fetch_open_data_fvg,
+    lon_lat_box_clause,
     search_open_data_fvg,
     within_box_clause,
 )
@@ -106,6 +107,7 @@ __all__ = [
     'landsat_scene_date',
     'line_coverage_pct',
     'list_known_datasets',
+    'lon_lat_box_clause',
     'plot_index',
     'query_overpass',
     'region_parquet_name',

@@ -85,6 +85,21 @@ def within_box_clause(geometry_column: str, boundary: BaseGeometry) -> str:
     return f'within_box({geometry_column}, {maxy}, {minx}, {miny}, {maxx})'
 
 
+def lon_lat_box_clause(lon_column: str, lat_column: str, boundary: BaseGeometry) -> str:
+    """SoQL predicate keeping rows whose numeric longitude/latitude
+    columns fall inside `boundary`'s bounding box - for datasets that
+    store a point as two plain number columns rather than a geometry
+    column `within_box` can work on. Same superset semantics as
+    `within_box_clause`.
+
+    The columns must be SoQL `number`, not text: `between` on a text
+    column compares strings, which matches the wrong rows without
+    raising.
+    """
+    minx, miny, maxx, maxy = boundary.bounds
+    return f'{lat_column} between {miny} and {maxy} AND {lon_column} between {minx} and {maxx}'
+
+
 def search_open_data_fvg(query: str, limit: int = 20, timeout: int = 60) -> list[PortalAsset]:
     """Full-text search over the portal's own catalog, for the families of
     dataset too numerous to enumerate by hand - the per-comune budgets

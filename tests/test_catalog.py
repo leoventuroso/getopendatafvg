@@ -25,6 +25,12 @@ def test_catalog_entries_are_well_formed():
             # The WFS client reads geometry off the layer itself, so a
             # geometry_column here would be recorded but never used.
             assert entry.geometry_column is None
+            assert entry.lon_lat_columns is None
+        # The dispatcher takes geometry_column first, so recording both
+        # would leave lon_lat_columns silently unused.
+        assert entry.geometry_column is None or entry.lon_lat_columns is None
+        if entry.lon_lat_columns is not None:
+            assert len(entry.lon_lat_columns) == 2
 
 
 def test_catalog_has_no_duplicate_identifiers_within_a_source():
@@ -90,6 +96,17 @@ def socrata_entry_with_geometry() -> KnownDataset:
     )
 
 
+def socrata_entry_with_lon_lat() -> KnownDataset:
+    return KnownDataset(
+        'Aria - PM10',
+        'open_data_fvg',
+        'qp5k-6pvm',
+        'aria',
+        'test',
+        lon_lat_columns=('longitudine', 'latitudine'),
+    )
+
+
 def test_fetch_known_dataset_routes_a_wfs_entry_without_boundary_to_fetch_wfs_features():
     with patch('getopendatafvg.catalog.fetch_wfs_features', return_value=[]) as fetch:
         fetch_known_dataset(wfs_entry())
@@ -126,7 +143,7 @@ def test_fetch_known_dataset_returns_whatever_the_underlying_client_returned():
 
 
 def test_fetch_known_dataset_rejects_a_boundary_on_a_socrata_entry_without_a_geometry_column():
-    with pytest.raises(ValueError, match='no geometry column recorded'):
+    with pytest.raises(ValueError, match='no geometry or coordinate columns recorded'):
         fetch_known_dataset(socrata_entry(), boundary=box(0, 0, 1, 1))
 
 
@@ -138,6 +155,31 @@ def test_fetch_known_dataset_boundary_filters_a_socrata_entry_that_has_a_geometr
     # within_box takes the corners as north, west, south, east.
     assert fetch.call_args.args == ('7eat-pecq',)
     assert fetch.call_args.kwargs == {'where': 'within_box(the_geom, 46.12, 13.18, 46.02, 13.3)'}
+
+
+def test_fetch_known_dataset_boundary_filters_a_socrata_entry_by_its_lon_lat_columns():
+    boundary = box(13.18, 46.02, 13.30, 46.12)
+    with patch('getopendatafvg.catalog.fetch_open_data_fvg', return_value=[]) as fetch:
+        fetch_known_dataset(socrata_entry_with_lon_lat(), boundary=boundary)
+
+    assert fetch.call_args.args == ('qp5k-6pvm',)
+    assert fetch.call_args.kwargs == {
+        'where': 'latitudine between 46.02 and 46.12 AND longitudine between 13.18 and 13.3'
+    }
+
+
+def test_fetch_known_dataset_ands_a_caller_where_with_a_lon_lat_clause_too():
+    with patch('getopendatafvg.catalog.fetch_open_data_fvg', return_value=[]) as fetch:
+        fetch_known_dataset(
+            socrata_entry_with_lon_lat(),
+            boundary=box(13.18, 46.02, 13.30, 46.12),
+            where="data_misura >= '2025-01-01'",
+        )
+
+    assert fetch.call_args.kwargs['where'] == (
+        "(data_misura >= '2025-01-01') AND "
+        'latitudine between 46.02 and 46.12 AND longitudine between 13.18 and 13.3'
+    )
 
 
 def test_fetch_known_dataset_ands_a_caller_where_with_the_generated_boundary_clause():

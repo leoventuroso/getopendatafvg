@@ -142,11 +142,13 @@ so the return shape is the one that client already documents:
 `(properties, clipped_geometry)` pairs for a clipped WFS fetch, GeoJSON
 feature dicts for an unclipped one, plain row dicts for a portal
 dataset. A portal entry is boundary-filtered too when the catalog
-records its geometry column, which is a bounding-box filter server-side
-(SODA's `within_box`), not an exact cut - clip client-side if you need
-the exact shape. Most portal datasets are plain tables with no geometry
-column at all, and a boundary on one of those raises; fetch it
-unfiltered and filter the rows yourself.
+records either its geometry column (SODA's `within_box`) or a pair of
+numeric longitude/latitude columns (a `between` on each, which is how
+the ARPA air-quality stations are stored). Both are bounding-box filters
+server-side, not an exact cut - clip client-side if you need the exact
+shape. Most portal datasets are plain tables with no coordinates at all,
+and a boundary on one of those raises; fetch it unfiltered and filter
+the rows yourself.
 
 The catalog is a curated
 subset, not the full underlying catalogs (about 1150 WFS layers, about
@@ -155,7 +157,7 @@ of a listed entry, split across many per-tile/per-comune files, or a
 technical code not usable without its own legend.
 
 Every entry is checked against its live source by
-`tests/test_catalog_live.py`, which is skipped by default (it makes 87
+`tests/test_catalog_live.py`, which is skipped by default (it makes 94
 real requests to two government services) and runs with
 `GETOPENDATAFVG_LIVE=1 pytest tests/test_catalog_live.py`.
 

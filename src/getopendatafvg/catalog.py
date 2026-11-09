@@ -21,7 +21,7 @@ from typing import Any
 
 from shapely.geometry.base import BaseGeometry
 
-from .open_data_fvg import fetch_open_data_fvg, within_box_clause
+from .open_data_fvg import fetch_open_data_fvg, lon_lat_box_clause, within_box_clause
 from .wfs import fetch_and_clip_wfs_features, fetch_wfs_features
 
 WFS_BASE_URL = 'https://serviziogc.regione.fvg.it/geoserver/ows'
@@ -42,6 +42,14 @@ class KnownDataset:
     stays `None` unless checked live against the dataset's schema. WFS
     entries leave it `None`: the WFS client gets its geometry from the
     layer itself.
+
+    `lon_lat_columns` is the alternative for portal datasets that store a
+    point as two numeric columns, as `(longitude, latitude)` - x before
+    y, like every boundary in this library. An entry records at most one
+    of the two. When both exist on the portal, prefer the numeric pair
+    unless the geometry column is verified complete: ARPA's ozone series
+    has a `geocoded_column` that is empty for every row since May 2020,
+    so a `within_box` on it silently returns only the older half.
     """
 
     name: str
@@ -50,6 +58,7 @@ class KnownDataset:
     category: str
     description: str
     geometry_column: str | None = None
+    lon_lat_columns: tuple[str, str] | None = None
 
 
 CATALOG: tuple[KnownDataset, ...] = (
@@ -679,6 +688,71 @@ CATALOG: tuple[KnownDataset, ...] = (
         'economia',
         "Esempio della famiglia 'Bilancio - Comune ...' (132 asset), serie storica 2010/2015.",
     ),
+    # qualita' dell'aria ARPA FVG: una riga per stazione e giorno. Nessun
+    # codice stazione: la stessa centralina compare con nomi diversi negli
+    # anni ('V.Cairoli', 'Udine - via Cairoli', 'Udine via Cairoli') e
+    # coordinate che variano alla quinta cifra decimale, quindi
+    # `ubicazione` non e' una chiave affidabile per raggruppare.
+    KnownDataset(
+        'Aria - PM10',
+        'open_data_fvg',
+        'qp5k-6pvm',
+        'aria',
+        "Medie giornaliere di PM10 per stazione della rete ARPA FVG, dal 2005. Nessun codice stazione: "
+        "lo stesso sito compare con nomi e coordinate leggermente diversi negli anni.",
+        lon_lat_columns=('longitudine', 'latitudine'),
+    ),
+    KnownDataset(
+        'Aria - PM2.5',
+        'open_data_fvg',
+        'd63p-pqpr',
+        'aria',
+        'Medie giornaliere di PM2.5 per stazione della rete ARPA FVG, dal 2012.',
+        lon_lat_columns=('longitudine', 'latitudine'),
+    ),
+    KnownDataset(
+        "Aria - Biossido d'azoto (NO2)",
+        'open_data_fvg',
+        'ke9b-p6z2',
+        'aria',
+        "Massimo giornaliero della media oraria di NO2 per stazione ARPA FVG, con l'ora in cui cade, dal 2005.",
+        lon_lat_columns=('longitudine', 'latitudine'),
+    ),
+    KnownDataset(
+        'Aria - Ozono (O3)',
+        'open_data_fvg',
+        '7vnx-28uy',
+        'aria',
+        "Massimi giornalieri della media oraria e della media mobile su 8 ore di O3 per stazione ARPA FVG, "
+        "dal 2005. La colonna geocoded_column e' vuota dal maggio 2020: filtrare su latitudine/longitudine.",
+        lon_lat_columns=('longitudine', 'latitudine'),
+    ),
+    KnownDataset(
+        'Aria - Monossido di carbonio (CO)',
+        'open_data_fvg',
+        't274-vki6',
+        'aria',
+        'Massimo giornaliero della media mobile su 8 ore di CO per stazione ARPA FVG, dal 2005. '
+        "Ultimo dato al 2026-01-15 alla verifica del 2026-11-09, mentre le altre serie arrivano a novembre.",
+        lon_lat_columns=('longitudine', 'latitudine'),
+    ),
+    KnownDataset(
+        'Aria - Particolato totale sospeso (PTS)',
+        'open_data_fvg',
+        'dayp-qnyx',
+        'aria',
+        'Medie giornaliere di PTS per stazione ARPA FVG. Serie chiusa: copre 2005-2018, 10 stazioni.',
+        lon_lat_columns=('longitudine', 'latitudine'),
+    ),
+    KnownDataset(
+        'Aria - Pollini',
+        'open_data_fvg',
+        'rnci-smsu',
+        'aria',
+        'Concentrazioni polliniche settimanali per famiglia e genere botanico, 9 siti di campionamento '
+        'ARPA FVG, dal 2005.',
+        lon_lat_columns=('longitudine', 'latitudine'),
+    ),
 )
 
 
@@ -722,14 +796,16 @@ def fetch_known_dataset(
       dicts, unclipped
     - `'open_data_fvg'` -> `fetch_open_data_fvg`, i.e. one plain dict per
       row, boundary-filtered with a `within_box(...)` SoQL clause when the
-      entry records a `geometry_column`
+      entry records a `geometry_column`, or a `between` clause on each
+      coordinate when it records `lon_lat_columns`
 
     Unlike the WFS branch, an `'open_data_fvg'` `boundary` is a bounding-box
     filter only, never an exact cut - `within_box` is what SODA offers, so
     rows are a superset of what really intersects `boundary`. Clip
-    client-side afterward if you need the exact shape.
+    client-side afterward if you need the exact shape. The same holds for
+    the `between` clause on `lon_lat_columns`.
 
-    A `boundary` on an entry whose `geometry_column` is `None` raises:
+    A `boundary` on an entry that records neither raises:
     most of the portal is plain tables, and some datasets that do carry
     coordinates keep them in a form SODA cannot filter on (Parafarmacie,
     for one, stores `latitudine`/`longitudine` as text with a comma
@@ -745,13 +821,16 @@ def fetch_known_dataset(
 
     if entry.source == 'open_data_fvg':
         if boundary is not None:
-            if entry.geometry_column is None:
+            if entry.geometry_column is not None:
+                clause = within_box_clause(entry.geometry_column, boundary)
+            elif entry.lon_lat_columns is not None:
+                clause = lon_lat_box_clause(*entry.lon_lat_columns, boundary)
+            else:
                 raise ValueError(
-                    f'{entry.name!r} has no geometry column recorded, so it cannot be '
-                    'filtered by boundary server-side: fetch it unfiltered and filter '
-                    'the rows yourself'
+                    f'{entry.name!r} has no geometry or coordinate columns recorded, so it '
+                    'cannot be filtered by boundary server-side: fetch it unfiltered and '
+                    'filter the rows yourself'
                 )
-            clause = within_box_clause(entry.geometry_column, boundary)
             caller_where = kwargs.pop('where', None)
             kwargs['where'] = f'({caller_where}) AND {clause}' if caller_where else clause
         return fetch_open_data_fvg(entry.identifier, **kwargs)

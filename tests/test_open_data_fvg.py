@@ -2,7 +2,12 @@ from unittest.mock import MagicMock, patch
 
 from shapely.geometry import box
 
-from getopendatafvg import fetch_open_data_fvg, search_open_data_fvg, within_box_clause
+from getopendatafvg import (
+    fetch_open_data_fvg,
+    lon_lat_box_clause,
+    search_open_data_fvg,
+    within_box_clause,
+)
 
 
 def make_response(rows: list) -> MagicMock:
@@ -34,6 +39,12 @@ def test_fetch_open_data_fvg_passes_through_soql_clauses_when_given():
 def test_within_box_clause_formats_the_bbox_as_nw_se_corners():
     boundary = box(13.3, 46.0, 13.5, 46.2)  # minx, miny, maxx, maxy
     assert within_box_clause('the_geom', boundary) == 'within_box(the_geom, 46.2, 13.3, 46.0, 13.5)'
+
+
+def test_lon_lat_box_clause_bounds_latitude_by_y_and_longitude_by_x():
+    boundary = box(13.3, 46.0, 13.5, 46.2)  # minx, miny, maxx, maxy
+    clause = lon_lat_box_clause('longitudine', 'latitudine', boundary)
+    assert clause == 'latitudine between 46.0 and 46.2 AND longitudine between 13.3 and 13.5'
 
 
 def catalog_response(resources: list) -> MagicMock:

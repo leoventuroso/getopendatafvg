@@ -40,7 +40,7 @@ source-specific format.
 
 As of this writing, the library exposes 61 public functions and classes
 across 19 modules (about 3,000 lines of source), backed by a test suite
-of over 150 cases and a curated, live-verified catalog of 87 named
+of over 150 cases and a curated, live-verified catalog of 94 named
 Friuli Venezia Giulia datasets spanning natural hazard, hydrology,
 protected areas, land use, energy, and administrative boundary data.
 

@@ -224,6 +224,79 @@ source), commit, check it off.
       `fetch_known_dataset` already returns. The catalog entry is the
       right level of support for it.
 
+## Regional sources not yet bridged
+
+Added 2026-11-09. The aim is that this library is the single bridge to
+FVG data, so the gap that matters is regional sources reachable neither
+through the GeoServer nor through the 87-entry catalog. National and
+global sources (Sentinel-2, Landsat, ISTAT, OSM, Open-Meteo, catasto)
+are already covered. Rough priority order: the catalog items first,
+because they are small and live-verifiable, then the new modules.
+
+- [x] ARPA FVG air quality on the portal. Done 2026-11-09: seven
+      entries under a new `aria` category, catalog 87 -> 94. They are PM10
+      (`qp5k-6pvm`), PM2.5 (`d63p-pqpr`), NO2 (`ke9b-p6z2`), O3
+      (`7vnx-28uy`), CO (`t274-vki6`), PTS (`dayp-qnyx`) and pollini
+      (`rnci-smsu`). All are boundary-filterable, through a new
+      `KnownDataset.lon_lat_columns` and `lon_lat_box_clause`. 3 unit
+      tests plus a live one; the full live suite passes. `8cfc-sfz5`
+      ("Centraline aria") is an `href` to a map, not data, and stays out.
+
+      Why a second filtering mechanism instead of `geometry_column`: all
+      seven store the station as numeric `latitudine`/`longitudine`, and
+      only PM10 and O3 also have a `geocoded_column`. On O3 that column
+      is empty for every row from 2020-05 on (130,903 of 256,291 rows),
+      so `within_box` on it would return only the pre-2020 half, without
+      any error. The numeric pair is populated throughout every dataset.
+
+      The live test checks that the schema type is `number`. A `between`
+      on a text column is not an error in SODA: it compares strings. It
+      also builds its box around one real row of each dataset. A fixed
+      box around Udine failed on PTS and pollini, which have no site
+      near Udine.
+
+      Traps, written into the descriptions:
+      - **No station code.** The same station appears as `V.Cairoli`,
+        `Udine - via Cairoli` and `Udine via Cairoli`, with coordinates
+        that differ in the fifth decimal place. `ubicazione` is not a
+        key to group by.
+      - **PTS is a closed series** (2005-2018, 10 stations).
+      - **CO's last value is 2026-01-15**, while the other series reach
+        2026-11-01. It may be discontinued. Re-check on the next sweep.
+
+- [ ] The rest of ARPA FVG on the portal. `search_open_data_fvg('arpa')`
+      returns 34 assets, still to review one by one. Seen so far: radon
+      (`k8yw-gcpj`), impianti di telefonia mobile (`28hy-b3b2`), and
+      water classification for groundwater (`wthn-aebz`) and inland
+      surface water (`q8d6-8b5n`). Apply the usual near-duplicate rule.
+- [ ] OSMER regional weather stations. The portal only links to them
+      (`4wxn-35av` "Meteo - dati delle stazioni regionali", `j654-ykm6`
+      "previsioni e dati in formato XML"), so this is a module rather
+      than catalog entries. Worth having because `weather.py` is
+      Open-Meteo reanalysis, not measurements. Not yet investigated:
+      format, history depth, terms of use.
+- [ ] Daily avalanche danger (AINEVA bulletin, CAAML). This is the
+      sourced danger rating that `avalanche.py` deliberately does not
+      derive. Not yet verified: whether FVG's bulletin is published in
+      machine-readable form, under what licence, and how far back it
+      goes.
+- [ ] Earthquake events: OGS (the regional seismic network, Trieste)
+      and/or INGV's FDSN event service, filtered by boundary. This is the
+      dynamic counterpart to the static seismic classification, which
+      already has its catalog entry. Not yet verified: which of the two
+      catalogues is more complete for FVG, and whether OGS exposes an
+      API at all.
+- [ ] Regional LiDAR DTM download. `dem.py` samples a DTM file the
+      caller already has but cannot fetch one. Not yet verified: whether
+      the regional DTM has a scriptable download service, and its tile
+      scheme.
+- [ ] Public transport GTFS (TPL FVG, regional rail). Restricted to the FVG
+      domain, the portal search for "gtfs" returns nothing (the hits
+      without that filter belong to other regions' portals), so the
+      source is elsewhere. Still to find.
+- [ ] Hydrometric levels and civil protection alerts (Protezione Civile
+      FVG). Not yet investigated.
+
 ## JOSS readiness
 
 Read straight from joss.readthedocs.io (submitting, review_criteria,

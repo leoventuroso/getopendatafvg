@@ -1,5 +1,5 @@
 """Opt-in check that every catalog entry still resolves against its live
-source. Off by default - it makes 87 real requests and depends on two
+source. Off by default - it makes 94 real requests and depends on two
 government services being up, neither of which belongs in CI on every
 push. Run it before adding entries, and periodically to catch a layer
 that got renamed or retired upstream:
@@ -135,6 +135,42 @@ def test_recorded_geometry_columns_are_really_filterable():
             f'{entry.name}: within_box({entry.geometry_column}) returned all {total} rows, '
             'so it is not actually filtering'
         )
+        time.sleep(0.4)
+
+
+@live_only
+def test_recorded_lon_lat_columns_are_numeric_and_really_filter():
+    """The failure modes here are quieter than for a geometry column.
+    `between` on a *text* column is not an error: SODA compares strings
+    and returns whatever sorts between the bounds. So check the schema
+    says `number`, then that the clause returns a strict, non-empty
+    subset, counted server-side because these series run to hundreds of
+    thousands of rows.
+
+    The box is built around one real row of each dataset rather than
+    fixed, because no single box suits them all: none of the 10 PTS
+    stations or 9 pollen sites is anywhere near Udine, which is what
+    the geometry-column test above uses.
+    """
+    entries = [d for d in list_known_datasets(source='open_data_fvg') if d.lon_lat_columns]
+    assert entries, 'no portal entry records lon/lat columns; this test would pass vacuously'
+
+    for entry in entries:
+        lon_column, lat_column = entry.lon_lat_columns
+        row = fetch_known_dataset(entry, where=f'{lat_column} IS NOT NULL', limit=1)[0]
+        lon, lat = float(row[lon_column]), float(row[lat_column])
+        around_one_site = box(lon - 0.01, lat - 0.01, lon + 0.01, lat + 0.01)
+
+        view = requests.get(
+            f'{OPEN_DATA_FVG_BASE_URL}/api/views/{entry.identifier}.json', timeout=60, headers=HEADERS
+        ).json()
+        types = {c['fieldName']: c['dataTypeName'] for c in view['columns']}
+        for column in entry.lon_lat_columns:
+            assert types.get(column) == 'number', f'{entry.name}: {column} is {types.get(column)!r}'
+
+        total = int(fetch_known_dataset(entry, select='count(*)')[0]['count'])
+        inside = int(fetch_known_dataset(entry, boundary=around_one_site, select='count(*)')[0]['count'])
+        assert 0 < inside < total, f'{entry.name}: {inside} of {total} rows inside a box around one of its sites'
         time.sleep(0.4)
 
 
