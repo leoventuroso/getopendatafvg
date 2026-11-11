@@ -1,0 +1,60 @@
+name: Release
+
+# Publishing a GitHub release builds the package and uploads it to PyPI
+# through trusted publishing, so no API token is stored anywhere. The same
+# release is archived by Zenodo, which mints the DOI, once the repository
+# is enabled in Zenodo's GitHub settings. Zenodo reads CITATION.cff.
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Check the tag matches the package version
+        run: |
+          version=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "Release tag ${GITHUB_REF_NAME} does not match pyproject.toml version v${version}" >&2
+            exit 1
+          fi
+
+      - name: Test
+        run: |
+          pip install -e ".[dev]"
+          ruff check .
+          pytest --cov
+
+      - name: Build
+        run: |
+          pip install build
+          python -m build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/getopendatafvg
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1

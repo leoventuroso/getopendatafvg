@@ -1,0 +1,60 @@
+site_name: getopendatafvg
+site_description: Open geographic, socio-economic and environmental data for Friuli Venezia Giulia
+site_url: https://leoventuroso.github.io/getopendatafvg/
+repo_url: https://github.com/leoventuroso/getopendatafvg
+repo_name: leoventuroso/getopendatafvg
+edit_uri: ""
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - content.code.copy
+
+# docs/PLAN.md is the project's internal strategy, not user documentation.
+exclude_docs: |
+  PLAN.md
+
+nav:
+  - Home: index.md
+  - API reference:
+      - FVG data:
+          - Catalog: api/catalog.md
+          - Regional WFS: api/wfs.md
+          - Open Data FVG portal: api/open-data-fvg.md
+          - ISTAT statistics: api/istat.md
+          - Cadastral parcels: api/cadastre.md
+          - Avalanche sites: api/avalanche.md
+          - OpenStreetMap: api/openstreetmap.md
+      - Earth observation:
+          - Satellite imagery: api/imagery.md
+          - Spectral indices and rasters: api/indices.md
+      - Utilities:
+          - Terrain and coverage: api/terrain.md
+          - Vector tiles: api/tiles.md
+          - Historical weather: api/weather.md
+          - Deprecated: api/deprecated.md
+  - Upstream defects: upstream-defects.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: false
+            show_root_heading: false
+            show_root_toc_entry: false
+            heading_level: 2
+            members_order: source
+            show_signature_annotations: true
+            separate_signature: true
+            signature_crossrefs: true
+            show_symbol_type_heading: true
+            docstring_style: google

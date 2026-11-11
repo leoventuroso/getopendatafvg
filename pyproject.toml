@@ -34,14 +34,29 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/leoventuroso/getopendatafvg"
 Issues = "https://github.com/leoventuroso/getopendatafvg/issues"
+Documentation = "https://leoventuroso.github.io/getopendatafvg/"
 Changelog = "https://github.com/leoventuroso/getopendatafvg/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 viz = ["matplotlib"]
 dev = ["pytest", "pytest-cov", "ruff", "getopendatafvg[viz]"]
+docs = ["mkdocs", "mkdocs-material", "mkdocstrings[python]"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/getopendatafvg"]
+
+# The source distribution carries what is needed to build, test and cite
+# the package, and nothing local to a checkout (.vscode, paper drafts).
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/getopendatafvg",
+  "tests",
+  "docs/upstream-defects.md",
+  "README.md",
+  "LICENSE",
+  "CHANGELOG.md",
+  "CITATION.cff",
+]
 
 [tool.ruff]
 line-length = 100

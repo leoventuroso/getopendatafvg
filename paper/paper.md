@@ -148,9 +148,13 @@ rather than each source's own undocumented access path.
 
 # AI usage disclosure
 
-Claude models (Anthropic), accessed through Claude Code, were used for
-test scaffolding during development. All tests were reviewed and
-validated by the author.
+Claude models by Anthropic were used for tests, documentation and
+roadmap notes: Claude Sonnet 5.5 in September 2026 and Claude Opus 5.5
+from October 2026. From November 2026, Claude Code with
+`claude-opus-5-5` was also used for project planning and for checks
+against the live upstream services. All AI-assisted output was checked
+and validated manually by the author, who made the core design
+decisions. The log is kept in the repository's CONTRIBUTING.md.
 
 # Acknowledgements
 
@@ -159,5 +163,9 @@ for Mappa Civica, a civic platform for the comune of Montereale
 Valcellina. We thank the open-source communities behind shapely,
 rasterio, and DuckDB, whose libraries this project builds on directly.
 This work received no external funding or grant support.
+
+# Conflict of interest
+
+The author declares no conflict of interest.
 
 # References

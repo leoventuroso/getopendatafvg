@@ -42,10 +42,21 @@ entry here in the same change.
   and the markers in step. An opt-in live suite,
   `tests/test_upstream_defects_live.py`, checks that each defect still
   exists upstream.
+- An API reference built with MkDocs and mkdocstrings, published to
+  GitHub Pages; CI fails if it does not build cleanly or if a public
+  name is missing from it.
+- A release workflow that publishes to PyPI through trusted publishing
+  when a GitHub release is published, after checking that the tag
+  matches the package version.
 - CI:
   - Python 3.11–3.13 matrix;
   - branch coverage with a 95% floor;
   - a weekly scheduled run of the live catalog checks.
+
+### Changed
+
+- The source distribution now contains only the package, its tests, and
+  the files needed to cite and build it.
 
 ### Deprecated
 

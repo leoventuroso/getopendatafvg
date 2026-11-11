@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="getopendatafvglogo.png" alt="getopendatafvg" width="700" style="margin-bottom: -30px;">
+  <img src="https://raw.githubusercontent.com/leoventuroso/getopendatafvg/main/getopendatafvglogo.png" alt="getopendatafvg" width="700" style="margin-bottom: -30px;">
 </div>
 
 # getopendatafvg
@@ -461,6 +461,17 @@ GETOPENDATAFVG_LIVE=1 pytest tests/test_upstream_defects_live.py
 
 `pytest -m quirk` runs every offline test that pins one of those
 defects.
+
+## Documentation
+
+The API reference is at
+[leoventuroso.github.io/getopendatafvg](https://leoventuroso.github.io/getopendatafvg/),
+built from the docstrings. To build it locally:
+
+```bash
+pip install -e ".[docs]"
+mkdocs serve
+```
 
 ## Contributing and citing
 

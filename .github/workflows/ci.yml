@@ -30,3 +30,19 @@ jobs:
         # Coverage settings, including the fail_under ratchet, live in
         # pyproject.toml so a local `pytest --cov` enforces the same bar.
         run: pytest --cov
+
+  docs:
+    # --strict turns any broken reference or unrendered name into a failure.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install
+        run: pip install -e ".[docs]"
+
+      - name: Build
+        run: mkdocs build --strict

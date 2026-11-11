@@ -12,7 +12,9 @@ from pathlib import Path
 
 import getopendatafvg
 
-CHANGELOG = Path(__file__).resolve().parent.parent / 'CHANGELOG.md'
+ROOT = Path(__file__).resolve().parent.parent
+CHANGELOG = ROOT / 'CHANGELOG.md'
+API_DOCS = ROOT / 'docs' / 'api'
 
 PUBLIC_API = frozenset({
     'AvalancheSite',
@@ -108,3 +110,13 @@ def test_every_public_name_is_recorded_in_the_changelog():
         name for name in getopendatafvg.__all__ if not re.search(rf'`{re.escape(name)}`', text)
     )
     assert not unrecorded, f'public names missing from CHANGELOG.md: {unrecorded}'
+
+
+def test_every_public_name_is_in_the_api_reference():
+    # The pages list members explicitly, one `- name` line each, so a new
+    # export does not appear on the documentation site by itself.
+    listed = set()
+    for page in API_DOCS.glob('*.md'):
+        listed.update(re.findall(r'^\s+- (\w+)$', page.read_text(encoding='utf-8'), flags=re.MULTILINE))
+    missing = sorted(set(getopendatafvg.__all__) - listed)
+    assert not missing, f'public names missing from docs/api/: {missing}'

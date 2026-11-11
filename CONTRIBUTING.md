@@ -37,7 +37,8 @@ change that breaks one is caught before review:
 
 - **Public API.** The public API is exactly `getopendatafvg.__all__`.
   Adding or removing a name means updating `PUBLIC_API` in
-  `tests/test_public_api.py` and mentioning the name in `CHANGELOG.md`.
+  `tests/test_public_api.py`, mentioning the name in `CHANGELOG.md`,
+  and listing it on its page under `docs/api/`.
   A name is removed only after it has emitted a `DeprecationWarning` for
   at least one minor release and two months.
 - **Upstream defects.** A new way a source misbehaves or misleads gets
