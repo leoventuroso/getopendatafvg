@@ -1,0 +1,45 @@
+name: Upstream data problem
+description: A source changed, moved, went stale, or publishes data that misleads.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Known problems are listed in [docs/upstream-defects.md](https://github.com/leoventuroso/getopendatafvg/blob/main/docs/upstream-defects.md). Check there first; a new one may be added to it.
+  - type: dropdown
+    id: source
+    attributes:
+      label: Source
+      options:
+        - Regional WFS GeoServer (serviziogc.regione.fvg.it)
+        - Open Data FVG portal (dati.friuliveneziagiulia.it)
+        - ISTAT SDMX (esploradati.istat.it)
+        - Cadastral parcels (onData)
+        - OpenStreetMap Overpass
+        - Sentinel-2 (Copernicus Data Space)
+        - Landsat (USGS M2M)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: identifier
+    attributes:
+      label: Dataset identifier
+      description: WFS layer, portal resource id, ISTAT dataflow and key, or catalog entry name.
+      placeholder: "UNITA_AMM:COMUNI_FVG, 7vnx-28uy, 122_54 ..."
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong
+      description: What the service returns, and why it misleads or breaks. Include the request URL if you have it.
+    validations:
+      required: true
+  - type: input
+    id: seen
+    attributes:
+      label: When you saw it
+      description: Date of the request, since upstream services change without notice.
+      placeholder: "2026-11-11"
+    validations:
+      required: true

@@ -450,6 +450,26 @@ before adding entries. It also runs weekly in CI (`.github/workflows/live.yml`),
 which is what catches a layer being renamed or retired by the region -
 something no offline test can see.
 
+A second live suite checks that the upstream defects recorded in
+[docs/upstream-defects.md](docs/upstream-defects.md) still exist. It
+makes about 13 requests, 3 of them to ISTAT, spaced to stay under its
+rate limit:
+
+```bash
+GETOPENDATAFVG_LIVE=1 pytest tests/test_upstream_defects_live.py
+```
+
+`pytest -m quirk` runs every offline test that pins one of those
+defects.
+
+## Contributing and citing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) to report a problem or propose a
+change, and the [Code of Conduct](CODE_OF_CONDUCT.md). Changes are
+recorded in [CHANGELOG.md](CHANGELOG.md). To cite the library, use the
+metadata in [CITATION.cff](CITATION.cff); GitHub's "Cite this
+repository" button reads it.
+
 ## License
 
 [MIT](LICENSE)

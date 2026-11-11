@@ -1,0 +1,36 @@
+name: New source or feature
+description: Propose a dataset, a source or a capability.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The library covers open data for Friuli Venezia Giulia. Sources that are not specific to the region are usually out of scope.
+  - type: textarea
+    id: need
+    attributes:
+      label: What you need
+      description: The data or capability, and what you would use it for.
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Source
+      description: Where the data is published, if this is about a dataset.
+  - type: input
+    id: licence
+    attributes:
+      label: Licence
+      description: The data's licence or terms of use, if known.
+  - type: dropdown
+    id: granularity
+    attributes:
+      label: Finest granularity
+      description: The smallest area the data can be resolved to, if known.
+      options:
+        - Point or sub-comunal geometry
+        - Comune
+        - Province
+        - Region
+        - Not known

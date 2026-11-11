@@ -1,0 +1,37 @@
+name: Bug in the library
+description: A function raises, returns wrong data, or behaves differently from its documentation.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If the problem is in the data a service publishes rather than in this library, use **Upstream data problem** instead.
+  - type: textarea
+    id: call
+    attributes:
+      label: What you ran
+      description: The smallest code that shows the problem, including the boundary, comune code or dataset identifier.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: The full traceback, or the result you got.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Output of `python -c "import importlib.metadata as m, sys; print(m.version('getopendatafvg'), sys.version)"`.
+    validations:
+      required: true
