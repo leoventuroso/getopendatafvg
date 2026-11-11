@@ -13,8 +13,8 @@ authors:
     given-names: Leonardo
     affiliation: "Fraunhofer Italia Research"
     orcid: "https://orcid.org/0000-0001-7789-2412"
-version: 0.1.0
-date-released: 2026-09-15
+version: 0.2.0
+date-released: 2026-11-11
 license: MIT
 repository-code: "https://github.com/leoventuroso/getopendatafvg"
 url: "https://github.com/leoventuroso/getopendatafvg"

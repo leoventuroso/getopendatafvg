@@ -12,6 +12,8 @@ entry here in the same change.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-11
+
 ### Added
 
 - `fetch_known_dataset`, which dispatches a catalog entry to the right
@@ -107,5 +109,6 @@ repository.
 - Other sources: `fetch_historical_weather`, `DailyWeather`,
   `fetch_elevation`, `fetch_wikipedia_summary`.
 
-[Unreleased]: https://github.com/leoventuroso/getopendatafvg/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/leoventuroso/getopendatafvg/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/leoventuroso/getopendatafvg/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/leoventuroso/getopendatafvg/releases/tag/v0.1.0
