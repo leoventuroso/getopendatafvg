@@ -1,6 +1,11 @@
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from getopendatafvg import fetch_wikipedia_summary
+
+# The rest of this file tests behaviour, not the deprecation.
+pytestmark = pytest.mark.filterwarnings('ignore:fetch_wikipedia_summary is deprecated:DeprecationWarning')
 
 
 def make_response(status_code: int = 200, json_data: dict | None = None) -> MagicMock:
@@ -46,3 +51,12 @@ def test_fetch_wikipedia_summary_returns_none_when_nothing_matches():
         result = fetch_wikipedia_summary('Not A Real Place At All Xyz')
 
     assert result is None
+
+
+def test_fetch_wikipedia_summary_warns_that_it_is_deprecated():
+    resp = make_response(json_data={'extract': 'A comune.', 'type': 'standard'})
+    with (
+        patch('getopendatafvg.wikipedia.requests.get', return_value=resp),
+        pytest.warns(DeprecationWarning, match='removed in getopendatafvg 1.0'),
+    ):
+        fetch_wikipedia_summary('Montereale Valcellina')

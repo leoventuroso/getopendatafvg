@@ -41,6 +41,13 @@ entry here in the same change.
   - branch coverage with a 95% floor;
   - a weekly scheduled run of the live catalog checks.
 
+### Deprecated
+
+- `fetch_elevation` and `fetch_wikipedia_summary` now emit a
+  `DeprecationWarning` and will be removed in 1.0. Neither is specific to
+  Friuli Venezia Giulia. Use `DemSampler` or Open-Elevation directly in
+  place of the first, and the Wikipedia REST API in place of the second.
+
 ### Fixed
 
 - Five catalog entries pointed at the wrong WFS workspace, for example

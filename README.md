@@ -316,6 +316,10 @@ and used internally, so lines can stay in WGS84.
 
 For a single point, downloading a whole DEM is overkill:
 
+> **Deprecated.** `fetch_elevation` is not specific to Friuli Venezia
+> Giulia. It now emits a `DeprecationWarning` and will be removed in 1.0.
+> Use `DemSampler`, or call Open-Elevation directly.
+
 ```python
 from getopendatafvg import fetch_elevation
 
@@ -401,6 +405,10 @@ data (a landslide event, a fire, a satellite scene) with the weather
 around it.
 
 ## Wikipedia summaries
+
+> **Deprecated.** `fetch_wikipedia_summary` is not specific to Friuli
+> Venezia Giulia. It now emits a `DeprecationWarning` and will be removed
+> in 1.0. Call the Wikipedia REST API directly.
 
 ```python
 from getopendatafvg import fetch_wikipedia_summary

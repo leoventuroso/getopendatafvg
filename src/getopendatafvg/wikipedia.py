@@ -2,10 +2,14 @@
 
 Returns the raw extract only; classifying what it means (touristic,
 notable, historic, ...) is a decision for the caller, not this library.
+
+Deprecated: nothing here is specific to Friuli Venezia Giulia, so the module
+is outside the library's scope, and it will be removed in 1.0.
 """
 
 from __future__ import annotations
 
+import warnings
 from urllib.parse import quote
 
 import requests
@@ -19,7 +23,15 @@ def fetch_wikipedia_summary(title: str, lang: str = 'it', timeout: float = 8.0) 
     page (no useful summary of its own), retries once against Wikipedia's
     title-search API and fetches the top match instead. Returns None if
     no matching page is found either way.
+
+    Deprecated, removed in 1.0: call the Wikipedia REST API directly.
     """
+    warnings.warn(
+        'fetch_wikipedia_summary is deprecated and will be removed in getopendatafvg 1.0. '
+        'Call the Wikipedia REST API directly.',
+        DeprecationWarning,
+        stacklevel=2,
+    )
     extract, page_type = _fetch_summary(title, lang, timeout)
     if extract and page_type != 'disambiguation':
         return extract
