@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+type: software
+title: "getopendatafvg"
+abstract: >-
+  A Python library that extracts open geographic, socio-economic and
+  environmental data for a comune or area of Friuli Venezia Giulia (Italy):
+  the regional WFS GeoServer and Open Data portal, ISTAT statistics,
+  cadastral parcels, OpenStreetMap, and Sentinel-2/Landsat imagery, with
+  documented upstream defects handled and tested against the live services.
+authors:
+  - family-names: Venturoso
+    given-names: Leonardo
+    affiliation: "Fraunhofer Italia Research"
+    orcid: "https://orcid.org/0000-0001-7789-2412"
+version: 0.1.0
+date-released: 2026-09-15
+license: MIT
+repository-code: "https://github.com/leoventuroso/getopendatafvg"
+url: "https://github.com/leoventuroso/getopendatafvg"
+keywords:
+  - open data
+  - Friuli Venezia Giulia
+  - GIS
+  - ISTAT
+  - WFS
+  - remote sensing
