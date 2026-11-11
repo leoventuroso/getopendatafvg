@@ -479,7 +479,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) to report a problem or propose a
 change, and the [Code of Conduct](CODE_OF_CONDUCT.md). Changes are
 recorded in [CHANGELOG.md](CHANGELOG.md). To cite the library, use the
 metadata in [CITATION.cff](CITATION.cff); GitHub's "Cite this
-repository" button reads it.
+repository" button reads it. Every release is archived on Zenodo:
+[doi:10.5281/zenodo.24132368](https://doi.org/10.5281/zenodo.24132368)
+always resolves to the latest version.
 
 ## License
 
