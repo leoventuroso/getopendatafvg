@@ -9,9 +9,10 @@ tags:
   - Italy
 authors:
   - name: Leonardo Venturoso
+    orcid: 0000-0001-7789-2412
     affiliation: 1
 affiliations:
-  - name: Fraunhofer Italia
+  - name: Fraunhofer Italia Research
     index: 1
 date: 15 September 2026
 bibliography: paper.bib
