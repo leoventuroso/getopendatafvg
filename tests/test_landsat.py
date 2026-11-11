@@ -33,12 +33,14 @@ def test_select_scene_returns_none_when_all_too_cloudy():
     assert select_scene(scenes, cloud_cover_max_pct=20) is None
 
 
+@pytest.mark.quirk('UD-18')
 def test_download_label_fits_m2m_limit():
     # A label built from a scene's own (much longer) entityId blew past
     # M2M's 50-character cap and made download-request fail outright.
     assert len(DOWNLOAD_LABEL) <= 50
 
 
+@pytest.mark.quirk('UD-17')
 def test_find_band_download_matches_on_entity_id_not_just_product_name():
     # Live behaviour: productName is a generic "Landsat Collection 2
     # Level-2 Band File" for every option - the band identifier only shows
@@ -78,6 +80,7 @@ def test_fetch_landsat_scene_raises_when_nothing_clean_found():
         fetch_landsat_scene(boundary, credentials, Path('/tmp/does-not-matter'))
 
 
+@pytest.mark.quirk('UD-17')
 def test_fetch_landsat_scene_pairs_the_secondary_downloads_own_entity_id(tmp_path):
     # Regression test: download-request needs the *secondary* download's
     # own entityId, not the parent scene's - pairing the parent's entityId
@@ -157,6 +160,7 @@ def test_m2m_post_omits_the_header_entirely_when_there_is_no_key_yet():
     assert post.call_args.kwargs['headers'] == {}
 
 
+@pytest.mark.quirk('UD-19')
 def test_m2m_post_raises_on_an_error_code_even_though_the_http_status_was_200():
     # M2M reports application errors in a 200 body, so raise_for_status
     # alone would let them through as a successful, empty result.

@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+import pytest
 from shapely.geometry import box
 
 from getopendatafvg import (
@@ -68,6 +69,7 @@ def test_search_open_data_fvg_scopes_the_query_to_the_fvg_domain():
     assert params['q'] == 'Rendiconto Entrate Tolmezzo'
 
 
+@pytest.mark.quirk('UD-09')
 def test_search_open_data_fvg_never_narrows_to_only_datasets():
     # 551 of the portal's ~850 assets are type `filter`, several of them
     # catalog entries. `only=dataset` would hide them and make a present
@@ -80,6 +82,7 @@ def test_search_open_data_fvg_never_narrows_to_only_datasets():
     assert 'only' not in get.call_args.kwargs['params']
 
 
+@pytest.mark.quirk('UD-09')
 def test_search_open_data_fvg_returns_filters_and_datasets_alike():
     resources = [
         {'id': 'ppcp-v6ci', 'name': 'Rendiconto Entrate - Comune di Tolmezzo',

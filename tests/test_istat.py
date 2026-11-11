@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from getopendatafvg import (
     FVG_NUTS_AREAS,
     fetch_bank_branches,
@@ -24,6 +26,7 @@ def make_response(csv_text: str) -> MagicMock:
     return resp
 
 
+@pytest.mark.quirk('UD-01')
 def test_correct_end_period_subtracts_one_from_a_plain_year():
     # Confirmed live against the real endpoint: endPeriod=2020 returns
     # data through 2021. A 4-digit year gets -1 so callers get what they
@@ -37,6 +40,17 @@ def test_correct_end_period_leaves_non_year_periods_unchanged():
     assert _correct_end_period('2020-Q1') == '2020-Q1'
 
 
+@pytest.mark.quirk('UD-03')
+def test_fetch_istat_dataflow_asks_the_modern_endpoint_never_the_legacy_one():
+    istat_module._request_times.clear()
+    with patch('getopendatafvg.istat.requests.get', return_value=make_response('TIME_PERIOD,OBS_VALUE\n')) as get:
+        fetch_istat_dataflow('22_289', 'A.093042....')
+
+    url = get.call_args.args[0]
+    assert url.startswith('https://esploradati.istat.it/SDMXWS/rest/data/22_289/')
+
+
+@pytest.mark.quirk('UD-01')
 def test_fetch_istat_dataflow_sends_the_corrected_end_period():
     istat_module._request_times.clear()
     csv_text = 'TIME_PERIOD,OBS_VALUE\n2020,100\n'
@@ -149,6 +163,7 @@ def test_fetch_income_series_leaves_the_average_none_when_a_value_is_redacted():
     ]
 
 
+@pytest.mark.quirk('UD-02')
 def test_throttle_does_not_sleep_under_the_limit(monkeypatch):
     istat_module._request_times.clear()
     sleeps = []
@@ -161,6 +176,7 @@ def test_throttle_does_not_sleep_under_the_limit(monkeypatch):
     assert sleeps == []
 
 
+@pytest.mark.quirk('UD-02')
 def test_throttle_sleeps_once_the_limit_is_reached(monkeypatch):
     istat_module._request_times.clear()
     sleeps = []
@@ -249,6 +265,7 @@ def test_fetch_employment_rate_skips_a_suppressed_observation():
     assert series == [{'year': 2024, 'employment_rate_pct': 69.8}]
 
 
+@pytest.mark.quirk('UD-04')
 def test_fvg_nuts_areas_use_the_pre_2013_vintage_this_dataflow_needs():
     # The modern codes (ITH4, ITH41...) 404 on 150_915. If this mapping
     # ever gets "modernised", every employment call breaks.
@@ -284,6 +301,8 @@ def test_fetch_tourism_flows_builds_an_eleven_position_key():
     assert len(key.split('.')) == 11
 
 
+@pytest.mark.quirk('UD-05')
+@pytest.mark.quirk('UD-07')
 def test_fetch_tourism_flows_takes_the_all_localities_total_not_a_subtotal():
     # The real failure this guards: for ITD4 in 2023 the LOCALITY_TYPE
     # dimension returns 11 rows for one year. ALL is 2,910,023 arrivals,
@@ -305,6 +324,7 @@ def test_fetch_tourism_flows_takes_the_all_localities_total_not_a_subtotal():
                        'average_stay_nights': round(9946875 / 2910023, 2)}]
 
 
+@pytest.mark.quirk('UD-05')
 def test_fetch_tourism_flows_ignores_a_single_country_of_residence():
     istat_module._request_times.clear()
     csv_text = tourism_csv(
@@ -318,6 +338,7 @@ def test_fetch_tourism_flows_ignores_a_single_country_of_residence():
     assert series[0]['arrivals'] == 2910023
 
 
+@pytest.mark.quirk('UD-06')
 def test_fetch_tourism_flows_returns_empty_for_a_comune_rather_than_failing():
     # 122_54 has comune rows, but only capacity ones: AR and NI are absent
     # at comune level, so this is the documented empty result, not an error.
@@ -345,6 +366,7 @@ def test_fetch_tourism_capacity_collects_the_three_indicators_per_year():
     ]
 
 
+@pytest.mark.quirk('UD-05')
 def test_fetch_tourism_capacity_skips_a_star_rating_subtotal():
     istat_module._request_times.clear()
     csv_text = tourism_csv(
@@ -357,6 +379,7 @@ def test_fetch_tourism_capacity_skips_a_star_rating_subtotal():
     assert series == [{'year': 2023, 'establishments': None, 'beds': 193, 'rooms': None}]
 
 
+@pytest.mark.quirk('UD-05')
 def test_tourism_total_keys_pin_every_breakdown_dimension():
     # If a dimension is dropped from here, its subtotals start leaking
     # into the series silently.

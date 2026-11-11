@@ -47,6 +47,10 @@ line-length = 100
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = [
+    "quirk(id): pins an upstream defect or trap recorded in docs/upstream-defects.md",
+]
 
 [tool.coverage.run]
 source = ["getopendatafvg"]

@@ -36,6 +36,12 @@ entry here in the same change.
   - 9 portal datasets;
   - one example entry per municipal budget family;
   - 7 ARPA FVG air-quality series under a new `aria` category.
+- `docs/upstream-defects.md`, a registry of 19 upstream defects and traps
+  with how each is handled. Tests that pin an entry carry a `quirk`
+  marker, so `pytest -m quirk` runs them, and a test keeps the registry
+  and the markers in step. An opt-in live suite,
+  `tests/test_upstream_defects_live.py`, checks that each defect still
+  exists upstream.
 - CI:
   - Python 3.11–3.13 matrix;
   - branch coverage with a 95% floor;

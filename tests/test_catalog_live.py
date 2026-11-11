@@ -138,6 +138,8 @@ def test_recorded_geometry_columns_are_really_filterable():
         time.sleep(0.4)
 
 
+@pytest.mark.quirk('UD-10')
+@pytest.mark.quirk('UD-11')
 @live_only
 def test_recorded_lon_lat_columns_are_numeric_and_really_filter():
     """The failure modes here are quieter than for a geometry column.

@@ -217,3 +217,25 @@ def test_every_catalog_entry_is_dispatchable():
             patch('getopendatafvg.catalog.fetch_open_data_fvg', return_value=[]),
         ):
             assert fetch_known_dataset(entry) == []
+
+
+@pytest.mark.quirk('UD-10')
+def test_the_ozone_entry_filters_by_coordinates_not_by_its_half_empty_geocoded_column():
+    (ozone,) = [e for e in CATALOG if e.identifier == '7vnx-28uy']
+    assert ozone.geometry_column is None
+    assert ozone.lon_lat_columns == ('longitudine', 'latitudine')
+
+
+@pytest.mark.quirk('UD-12')
+def test_parafarmacie_records_no_coordinates_so_a_boundary_raises_rather_than_misfilters():
+    (parafarmacie,) = [e for e in CATALOG if e.identifier == 'b3xh-hm8p']
+    assert parafarmacie.geometry_column is None and parafarmacie.lon_lat_columns is None
+    with pytest.raises(ValueError, match='no geometry or coordinate columns recorded'):
+        fetch_known_dataset(parafarmacie, boundary=box(13.2, 46.0, 13.3, 46.1))
+
+
+@pytest.mark.quirk('UD-14')
+def test_the_closed_and_stalled_arpa_series_say_so_in_their_descriptions():
+    by_id = {e.identifier: e for e in CATALOG}
+    assert 'Serie chiusa' in by_id['dayp-qnyx'].description
+    assert 'Ultimo dato al 2026-01-15' in by_id['t274-vki6'].description

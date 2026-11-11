@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+import pytest
 from shapely.geometry import box, mapping
 
 from getopendatafvg import fetch_avalanche_sites
@@ -34,6 +35,7 @@ def by_layer(surveyed, photo):
     return fake
 
 
+@pytest.mark.quirk('UD-15')
 def test_fetch_avalanche_sites_merges_both_layers_and_flags_the_survey_method():
     # The whole point: neither layer tells a caller the other exists.
     with patch('getopendatafvg.avalanche.fetch_wfs_features',
@@ -44,6 +46,7 @@ def test_fetch_avalanche_sites_merges_both_layers_and_flags_the_survey_method():
     assert {s.site_id: s.photo_interpreted for s in sites} == {1: False, 2: True}
 
 
+@pytest.mark.quirk('UD-16')
 def test_fetch_avalanche_sites_groups_a_site_stored_as_two_polygons():
     # ID_SITO 1060 and 3668 really are two rows each in the surveyed
     # layer. Keeping one row would shrink the site's footprint.
@@ -122,6 +125,7 @@ def test_as_int_tolerates_a_missing_elevation():
     assert _as_int('non un numero') is None
 
 
+@pytest.mark.quirk('UD-15')
 def test_layer_names_are_the_two_real_catasto_valanghe_layers():
     assert SURVEYED_LAYER == 'ZONE_RISC:CV_VALANGHE_RILEVATE'
     assert PHOTO_INTERPRETED_LAYER == 'ZONE_RISC:CV_VALANGHE_FOTOINT'

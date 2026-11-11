@@ -48,7 +48,7 @@ class KnownDataset:
     y, like every boundary in this library. An entry records at most one
     of the two. When both exist on the portal, prefer the numeric pair
     unless the geometry column is verified complete: ARPA's ozone series
-    has a `geocoded_column` that is empty for every row since May 2020,
+    has a `geocoded_column` that is empty for every row after 2020-05-19,
     so a `within_box` on it silently returns only the older half.
     """
 
@@ -724,7 +724,7 @@ CATALOG: tuple[KnownDataset, ...] = (
         '7vnx-28uy',
         'aria',
         "Massimi giornalieri della media oraria e della media mobile su 8 ore di O3 per stazione ARPA FVG, "
-        "dal 2005. La colonna geocoded_column e' vuota dal maggio 2020: filtrare su latitudine/longitudine.",
+        "dal 2005. La colonna geocoded_column e' vuota dal 20 maggio 2020: filtrare su latitudine/longitudine.",
         lon_lat_columns=('longitudine', 'latitudine'),
     ),
     KnownDataset(
